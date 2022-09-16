@@ -7,14 +7,12 @@
 		"64": "icons/icon.png"
 	},
 	"background": {
-		"scripts": [
-			"background_script.js"
-		]
+		"page": "background_page.html"
 	},
 	"content_scripts": [
 		{
 			"matches": [
-				"*://*.mozilla.org/*"
+				"<all_urls>"
 			],
 			"js": [
 				"content_script.js"
@@ -33,13 +31,22 @@
 			"64": "icons/icon.png"
 		},
 		"default_popup": "pageAction/index.html",
-		"default_title": "FirefoxGroupTabs"
+		"default_title": "FirefoxGroupTabs",
+		"show_matches": ["<all_urls>"]
 	},
 	"options_ui": {
 		"page": "options/index.html"
 	},
     "permissions": [
         "tabs",
-        "contextMenus"
-    ]
+		"tabHide",
+        "contextMenus",
+		"sessions"
+    ],
+	"browser_specific_settings": {
+		"gecko": {
+		  "id": "addon@example.com"
+		}
+	  }
+	  
 }
