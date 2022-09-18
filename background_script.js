@@ -1,6 +1,6 @@
-import { setupCreate } from "./background_scripts/CreateGroupTab.js";
-import { setupGroupTabOnClick } from "./background_scripts/GroupTabOnClick.js";
-import { setUpStorage } from "./background_scripts/StorageManager.js";
+import { setupCreate } from "./backgroundScripts/GroupTabActions/CreateGroupTab.js";
+import { setupGroupTabOnClick } from "./backgroundScripts/GroupTabActions/GroupTabOnClick.js";
+import { setUpStorage } from "./backgroundScripts/StorageManager.js";
 
 /**
  * Adds the context menu item for adding a group tabs

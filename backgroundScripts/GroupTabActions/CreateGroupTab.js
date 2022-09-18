@@ -1,4 +1,4 @@
-import { addGroupTab } from "./StorageManager.js";
+import { addGroupTab } from "../StorageManager.js";
 
 /**
  * Handles setup for group tab creation
