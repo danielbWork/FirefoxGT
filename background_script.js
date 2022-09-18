@@ -18,5 +18,8 @@ browser.runtime.onInstalled.addListener(() => {
   setUpStorage();
 });
 
+// FOR TESTING/DEVELOPMENT ONLY NOT PRODUCTION AT ALL!!!!!!!!!!!!!!!!!!!!!!!!!
+setUpStorage();
+
 setupCreate();
 setupGroupTabOnClick();
