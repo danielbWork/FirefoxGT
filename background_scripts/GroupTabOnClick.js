@@ -1,22 +1,15 @@
-import {
-  INNER_TAB_LIST_KEY,
-  IS_HIDING_KEY,
-  GROUP_TAB_LIST_KEY,
-} from "/background_scripts/Consts.js";
+import { getGroupTabByID, toggleGroupTabVisibility } from "./StorageManager.js";
 
 /**
- * Handles setup code for handliing group tab click
+ * Handles setup code for handling group tab click
  */
 export function setupGroupTabOnClick() {
   browser.tabs.onActivated.addListener(async (activeInfo) => {
     try {
-      let groupTablist = await browser.sessions.getWindowValue(
-        activeInfo.windowId,
-        GROUP_TAB_LIST_KEY
-      );
+      let groupTab = await getGroupTabByID(activeInfo.tabId);
 
-      if (groupTablist.includes(activeInfo.tabId)) {
-        onGroupTabClick(activeInfo.tabId, activeInfo.previousTabId);
+      if (groupTab) {
+        onGroupTabClick(activeInfo.tabId, groupTab, activeInfo.previousTabId);
       }
     } catch (error) {
       console.log({ error, activeInfo });
@@ -25,27 +18,21 @@ export function setupGroupTabOnClick() {
 }
 
 /**
- *  Reacts to user clicking the group id and either hides or show's the tab's inside the group appropriatly
+ *  Reacts to user clicking the group tabs and either hides or shows the tabs inside the group appropriately
  * @param {number} groupTabID The id of the group tab
+ * @param {innerTabs: string, isHidingTabs: boolean} groupTab The actual group tab
  * @param {number} previousTabId The id of the previously active tab
  */
-async function onGroupTabClick(groupTabID, previousTabId) {
-  const tabList = await browser.sessions.getTabValue(
-    groupTabID,
-    INNER_TAB_LIST_KEY
-  );
-  const isHidden = await browser.sessions.getTabValue(
-    groupTabID,
-    IS_HIDING_KEY
-  );
+async function onGroupTabClick(groupTabID, groupTab, previousTabId) {
+  console.log("onGroupTabClick");
 
-  if (isHidden) {
-    await browser.tabs.show(tabList);
+  if (groupTab.isHidingTabs) {
+    await browser.tabs.show(groupTab.innerTabs);
   } else {
-    await browser.tabs.hide(tabList);
+    await browser.tabs.hide(groupTab.innerTabs);
   }
 
   await browser.tabs.update(previousTabId, { active: true });
 
-  await browser.sessions.setTabValue(groupTabID, IS_HIDING_KEY, !isHidden);
+  toggleGroupTabVisibility(groupTabID, groupTab);
 }

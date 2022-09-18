@@ -41,7 +41,7 @@
         "tabs",
 		"tabHide",
         "contextMenus",
-		"sessions"
+		"storage"
     ],
 	"browser_specific_settings": {
 		"gecko": {

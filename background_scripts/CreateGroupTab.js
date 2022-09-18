@@ -1,26 +1,9 @@
-import {
-  GROUP_TAB_LIST_KEY,
-  INNER_TAB_LIST_KEY,
-  IS_HIDING_KEY,
-} from "./Consts.js";
-
-/**
- * Adds the context menu item for adding a group tabs
- */
-function createConextMenuItems() {
-  browser.contextMenus.create({
-    id: "add-group-tab",
-    title: "Put this tab in new group tab",
-    contexts: ["tab"],
-  });
-}
+import { addGroupTab } from "./StorageManager.js";
 
 /**
  * Handles setup for group tab creation
  */
 export function setupCreate() {
-  createConextMenuItems();
-
   browser.contextMenus.onClicked.addListener(createGroupTab);
 }
 
@@ -43,12 +26,12 @@ async function createGroupTab(info, tab) {
     title: "test",
   });
 
-  // Set Group tab values
-  await browser.sessions.setTabValue(groupTab.id, INNER_TAB_LIST_KEY, [tab.id]);
-  await browser.sessions.setTabValue(groupTab.id, IS_HIDING_KEY, false);
-
-  // Set Window's values regarding group tab
-  await browser.sessions.setWindowValue(groupTab.windowId, GROUP_TAB_LIST_KEY, [
-    groupTab.id,
-  ]);
+  try {
+    await addGroupTab(groupTab.id, {
+      isHidingTabs: false,
+      innerTabs: [tab.id],
+    });
+  } catch (error) {
+    console.log({ error });
+  }
 }
