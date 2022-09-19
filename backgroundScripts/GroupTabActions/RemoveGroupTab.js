@@ -25,6 +25,5 @@ export function setupRemove() {
  * @param {} removeInfo Info regarding deleting the tab
  */
 async function removeGroupTab(tabId, removeInfo) {
-  console.log({ tabId, removeInfo });
   await deleteGroupTab(tabId);
 }

@@ -14,8 +14,6 @@ async function getAllGroupTabs() {
  * @param {} groupTabs The group tabs we want to set in the storage
  */
 async function updateAllGroupTabs(groupTabs) {
-  console.log(groupTabs);
-
   await browser.storage.local.set({ groupTabs });
 }
 
@@ -34,6 +32,15 @@ export function setUpStorage() {
 export async function getGroupTabByID(id) {
   const groupTabs = await getAllGroupTabs();
   return groupTabs[id];
+}
+
+/**
+ * Gets all the ids of the group tabs.
+ * @returns And array of all the group tab ids
+ */
+export async function getAllGroupTabIDs() {
+  const groupTabs = await getAllGroupTabs();
+  return Object.keys(groupTabs);
 }
 
 //#endregion

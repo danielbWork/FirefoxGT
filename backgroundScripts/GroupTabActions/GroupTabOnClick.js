@@ -1,4 +1,5 @@
 import {
+  getAllGroupTabIDs,
   getGroupTabByID,
   toggleGroupTabVisibility,
 } from "../StorageHandler.js";
@@ -12,7 +13,7 @@ export function setupGroupTabOnClick() {
       let groupTab = await getGroupTabByID(activeInfo.tabId);
 
       if (groupTab) {
-        onGroupTabClick(activeInfo.tabId, groupTab, activeInfo.previousTabId);
+        onGroupTabClick(activeInfo.tabId, groupTab);
       }
     } catch (error) {
       console.log({ error, activeInfo });
@@ -24,18 +25,62 @@ export function setupGroupTabOnClick() {
  *  Reacts to user clicking the group tabs and either hides or shows the tabs inside the group appropriately
  * @param {number} groupTabID The id of the group tab
  * @param {innerTabs: string, isHidingTabs: boolean} groupTab The actual group tab
- * @param {number} previousTabId The id of the previously active tab
  */
-async function onGroupTabClick(groupTabID, groupTab, previousTabId) {
-  console.log("onGroupTabClick");
-
+async function onGroupTabClick(groupTabID, groupTab) {
+  // Checks whether to hide or show
   if (groupTab.isHidingTabs) {
     await browser.tabs.show(groupTab.innerTabs);
   } else {
     await browser.tabs.hide(groupTab.innerTabs);
   }
 
-  await browser.tabs.update(previousTabId, { active: true });
-
   toggleGroupTabVisibility(groupTabID, groupTab);
+
+  // Makes sure group tab is discarded and not active tab
+  handleTabMove(groupTab);
+
+  // Need to wait for tab to actually not be active to discard
+  setTimeout(() => {
+    browser.tabs.discard(groupTabID).then();
+  }, 100);
+}
+
+/**
+ * Finds a valid tab to move to once the group is hidden, otherwise creates a new tab
+ *
+ * @param {*} groupTab The group tab that we want to move from
+ */
+async function handleTabMove(groupTab) {
+  let otherTabs = await browser.tabs.query({
+    hidden: false,
+    currentWindow: true,
+  });
+
+  // Checks if window only has single closed group tab
+  if (otherTabs.length === 1) {
+    browser.tabs.create({ active: true });
+    return;
+  }
+
+  const groupTabIDs = await getAllGroupTabIDs();
+
+  // Filters for tabs that are neither a group tab or one of the inner tab about to be hidden
+  const validTabs = otherTabs.filter((value) => {
+    const id = value.id;
+
+    return !groupTabIDs.includes(`${id}`) && !groupTab.innerTabs.includes(id);
+  });
+
+  if (validTabs.length > 0) {
+    // Currently goes for the first option might change in future
+    browser.tabs.update(validTabs[0].id, { active: true }).catch((error) => {
+      // Caused by closing into group tab
+      console.log(error);
+
+      // Creates a new tab instead
+      browser.tabs.create({ active: true });
+    });
+  } else {
+    browser.tabs.create({ active: true });
+  }
 }

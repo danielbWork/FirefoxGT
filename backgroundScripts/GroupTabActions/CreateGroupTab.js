@@ -21,7 +21,7 @@ async function createGroupTab(info, tab) {
 
   const groupTab = await browser.tabs.create({
     // TODO Change url to local html file that show a list of the tabs
-    url: "https://developer.mozilla.org/en-US/Add-ons/WebExtensions",
+    url: "/group_tab.html",
     index: tab.index,
     discarded: true,
     title: "test",
