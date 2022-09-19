@@ -1,8 +1,10 @@
+import { GroupTab } from "./GroupTab.js";
+
 //#region Util Functions
 
 /**
  * Util to make it easier to get group tabs
- * @returns The group tabs
+ * @returns {} The group tabs
  */
 async function getAllGroupTabs() {
   let { groupTabs } = await browser.storage.local.get("groupTabs");
@@ -27,7 +29,7 @@ export function setUpStorage() {
 /**
  * Gets the group tab from the storage with the id, or undefined if it doesn't exist
  * @param {number} id The id of the group
- * @returns {{innerTabs: string, isHidingTabs: boolean}} the group tab belonging to the id or undefined if it doesn't exist
+ * @returns {GroupTab?} the group tab belonging to the id or undefined if it doesn't exist
  */
 export async function getGroupTabByID(id) {
   const groupTabs = await getAllGroupTabs();
@@ -51,18 +53,18 @@ export async function getAllGroupTabIDs() {
  *  Adds a the new group tab to the group tab list
  *
  * @param {number} id The id of the group tab
- * @param {{innerTabs: string, isHidingTabs: boolean}} groupTab The new group tab
+ * @param {number[]} innerTabs The new group tab
  *
  * @throws Error when user adds a group tab that was already in the list
  */
-export async function addGroupTab(id, groupTab) {
+export async function addGroupTab(id, innerTabs) {
   let groupTabs = await getAllGroupTabs();
 
   if (groupTabs[id]) {
     throw "Invalid group tab ID, already exists";
   }
 
-  groupTabs[id] = groupTab;
+  groupTabs[id] = new GroupTab(id, innerTabs);
 
   await updateAllGroupTabs(groupTabs);
 }
@@ -73,13 +75,14 @@ export async function addGroupTab(id, groupTab) {
 
 /**
  * Updates the group tab value in the storage
- * @param {number} id The id of the group tab
- * @param {{innerTabs: string, isHidingTabs: boolean}} newGroupTab The new value for the group tab
+ * @param {GroupTab} newGroupTab The new value for the group tab
  *
  * @throws Error when user attempts to update a group tab that doesn't exists
  */
-export async function updateGroupTab(id, newGroupTab) {
+export async function updateGroupTab(newGroupTab) {
   let groupTabs = await getAllGroupTabs();
+
+  const id = newGroupTab.id;
 
   if (!groupTabs[id]) {
     throw "Invalid group tab id no such group";
@@ -92,14 +95,13 @@ export async function updateGroupTab(id, newGroupTab) {
 
 /**
  * Toggles the group tab's isHidingTabs value
- * @param {number} id The id of the group tab
- * @param {{innerTabs: string, isHidingTabs: boolean}} groupTab The group tab we update
+ * @param {GroupTab} groupTab The group tab we update
  *
  * @throws Error when user attempts to update a group tab that doesn't exists
  */
-export async function toggleGroupTabVisibility(id, groupTab) {
-  groupTab.isHidingTabs = !groupTab.isHidingTabs;
-  await updateGroupTab(id, groupTab);
+export async function toggleGroupTabVisibility(groupTab) {
+  groupTab.isOpen = !groupTab.isOpen;
+  await updateGroupTab(groupTab);
 }
 
 //#endregion

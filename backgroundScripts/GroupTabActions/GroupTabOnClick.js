@@ -1,3 +1,4 @@
+import { GroupTab } from "../GroupTab.js";
 import {
   getAllGroupTabIDs,
   getGroupTabByID,
@@ -13,7 +14,7 @@ export function setupGroupTabOnClick() {
       let groupTab = await getGroupTabByID(activeInfo.tabId);
 
       if (groupTab) {
-        onGroupTabClick(activeInfo.tabId, groupTab);
+        onGroupTabClick(groupTab);
       }
     } catch (error) {
       console.log({ error, activeInfo });
@@ -23,32 +24,31 @@ export function setupGroupTabOnClick() {
 
 /**
  *  Reacts to user clicking the group tabs and either hides or shows the tabs inside the group appropriately
- * @param {number} groupTabID The id of the group tab
- * @param {innerTabs: string, isHidingTabs: boolean} groupTab The actual group tab
+ * @param {GroupTab} groupTab The group tab that was clicked
  */
-async function onGroupTabClick(groupTabID, groupTab) {
+async function onGroupTabClick(groupTab) {
   // Checks whether to hide or show
-  if (groupTab.isHidingTabs) {
+  if (groupTab.isOpen) {
     await browser.tabs.show(groupTab.innerTabs);
   } else {
     await browser.tabs.hide(groupTab.innerTabs);
   }
 
-  toggleGroupTabVisibility(groupTabID, groupTab);
+  toggleGroupTabVisibility(groupTab);
 
   // Makes sure group tab is discarded and not active tab
   handleTabMove(groupTab);
 
   // Need to wait for tab to actually not be active to discard
   setTimeout(() => {
-    browser.tabs.discard(groupTabID).then();
+    browser.tabs.discard(groupTab.id).then();
   }, 100);
 }
 
 /**
  * Finds a valid tab to move to once the group is hidden, otherwise creates a new tab
  *
- * @param {*} groupTab The group tab that we want to move from
+ * @param {GroupTab} groupTab The group tab that we want to move from
  */
 async function handleTabMove(groupTab) {
   let otherTabs = await browser.tabs.query({

@@ -28,10 +28,7 @@ async function createGroupTab(info, tab) {
   });
 
   try {
-    await addGroupTab(groupTab.id, {
-      isHidingTabs: false,
-      innerTabs: [tab.id],
-    });
+    await addGroupTab(groupTab.id, [tab.id]);
   } catch (error) {
     console.log({ error });
   }
