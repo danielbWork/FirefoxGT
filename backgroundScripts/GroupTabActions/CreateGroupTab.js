@@ -1,4 +1,5 @@
-import { addGroupTab } from "../StorageManager.js";
+import { ADD_GROUP_TAB_ID } from "../Consts.js";
+import { addGroupTab } from "../StorageHandler.js";
 
 /**
  * Handles setup for group tab creation
@@ -9,12 +10,12 @@ export function setupCreate() {
 
 /**
  * Creates a group tab and sets it's info for the session
- * @param {*} info The info regarding the tab thet was pressed
- * @param {*} tab The tab that the user added to the gorup
+ * @param {*} info The info regarding the tab that was pressed
+ * @param {*} tab The tab that the user added to the group
  */
 async function createGroupTab(info, tab) {
   // Makes sure we only add group tab when needed
-  if (info.menuItemId !== "add-group-tab") {
+  if (info.menuItemId !== ADD_GROUP_TAB_ID) {
     return;
   }
 

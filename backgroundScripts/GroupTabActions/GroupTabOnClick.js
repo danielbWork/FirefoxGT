@@ -1,4 +1,7 @@
-import { getGroupTabByID, toggleGroupTabVisibility } from "./StorageManager.js";
+import {
+  getGroupTabByID,
+  toggleGroupTabVisibility,
+} from "../StorageHandler.js";
 
 /**
  * Handles setup code for handling group tab click

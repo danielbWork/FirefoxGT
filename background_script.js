@@ -1,20 +1,11 @@
+import { setUpContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
 import { setupCreate } from "./backgroundScripts/GroupTabActions/CreateGroupTab.js";
 import { setupGroupTabOnClick } from "./backgroundScripts/GroupTabActions/GroupTabOnClick.js";
-import { setUpStorage } from "./backgroundScripts/StorageManager.js";
-
-/**
- * Adds the context menu item for adding a group tabs
- */
-function createContextMenuItems() {
-  browser.contextMenus.create({
-    id: "add-group-tab",
-    title: "Put this tab in new group tab",
-    contexts: ["tab"],
-  });
-}
+import { setupRemove } from "./backgroundScripts/GroupTabActions/RemoveGroupTab.js";
+import { setUpStorage } from "./backgroundScripts/StorageHandler.js";
 
 browser.runtime.onInstalled.addListener(() => {
-  createContextMenuItems();
+  setUpContextMenuItems();
   setUpStorage();
 });
 
@@ -23,3 +14,4 @@ setUpStorage();
 
 setupCreate();
 setupGroupTabOnClick();
+setupRemove();
