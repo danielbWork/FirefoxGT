@@ -38,7 +38,7 @@ export async function getGroupTabByID(id) {
 
 /**
  * Gets all the ids of the group tabs.
- * @returns And array of all the group tab ids
+ * @returns An array of all the group tab ids
  */
 export async function getAllGroupTabIDs() {
   const groupTabs = await getAllGroupTabs();
@@ -109,16 +109,32 @@ export async function toggleGroupTabVisibility(groupTab) {
 //#region Remove Group Tab
 
 /**
- * Sets the value of the group tab in the storage as undefined
- * @param {number} id The Id of the group tab
+ * Sets the value of the group tab (or inner tab) in the storage as undefined
+ * @param {number} id The Id of the tab that was removed
+ *
  */
-export async function deleteGroupTab(id) {
+export async function removeTabFromStorage(id) {
   let groupTabs = await getAllGroupTabs();
 
   // If group tab doesn't exist does nothing
   if (groupTabs[id]) {
     delete groupTabs[id];
     await updateAllGroupTabs(groupTabs);
+  }
+  // Checks inner tabs as well
+  else {
+    const groupTab = Object.values(groupTabs).find((group) => {
+      return group.innerTabs.includes(id);
+    });
+
+    // Updates the group tab
+    if (groupTab) {
+      // Removes the deleted inner tab
+      groupTab.innerTabs = groupTab.innerTabs.filter((tabId) => tabId !== id);
+
+      groupTabs[groupTab.id] = groupTab;
+      await updateAllGroupTabs(groupTabs);
+    }
   }
 }
 

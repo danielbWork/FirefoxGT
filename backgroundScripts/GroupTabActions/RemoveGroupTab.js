@@ -1,5 +1,5 @@
 import { REMOVE_GROUP_TAB_ID } from "../Consts.js";
-import { deleteGroupTab } from "../StorageHandler.js";
+import { removeTabFromStorage } from "../StorageHandler.js";
 
 /**
  * Handles setup for group tab removing
@@ -11,7 +11,7 @@ export function setupRemove() {
       return;
     }
 
-    //Assumes the tab given is a group tab since was called with context menu
+    // Assumes the tab given is a group tab since was called with context menu
     browser.tabs.remove(tab.id);
   });
 
@@ -25,5 +25,5 @@ export function setupRemove() {
  * @param {} removeInfo Info regarding deleting the tab
  */
 async function removeGroupTab(tabId, removeInfo) {
-  await deleteGroupTab(tabId);
+  await removeTabFromStorage(tabId);
 }
