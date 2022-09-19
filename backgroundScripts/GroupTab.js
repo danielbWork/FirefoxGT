@@ -23,7 +23,7 @@ export class GroupTab {
    * @param {number[]} innerTabs The tabs inside the group
    * @param {boolean} isOpen Whether or not user group tab is hiding the tabs
    */
-  constructor(id, innerTabs, isOpen = false) {
+  constructor(id, innerTabs, isOpen = true) {
     this.id = id;
     this.innerTabs = innerTabs;
     this.isOpen = isOpen;
