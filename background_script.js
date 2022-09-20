@@ -1,6 +1,7 @@
 import { setUpContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
 import { setupCreate } from "./backgroundScripts/GroupTabActions/CreateGroupTab.js";
 import { setupGroupTabOnClick } from "./backgroundScripts/GroupTabActions/GroupTabOnClick.js";
+import { setupMoveGroupTab } from "./backgroundScripts/GroupTabActions/MoveGroupTab.js";
 import { setupRemove } from "./backgroundScripts/GroupTabActions/RemoveGroupTab.js";
 import { setUpStorage } from "./backgroundScripts/StorageHandler.js";
 
@@ -15,3 +16,4 @@ setUpStorage();
 setupCreate();
 setupGroupTabOnClick();
 setupRemove();
+setupMoveGroupTab();
