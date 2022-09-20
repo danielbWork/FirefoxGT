@@ -37,12 +37,11 @@ async function onGroupTabClick(groupTab, previousTabId) {
 
   toggleGroupTabVisibility(groupTab);
 
-  // Makes sure group tab is discarded and not active tab
   handleTabMove(groupTab, previousTabId);
 
   // Need to wait for tab to actually not be active to discard
   setTimeout(() => {
-    browser.tabs.discard(groupTab.id).then();
+    browser.tabs.discard(groupTab.id);
   }, 100);
 }
 
@@ -70,12 +69,10 @@ async function handleTabMove(groupTab, previousTabId) {
 
   // Checks if we can just go back to previous tab
   if (!groupTab.innerTabs.includes(previousTabId)) {
-    console.log(`Pre ${previousTabId}`);
     await browser.tabs
       .update(previousTabId, { active: true })
       .catch(handleUpdateError);
 
-    console.log("Post");
     return;
   }
 

@@ -20,12 +20,15 @@ async function createGroupTab(info, tab) {
   }
 
   const groupTab = await browser.tabs.create({
-    // TODO Change url to local html file that show a list of the tabs
     url: "/group_tab.html",
     index: tab.index,
-    discarded: true,
-    title: "test",
+    active: false,
   });
+
+  // Calls discard with delay to have the ui load up icon and title for tab
+  setTimeout(() => {
+    browser.tabs.discard(groupTab.id);
+  }, 100);
 
   try {
     await addGroupTab(groupTab.id, [tab.id]);
