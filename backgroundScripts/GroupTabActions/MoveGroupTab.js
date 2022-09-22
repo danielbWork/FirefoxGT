@@ -1,5 +1,10 @@
 import { GroupTab } from "../GroupTab.js";
-import { getGroupTabByID } from "../StorageHandler.js";
+import {
+  addInnerTab,
+  getGroupTabByID,
+  getGroupTabOrInnerTabByID,
+  removeTabFromStorage,
+} from "../StorageHandler.js";
 import { onStopDragging } from "./GroupTabOnClick.js";
 
 /**
@@ -7,10 +12,16 @@ import { onStopDragging } from "./GroupTabOnClick.js";
  */
 export function setupMoveGroupTab() {
   browser.tabs.onMoved.addListener(async (tabId, moveInfo) => {
-    let groupTab = await getGroupTabByID(tabId);
+    let { groupTab, index } = await getGroupTabOrInnerTabByID(tabId);
 
     if (groupTab) {
-      onGroupTabMove(groupTab, moveInfo);
+      if (typeof index !== "undefined") {
+        onInnerTabMove(groupTab, index, moveInfo);
+      } else {
+        onGroupTabMove(groupTab, moveInfo);
+      }
+    } else {
+      onMoveInsideAGroupTab(tabId, moveInfo);
     }
   });
 }
@@ -39,5 +50,75 @@ async function onGroupTabMove(groupTab, moveInfo) {
     await onStopDragging(groupTab);
   } catch (error) {
     console.log(error);
+  }
+}
+
+/**
+ *  Handles user moving an inner tab to a new location
+ * @param {GroupTab} groupTab The group tab who had an inner tab
+ * @param {number} index The index of the inner tab in the group tab
+ * @param {*} moveInfo The moveInfo regarding the inner tab
+ */
+async function onInnerTabMove(groupTab, index, moveInfo) {
+  // Block infinite loop and non important movements
+  if (moveInfo.toIndex === moveInfo.fromIndex) {
+    return;
+  }
+
+  const groupTabInfo = await browser.tabs.get(groupTab.id);
+
+  // Checks if the tab is inside of group range
+  if (
+    moveInfo.toIndex > groupTabInfo.index && // min
+    moveInfo.toIndex <= groupTabInfo.index + groupTab.innerTabs.length // max
+  ) {
+    return;
+  }
+
+  const movedTabInfo = await browser.tabs.get(groupTab.innerTabs[index]);
+
+  // TODO Add dialog asking user if they are sure
+  await removeTabFromStorage(movedTabInfo.id);
+
+  // Notifies user
+  const removedAlert = `alert("Tab ${movedTabInfo.title} was removed from group tab ${groupTabInfo.title}")`;
+  await browser.tabs.executeScript(movedTabInfo.id, { code: removedAlert });
+}
+
+/**
+ * Handles user moving tab inside of the group tab area
+ * @param {number} tabId Id of the tab that was moved
+ * @param {*} moveInfo Info regarding the tab movement
+ */
+async function onMoveInsideAGroupTab(tabId, moveInfo) {
+  const groupTabInfos = await browser.tabs.query({
+    windowId: moveInfo.windowId,
+    url: "moz-extension://*/group_tab.html*",
+  });
+
+  // Uses normal for since we need to exist loop once the tab was added
+  for (const groupTabInfo of groupTabInfos) {
+    // Only cares about group tabs that are before the moved tab id
+    if (groupTabInfo.index > moveInfo.toIndex) continue;
+
+    const groupTab = await getGroupTabByID(groupTabInfo.id);
+
+    // Handles non group tabs with similar html schemes
+    if (!groupTab) continue;
+
+    // Checks if the tab was moved to inside a group
+    if (groupTabInfo.index + groupTab.innerTabs.length >= moveInfo.toIndex) {
+      // TODO Add dialog asking user if they are sure
+
+      const movedTabInfo = await browser.tabs.get(tabId);
+
+      addInnerTab(groupTab, tabId);
+
+      // Notifies user
+      const movedAlert = `alert("Tab ${movedTabInfo.title} was moved to group tab ${groupTabInfo.title}")`;
+      await browser.tabs.executeScript(tabId, { code: movedAlert });
+
+      break;
+    }
   }
 }

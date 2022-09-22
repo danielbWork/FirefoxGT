@@ -54,6 +54,10 @@ export function setupGroupTabOnClick() {
  * @param {GroupTab} groupTab The group tab which was moved
  */
 export async function onStopDragging(groupTab) {
+  // Makes sure to only react to user stopping drag
+  // This is mostly for stopping user using the context menu Move Tab option
+  if (!isDraggingFlag) return;
+
   // Makes sure the inner tabs match group tab info
   // Awaits required to make sure the update won't cause issues
   if (groupTab.isOpen) {

@@ -42,7 +42,8 @@
 		"tabHide",
 		"activeTab",
         "contextMenus",
-		"storage"
+		"storage",
+		"<all_urls>"
     ],
 	"browser_specific_settings": {
 		"gecko": {

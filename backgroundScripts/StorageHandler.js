@@ -28,12 +28,40 @@ export function setUpStorage() {
 
 /**
  * Gets the group tab from the storage with the id, or undefined if it doesn't exist
- * @param {number} id The id of the group
- * @returns {GroupTab?} the group tab belonging to the id or undefined if it doesn't exist
+ * @param {number} id The id of the tab
+ * @returns {GroupTab | undefined} the group tab belonging to the id or undefined if it doesn't exist
  */
 export async function getGroupTabByID(id) {
   const groupTabs = await getAllGroupTabs();
   return groupTabs[id];
+}
+
+/**
+ * Goes over the group tabs and checks to see if the id is either theirs or one of the inner tabs
+ * @param {number} id The id of the tab
+ * @returns {{groupTab: GroupTab | undefined, index: number| undefined}} Object holding group tab with the id or if the
+ *  id belongs to a inner tab then the object returns the index of the inner tab as well as the group tab
+ */
+export async function getGroupTabOrInnerTabByID(id) {
+  const groupTabs = await getAllGroupTabs();
+
+  if (groupTabs[id]) {
+    return { groupTab: groupTabs[id] };
+  }
+
+  // Finds the group tab with the problem index
+  const groupTab = Object.values(groupTabs).find((group) => {
+    return group.innerTabs.includes(id);
+  });
+
+  // No group tab or inner tab with this id
+  if (!groupTab) {
+    return {};
+  }
+
+  const index = groupTab.innerTabs.indexOf(id);
+
+  return { groupTab, index };
 }
 
 /**
@@ -104,6 +132,17 @@ export async function toggleGroupTabVisibility(groupTab) {
   await updateGroupTab(groupTab);
 }
 
+/**
+ * Adds an inner tab to the group tab
+ * @param {GroupTab} groupTab The group tab we add the id to
+ * @param {number} innerTabID The id of the new inner tab
+ */
+export async function addInnerTab(groupTab, innerTabID) {
+  groupTab.innerTabs = [...groupTab.innerTabs, innerTabID];
+
+  updateGroupTab(groupTab);
+}
+
 //#endregion
 
 //#region Remove Group Tab
@@ -123,14 +162,12 @@ export async function removeTabFromStorage(id) {
   }
   // Checks inner tabs as well
   else {
-    const groupTab = Object.values(groupTabs).find((group) => {
-      return group.innerTabs.includes(id);
-    });
+    const { groupTab, index } = await getGroupTabOrInnerTabByID(id);
 
     // Updates the group tab
     if (groupTab) {
       // Removes the deleted inner tab
-      groupTab.innerTabs = groupTab.innerTabs.filter((tabId) => tabId !== id);
+      const removed = groupTab.innerTabs.splice(index, 1);
 
       groupTabs[groupTab.id] = groupTab;
       await updateAllGroupTabs(groupTabs);

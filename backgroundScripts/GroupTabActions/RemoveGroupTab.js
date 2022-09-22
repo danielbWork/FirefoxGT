@@ -26,4 +26,5 @@ export function setupRemove() {
  */
 async function removeGroupTab(tabId, removeInfo) {
   await removeTabFromStorage(tabId);
+  // TODO Handle showing the inner tabs/removing after this
 }
