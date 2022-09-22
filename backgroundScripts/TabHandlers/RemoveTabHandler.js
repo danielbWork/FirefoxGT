@@ -1,4 +1,4 @@
-import { REMOVE_GROUP_TAB_ID } from "../Consts.js";
+import { REMOVE_GROUP_TAB_ID } from "../../Consts.js";
 import { removeTabFromStorage } from "../StorageHandler.js";
 
 /**

@@ -2,7 +2,7 @@ import {
   ADD_GROUP_TAB_ID,
   PARENT_CONTEXT_MENU,
   REMOVE_GROUP_TAB_ID,
-} from "./Consts.js";
+} from "../Consts.js";
 import { getGroupTabByID } from "./StorageHandler.js";
 
 /**

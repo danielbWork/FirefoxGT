@@ -43,7 +43,8 @@
 		"activeTab",
         "contextMenus",
 		"storage",
-		"<all_urls>"
+		"<all_urls>",
+		"notifications"
     ],
 	"browser_specific_settings": {
 		"gecko": {

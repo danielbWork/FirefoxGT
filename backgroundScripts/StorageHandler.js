@@ -81,18 +81,19 @@ export async function getAllGroupTabIDs() {
  *  Adds a the new group tab to the group tab list
  *
  * @param {number} id The id of the group tab
+ * @param {string} name The name of the group tab
  * @param {number[]} innerTabs The new group tab
  *
  * @throws Error when user adds a group tab that was already in the list
  */
-export async function addGroupTab(id, innerTabs) {
+export async function addGroupTab(id, name, innerTabs) {
   let groupTabs = await getAllGroupTabs();
 
   if (groupTabs[id]) {
     throw "Invalid group tab ID, already exists";
   }
 
-  groupTabs[id] = new GroupTab(id, innerTabs);
+  groupTabs[id] = new GroupTab(id, name, innerTabs);
 
   await updateAllGroupTabs(groupTabs);
 }

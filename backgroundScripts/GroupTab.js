@@ -8,6 +8,11 @@ export class GroupTab {
   id;
 
   /**
+   * The name of the group tab
+   */
+  name;
+
+  /**
    * The tabs inside the group
    */
   innerTabs;
@@ -20,11 +25,13 @@ export class GroupTab {
   /**
    *
    * @param {number} id The id of the group tab
+   * @param {string} name The name of the group tab
    * @param {number[]} innerTabs The tabs inside the group
    * @param {boolean} isOpen Whether or not user group tab is hiding the tabs
    */
-  constructor(id, innerTabs, isOpen = true) {
+  constructor(id, name, innerTabs, isOpen = true) {
     this.id = id;
+    this.name = name;
     this.innerTabs = innerTabs;
     this.isOpen = isOpen;
   }
