@@ -4,7 +4,7 @@ import { removeTabFromStorage } from "../StorageHandler.js";
 /**
  * Handles setup for group tab removing
  */
-export function setupRemove() {
+export function setupRemoveHandler() {
   browser.contextMenus.onClicked.addListener((info, tab) => {
     // Makes sure we only remove group tab when needed
     if (info.menuItemId !== REMOVE_GROUP_TAB_ID) {

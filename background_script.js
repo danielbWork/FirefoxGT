@@ -1,9 +1,9 @@
 import { setUpContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
-import { setupCreate } from "./backgroundScripts/GroupTabActions/CreateGroupTab.js";
-import { setupGroupTabOnClick } from "./backgroundScripts/GroupTabActions/GroupTabOnClick.js";
-import { setupMoveGroupTab } from "./backgroundScripts/GroupTabActions/MoveGroupTab.js";
-import { setupRemove } from "./backgroundScripts/GroupTabActions/RemoveGroupTab.js";
 import { setUpStorage } from "./backgroundScripts/StorageHandler.js";
+import { setupCreateHandler } from "./backgroundScripts/TabHandlers/CreateTabHandler.js";
+import { setupMoveHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler.js";
+import { setupOnClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler.js";
+import { setupRemoveHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler.js";
 
 browser.runtime.onInstalled.addListener(() => {
   setUpContextMenuItems();
@@ -13,7 +13,7 @@ browser.runtime.onInstalled.addListener(() => {
 // FOR TESTING/DEVELOPMENT ONLY NOT PRODUCTION AT ALL!!!!!!!!!!!!!!!!!!!!!!!!!
 setUpStorage();
 
-setupCreate();
-setupGroupTabOnClick();
-setupRemove();
-setupMoveGroupTab();
+setupCreateHandler();
+setupOnClickHandler();
+setupRemoveHandler();
+setupMoveHandler();

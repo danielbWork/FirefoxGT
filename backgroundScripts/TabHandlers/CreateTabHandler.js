@@ -4,7 +4,7 @@ import { addGroupTab } from "../StorageHandler.js";
 /**
  * Handles setup for group tab creation
  */
-export function setupCreate() {
+export function setupCreateHandler() {
   browser.contextMenus.onClicked.addListener(createGroupTab);
 }
 

@@ -20,7 +20,7 @@ let isDraggingFlag = false;
 /**
  * Handles setup code for handling group tab click
  */
-export function setupGroupTabOnClick() {
+export function setupOnClickHandler() {
   browser.tabs.onActivated.addListener(async (activeInfo) => {
     try {
       let groupTab = await getGroupTabByID(activeInfo.tabId);

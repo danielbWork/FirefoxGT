@@ -5,12 +5,12 @@ import {
   getGroupTabOrInnerTabByID,
   removeTabFromStorage,
 } from "../StorageHandler.js";
-import { onStopDragging } from "./GroupTabOnClick.js";
+import { onStopDragging } from "./OnTabClickHandler.js";
 
 /**
  * Handles setup code for moving group tabs and their inner tabs
  */
-export function setupMoveGroupTab() {
+export function setupMoveHandler() {
   browser.tabs.onMoved.addListener(async (tabId, moveInfo) => {
     let { groupTab, index } = await getGroupTabOrInnerTabByID(tabId);
 
