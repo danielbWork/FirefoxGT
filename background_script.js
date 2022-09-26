@@ -1,17 +1,17 @@
-import { setUpContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
-import { setUpStorage } from "./backgroundScripts/StorageHandler.js";
+import { setupContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
 import { setupCreateHandler } from "./backgroundScripts/TabHandlers/CreateTabHandler.js";
 import { setupMoveHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler.js";
 import { setupOnClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler.js";
 import { setupRemoveHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler.js";
+import { setupStorage } from "./Storage/StorageHandler.js";
 
 browser.runtime.onInstalled.addListener(() => {
-  setUpContextMenuItems();
-  setUpStorage();
+  setupContextMenuItems();
+  setupStorage();
 });
 
 // FOR TESTING/DEVELOPMENT ONLY NOT PRODUCTION AT ALL!!!!!!!!!!!!!!!!!!!!!!!!!
-setUpStorage();
+setupStorage();
 
 setupCreateHandler();
 setupOnClickHandler();

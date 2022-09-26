@@ -4,7 +4,7 @@ import {
   getGroupTabByID,
   getGroupTabOrInnerTabByID,
   removeTabFromStorage,
-} from "../StorageHandler.js";
+} from "../../Storage/StorageHandler.js";
 import { onStopDragging } from "./OnTabClickHandler.js";
 
 /**

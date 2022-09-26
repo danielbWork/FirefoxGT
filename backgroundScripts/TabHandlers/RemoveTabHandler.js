@@ -1,20 +1,9 @@
-import { REMOVE_GROUP_TAB_ID } from "../../Consts.js";
-import { removeTabFromStorage } from "../StorageHandler.js";
+import { removeTabFromStorage } from "../../Storage/StorageHandler.js";
 
 /**
  * Handles setup for group tab removing
  */
 export function setupRemoveHandler() {
-  browser.contextMenus.onClicked.addListener((info, tab) => {
-    // Makes sure we only remove group tab when needed
-    if (info.menuItemId !== REMOVE_GROUP_TAB_ID) {
-      return;
-    }
-
-    // Assumes the tab given is a group tab since was called with context menu
-    browser.tabs.remove(tab.id);
-  });
-
   browser.tabs.onRemoved.addListener(removeGroupTab);
 }
 

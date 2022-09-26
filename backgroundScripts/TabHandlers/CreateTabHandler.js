@@ -1,11 +1,16 @@
-import { ADD_GROUP_TAB_ID, NAME_PARAM, TAB_COUNT_PARAM } from "../../Consts.js";
-import { addGroupTab } from "../StorageHandler.js";
+import {
+  CREATE_NEW_GROUP_TAB_ID,
+  NAME_PARAM,
+  OPEN_LINK_IN_NEW_GROUP_TAB_ID,
+  TAB_COUNT_PARAM,
+} from "../../Consts.js";
+import { addGroupTab } from "../../Storage/StorageHandler.js";
 
 /**
  * Handles setup for group tab creation
  */
 export function setupCreateHandler() {
-  browser.contextMenus.onClicked.addListener(createGroupTabWithTab);
+  browser.contextMenus.onClicked.addListener(onCreateGroupTabMenuClick);
 }
 
 /**
@@ -13,58 +18,102 @@ export function setupCreateHandler() {
  * @param {*} info The info regarding the tab that was pressed
  * @param {*} tab The tab that the user added to the group
  */
-function createGroupTabWithTab(info, tab) {
-  // Makes sure we only add group tab when needed
-  if (info.menuItemId !== ADD_GROUP_TAB_ID) {
-    return;
+async function onCreateGroupTabMenuClick(info, tab) {
+  // Sends to appropriate create method
+  if (info.menuItemId === CREATE_NEW_GROUP_TAB_ID) {
+    addTabToGroupTab(tab);
+  } else if (info.menuItemId === OPEN_LINK_IN_NEW_GROUP_TAB_ID) {
+    openLinkInGroupTab(info.linkUrl, info.linkText, tab.index);
   }
+}
 
-  const createPrompt = `prompt("Please enter the Group tab's name", "${tab.title}" || "Group Tab");`;
+/**
+ * Creates a new group tab with the given tab as it's inner tab
+ * @param {Tab} tab The tab that we add to group tab
+ */
+async function addTabToGroupTab(tab) {
+  const groupTabTitle = await handleEnterGroupTabName(tab.title);
 
-  browser.tabs
-    .executeScript({ code: createPrompt })
-    .then(async (results) => {
-      console.log(results);
+  // Incase something went wrong with input
+  if (groupTabTitle) {
+    handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
+  }
+}
 
-      // TODO Use pop up instead
-      // Checks if user is in special tab
-      if (!results || results[0] === undefined) {
-        browser.notifications.create({
-          type: "basic",
-          // TODO Add Icon
-          title: "Create Failed",
-          message: "Can't create in this tab as it is blocked by firefox",
-        });
+/**
+ * Create a new group tab with a new inner tab from the link
+ *
+ * @param {string} linkUrl The url of link of the to be inner tab
+ * @param {string} linkText The text of the link we want to open
+ * @param {number} index The location we want to put the group at
+ */
+async function openLinkInGroupTab(linkUrl, linkText, index) {
+  const groupTabTitle = await handleEnterGroupTabName(linkText);
 
-        return;
-      }
+  // Incase something went wrong with input
+  if (groupTabTitle) {
+    const newTab = await browser.tabs.create({
+      url: linkUrl,
+      index: index + 1,
+      active: false,
+    });
 
-      // Checks if user chose to exit dialog
-      if (results[0] === null) {
-        return;
-      }
+    handleGroupTabCreation(groupTabTitle, [newTab.id], index + 1);
+  }
+}
 
-      // Makes sure to block empty names
-      if (results[0].trim() === "") {
-        browser.notifications.create({
-          type: "basic",
-          // TODO Add Icon
-          title: "Create Failed",
-          message: "Can't create group tab with empty name",
-        });
-      } else {
-        handleGroupTabCreation(results[0], [tab.id], tab.index);
-      }
-    })
-    .catch((error) => {
-      console.log(error);
+/**
+ * Requests the group tab name from the user
+ * @returns {string | undefined} The group tab name or undefined if user chose or couldn't enter name
+ */
+async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
+  const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}" || "Group Tab");`;
+
+  try {
+    const results = await browser.tabs.executeScript({ code: createPrompt });
+
+    console.log(results);
+
+    // TODO Use pop up instead
+    // Checks if user is in special tab
+    if (!results || results[0] === undefined) {
       browser.notifications.create({
         type: "basic",
         // TODO Add Icon
         title: "Create Failed",
-        message: error.toString(),
+        message: "Can't create in this tab as it is blocked by firefox",
       });
+
+      return;
+    }
+
+    // Checks if user chose to exit dialog
+    if (results[0] === null) {
+      return;
+    }
+
+    // Makes sure to block empty names
+    if (results[0].trim() === "") {
+      browser.notifications.create({
+        type: "basic",
+        // TODO Add Icon
+        title: "Create Failed",
+        message: "Can't create group tab with empty name",
+      });
+
+      return;
+    }
+
+    return results[0];
+  } catch (error) {
+    console.log(error);
+    browser.notifications.create({
+      type: "basic",
+      // TODO Add Icon
+      title: "Create Failed",
+      message: error.toString(),
     });
+  }
 }
 
 /**
@@ -88,7 +137,7 @@ async function handleGroupTabCreation(
   // Calls discard with delay to have the ui load up icon and title for tab
   setTimeout(() => {
     browser.tabs.discard(groupTab.id);
-  }, 300);
+  }, 500);
 
   try {
     await addGroupTab(groupTab.id, name, innerTabs);

@@ -4,7 +4,7 @@ import {
   getGroupTabByID,
   toggleGroupTabVisibility,
   updateGroupTab,
-} from "../StorageHandler.js";
+} from "../../Storage/StorageHandler.js";
 
 /**
  * The timeout id used to mark how long until a tab click

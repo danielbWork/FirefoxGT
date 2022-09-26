@@ -1,4 +1,32 @@
-import { GroupTab } from "./GroupTab.js";
+import { GroupTab } from "../backgroundScripts/GroupTab.js";
+import {
+  onAddTabNotifier,
+  onEditGroupTabNotifier,
+  onRemoveTabNotifier,
+} from "./StorageEventListeners.js";
+
+//#region Notifiers
+
+function StorageNotifier() {
+  /**
+   *  Notifies about group and inner tabs being added
+   */
+  this.onAddTab = new onAddTabNotifier();
+
+  /**
+   *  Notifies about group and inner tabs being removed
+   */
+  this.onRemoveTab = new onRemoveTabNotifier();
+
+  /**
+   *  Notifies about group tabs being edited
+   */
+  this.onEditTab = new onEditGroupTabNotifier();
+}
+
+export const storageNotifier = new StorageNotifier();
+
+//#endregion
 
 //#region Util Functions
 
@@ -22,7 +50,7 @@ async function updateAllGroupTabs(groupTabs) {
 /**
  *  Sets up storage default values
  */
-export function setUpStorage() {
+export function setupStorage() {
   updateAllGroupTabs({});
 }
 
@@ -93,9 +121,13 @@ export async function addGroupTab(id, name, innerTabs) {
     throw "Invalid group tab ID, already exists";
   }
 
-  groupTabs[id] = new GroupTab(id, name, innerTabs);
+  const newGroupTab = new GroupTab(id, name, innerTabs);
+
+  groupTabs[id] = newGroupTab;
 
   await updateAllGroupTabs(groupTabs);
+
+  storageNotifier.onAddTab.addedGroupTab(newGroupTab);
 }
 
 //#endregion
@@ -131,6 +163,8 @@ export async function updateGroupTab(newGroupTab) {
 export async function toggleGroupTabVisibility(groupTab) {
   groupTab.isOpen = !groupTab.isOpen;
   await updateGroupTab(groupTab);
+
+  storageNotifier.onEditTab.editedGroupTab(groupTab);
 }
 
 /**
@@ -142,6 +176,11 @@ export async function addInnerTab(groupTab, innerTabID) {
   groupTab.innerTabs = [...groupTab.innerTabs, innerTabID];
 
   updateGroupTab(groupTab);
+
+  storageNotifier.onAddTab.addedInnerTab(
+    groupTab,
+    groupTab.innerTabs.length - 1
+  );
 }
 
 //#endregion
@@ -158,8 +197,12 @@ export async function removeTabFromStorage(id) {
 
   // If group tab doesn't exist does nothing
   if (groupTabs[id]) {
+    const removedGroupTab = groupTabs[id];
+
     delete groupTabs[id];
     await updateAllGroupTabs(groupTabs);
+
+    storageNotifier.onRemoveTab.removedGroupTab(removedGroupTab);
   }
   // Checks inner tabs as well
   else {
@@ -172,6 +215,8 @@ export async function removeTabFromStorage(id) {
 
       groupTabs[groupTab.id] = groupTab;
       await updateAllGroupTabs(groupTabs);
+
+      storageNotifier.onRemoveTab.removedInnerTab(groupTab, index);
     }
   }
 }
