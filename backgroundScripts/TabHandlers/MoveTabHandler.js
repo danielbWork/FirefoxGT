@@ -176,9 +176,12 @@ async function onMoveIntoGroupTab(tabId, moveInfo) {
 
     addInnerTab(groupTab, tabId, moveInfo.toIndex - groupTabInfo.index - 1);
 
-    // Notifies user
-    const movedAlert = `alert("Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}")`;
-    await browser.tabs.executeScript(tabId, { code: movedAlert });
+    await browser.notifications.create({
+      type: "basic",
+      // TODO Add Icon
+      title: "Tab Moved",
+      message: `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`,
+    });
   }
 }
 
@@ -296,10 +299,11 @@ async function onMoveFromOneGroupToOther(
       moveInfo
     );
 
-    // Notifies user
-    const movedAlert = `alert("Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}")`;
-    await browser.tabs.executeScript(movedTabInfo.id, {
-      code: movedAlert,
+    await browser.notifications.create({
+      type: "basic",
+      // TODO Add Icon
+      title: "Tab Moved",
+      message: `Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}`,
     });
   } else {
     // Resets the inner tab inside the group tab
@@ -331,10 +335,11 @@ async function onRemoveTabFromGroup(groupTab, groupTabInfo, innerTabIndex) {
   if (results[0]) {
     await removeInnerTab(groupTab, movedTabInfo.id);
 
-    // Notifies user
-    const removedAlert = `alert("Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}")`;
-    await browser.tabs.executeScript(movedTabInfo.id, {
-      code: removedAlert,
+    await browser.notifications.create({
+      type: "basic",
+      // TODO Add Icon
+      title: "Tab Removed",
+      message: `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`,
     });
   } else {
     // Resets the inner tab inside the group tab
