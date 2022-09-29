@@ -69,51 +69,41 @@ async function openLinkInGroupTab(linkUrl, linkText, index) {
 async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
   const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}" || "Group Tab");`;
 
-  try {
-    const results = await browser.tabs.executeScript({ code: createPrompt });
+  const results = await browser.tabs.executeScript({ code: createPrompt });
 
-    console.log(results);
+  console.log(results);
 
-    // TODO Use pop up instead
-    // Checks if user is in special tab
-    if (!results || results[0] === undefined) {
-      browser.notifications.create({
-        type: "basic",
-        // TODO Add Icon
-        title: "Create Failed",
-        message: "Can't create in this tab as it is blocked by firefox",
-      });
-
-      return;
-    }
-
-    // Checks if user chose to exit dialog
-    if (results[0] === null) {
-      return;
-    }
-
-    // Makes sure to block empty names
-    if (results[0].trim() === "") {
-      browser.notifications.create({
-        type: "basic",
-        // TODO Add Icon
-        title: "Create Failed",
-        message: "Can't create group tab with empty name",
-      });
-
-      return;
-    }
-
-    return results[0];
-  } catch (error) {
-    console.log(error);
+  // TODO Use pop up instead
+  // Checks if user is in special tab
+  if (!results || results[0] === undefined) {
     browser.notifications.create({
       type: "basic",
       // TODO Add Icon
       title: "Create Failed",
-      message: error.toString(),
+      message: "Can't create in this tab as it is blocked by firefox",
     });
+
+    return;
   }
+
+  // Checks if user chose to exit dialog
+  if (results[0] === null) {
+    return;
+  }
+
+  // Makes sure to block empty names
+  if (results[0].trim() === "") {
+    browser.notifications.create({
+      type: "basic",
+      // TODO Add Icon
+      title: "Create Failed",
+      message: "Can't create group tab with empty name",
+    });
+
+    return;
+  }
+
+  return results[0];
 }
 
 /**

@@ -94,7 +94,7 @@ export async function getGroupTabOrInnerTabByID(id) {
 
 /**
  * Gets all the ids of the group tabs.
- * @returns An array of all the group tab ids
+ * @returns {Promise<string[]>} An array of all the group tab ids
  */
 export async function getAllGroupTabIDs() {
   const groupTabs = await getAllGroupTabs();
@@ -128,6 +128,27 @@ export async function addGroupTab(id, name, innerTabs) {
   await updateAllGroupTabs(groupTabs);
 
   storageNotifier.onAddTab.addedGroupTab(newGroupTab);
+}
+
+/**
+ * Adds an inner tab to the group tab
+ * @param {GroupTab} groupTab The group tab we add the id to
+ * @param {number} innerTabID The id of the new inner tab
+ * @param {number | undefined} index the index to put the new tab in if undefined put in the end of array
+ */
+export async function addInnerTab(groupTab, innerTabID, index = undefined) {
+  if (index !== undefined) {
+    groupTab.innerTabs.splice(index, 0, innerTabID);
+  } else {
+    groupTab.innerTabs.push(innerTabID);
+  }
+
+  await updateGroupTab(groupTab);
+
+  storageNotifier.onAddTab.addedInnerTab(
+    groupTab,
+    groupTab.innerTabs.length - 1
+  );
 }
 
 //#endregion
@@ -167,22 +188,6 @@ export async function toggleGroupTabVisibility(groupTab) {
   storageNotifier.onEditTab.editedGroupTab(groupTab);
 }
 
-/**
- * Adds an inner tab to the group tab
- * @param {GroupTab} groupTab The group tab we add the id to
- * @param {number} innerTabID The id of the new inner tab
- */
-export async function addInnerTab(groupTab, innerTabID) {
-  groupTab.innerTabs = [...groupTab.innerTabs, innerTabID];
-
-  updateGroupTab(groupTab);
-
-  storageNotifier.onAddTab.addedInnerTab(
-    groupTab,
-    groupTab.innerTabs.length - 1
-  );
-}
-
 //#endregion
 
 //#region Remove Group Tab
@@ -208,17 +213,31 @@ export async function removeTabFromStorage(id) {
   else {
     const { groupTab, index } = await getGroupTabOrInnerTabByID(id);
 
-    // Updates the group tab
     if (groupTab) {
       // Removes the deleted inner tab
-      const removed = groupTab.innerTabs.splice(index, 1);
+      groupTab.innerTabs.splice(index, 1);
 
       groupTabs[groupTab.id] = groupTab;
       await updateAllGroupTabs(groupTabs);
 
-      storageNotifier.onRemoveTab.removedInnerTab(groupTab, index);
+      storageNotifier.onRemoveTab.removedInnerTab(groupTab, id);
     }
   }
+}
+
+/**
+ * Removes an inner tab from the group tab
+ * @param {GroupTab} groupTab The group tab we remove the id from
+ * @param {number} innerTabID The id of the to be removed inner tab
+ */
+export async function removeInnerTab(groupTab, innerTabID) {
+  const index = groupTab.innerTabs.findIndex((id) => id === innerTabID);
+
+  groupTab.innerTabs.splice(index, 1);
+
+  await updateGroupTab(groupTab);
+
+  storageNotifier.onRemoveTab.removedInnerTab(groupTab, innerTabID);
 }
 
 //#endregion

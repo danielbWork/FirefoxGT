@@ -29,11 +29,11 @@ async function onRemoveTabFromScreen(tabId, removeInfo) {
  * TODO: in future have in setting page setting for doing this or deleting deleting
  *
  * @param {GroupTab} groupTab The group tab that was removed (or had an inner tab removed)
- * @param {number | undefined} index The index of the inner tab if this has a value function does nothing
+ * @param {number | undefined} innerTabID The id of the inner tab if this has a value function does nothing
  */
-function onRemoveTabFromStorage(groupTab, index) {
-  // Only cares when it group tab
-  if (index) return;
+function onRemoveTabFromStorage(groupTab, innerTabID) {
+  // Only cares when it's group tab
+  if (innerTabID) return;
 
   if (groupTab.isOpen) {
     browser.notifications.create({

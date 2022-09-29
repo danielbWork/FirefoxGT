@@ -95,11 +95,11 @@ export class onRemoveTabNotifier extends BaseEventNotifier {
   /**
    * Notifies all listeners about removed inner tab
    * @param {GroupTab} groupTab The group tab which held the inner tab
-   * @param {number} index The index of the removed inner tab
+   * @param {number} id The id of the removed inner tab
    */
-  removedInnerTab(groupTab, index) {
+  removedInnerTab(groupTab, id) {
     this.listeners.forEach((listener) => {
-      listener(groupTab, index);
+      listener(groupTab, id);
     });
   }
 }

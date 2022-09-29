@@ -189,10 +189,10 @@ async function addGroupTabToContextMenu(groupTab, isInnerTabIndex) {
 /**
  * Updates context menu and removes the appropriate items based on group tabs
  * @param {GroupTab} groupTab The group tab that was remove
- * @param {number| undefined} isInnerTabIndex The number marking if the update was for an inner tab (if so exists function)
+ * @param {number| undefined} innerTabID The id marking if the update was for an inner tab (if so exists function)
  */
-async function removeGroupTabFromContextMenu(groupTab, isInnerTabIndex) {
-  if (isInnerTabIndex) return;
+async function removeGroupTabFromContextMenu(groupTab, innerTabID) {
+  if (innerTabID) return;
 
   browser.contextMenus.remove(ADD_TO_GROUP_TAB_ID + groupTab.id);
   browser.contextMenus.remove(MOVE_TO_GROUP_TAB_ID + groupTab.id);
