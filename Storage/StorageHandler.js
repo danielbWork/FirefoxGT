@@ -188,6 +188,18 @@ export async function toggleGroupTabVisibility(groupTab) {
   storageNotifier.onEditTab.editedGroupTab(groupTab);
 }
 
+/**
+ * Updates the name of the group tab
+ * @param {GroupTab} groupTab The group tab that we update the name of
+ * @param {string} name The new name of the group tab
+ */
+export async function updateGroupTabName(groupTab, name) {
+  groupTab.name = name;
+  await updateGroupTab(groupTab);
+
+  storageNotifier.onEditTab.editedGroupTab(groupTab);
+}
+
 //#endregion
 
 //#region Remove Group Tab

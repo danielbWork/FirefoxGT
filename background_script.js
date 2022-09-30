@@ -1,5 +1,6 @@
 import { setupContextMenuItems } from "./backgroundScripts/ContextMenuHandler.js";
 import { setupCreateHandler } from "./backgroundScripts/TabHandlers/CreateTabHandler.js";
+import { setupEditHandler } from "./backgroundScripts/TabHandlers/EditTabHandler.js";
 import { setupMoveHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler.js";
 import { setupOnClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler.js";
 import { setupRemoveHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler.js";
@@ -17,3 +18,4 @@ setupCreateHandler();
 setupOnClickHandler();
 setupRemoveHandler();
 setupMoveHandler();
+setupEditHandler();

@@ -1,8 +1,7 @@
 import {
   CREATE_NEW_GROUP_TAB_ID,
-  NAME_PARAM,
+  GROUP_TAB_URL,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
-  TAB_COUNT_PARAM,
 } from "../../Consts.js";
 import { addGroupTab } from "../../Storage/StorageHandler.js";
 
@@ -67,11 +66,9 @@ async function openLinkInGroupTab(linkUrl, linkText, index) {
  * @returns {string | undefined} The group tab name or undefined if user chose or couldn't enter name
  */
 async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
-  const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}" || "Group Tab");`;
+  const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}");`;
 
   const results = await browser.tabs.executeScript({ code: createPrompt });
-
-  console.log(results);
 
   // TODO Use pop up instead
   // Checks if user is in special tab
@@ -80,7 +77,8 @@ async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
       type: "basic",
       // TODO Add Icon
       title: "Create Failed",
-      message: "Can't create in this tab as it is blocked by firefox",
+      message:
+        "Can't create in this tab as it is blocked by firefox, please move to another tab and try again",
     });
 
     return;
@@ -119,19 +117,17 @@ async function handleGroupTabCreation(
 ) {
   // Creates the group tab with the relevant info
   const groupTab = await browser.tabs.create({
-    url: `/group_tab.html?${NAME_PARAM}=${name}&${TAB_COUNT_PARAM}=${innerTabs.length}`,
+    url: GROUP_TAB_URL,
     index,
     active: false,
   });
-
-  // Calls discard with delay to have the ui load up icon and title for tab
-  setTimeout(() => {
-    browser.tabs.discard(groupTab.id);
-  }, 500);
 
   try {
     await addGroupTab(groupTab.id, name, innerTabs);
   } catch (error) {
     console.log({ error });
   }
+
+  // Refreshes the group tab to have the info from storage
+  await browser.tabs.reload(groupTab.id);
 }

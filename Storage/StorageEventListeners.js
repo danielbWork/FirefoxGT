@@ -50,8 +50,6 @@ export class onAddTabNotifier extends BaseEventNotifier {
    * @param {GroupTab} groupTab The new group tab
    */
   addedGroupTab(groupTab) {
-    console.log(groupTab);
-
     this.listeners.forEach((listener) => {
       listener(groupTab);
     });

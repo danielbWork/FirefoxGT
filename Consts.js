@@ -39,12 +39,20 @@ export const OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID =
 
 //#endregion
 
+//#region Group Tab Actions
+
+export const GROUP_TAB_ACTIONS_PARENT_ID = "parent-group-tab";
+
+export const TOGGLE_GROUP_TAB_ID = "toggle-group-tab";
+
+export const EDIT_GROUP_TAB_NAME_ID = "edit-group-tab-name";
+
 //#endregion
 
-//#region URL Params
+//#endregion
 
-export const NAME_PARAM = "name";
+//#region URL
 
-export const TAB_COUNT_PARAM = "tab_count";
+export const GROUP_TAB_URL = "/group_tab.html";
 
 //#endregion

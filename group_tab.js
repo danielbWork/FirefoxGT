@@ -1,16 +1,17 @@
-import { NAME_PARAM, TAB_COUNT_PARAM } from "./Consts.js";
+import { getGroupTabByID } from "./Storage/StorageHandler.js";
 
 /**
  * Updates the tab title to match the given values in the url
  */
-function handleTabTitle() {
-  const urlParams = new URLSearchParams(window.location.search);
+async function handleTabTitle() {
+  const tab = await browser.tabs.getCurrent();
 
-  const title = urlParams.get(NAME_PARAM) || "test";
+  const groupTab = await getGroupTabByID(tab.id);
 
-  const innerTabsCount = urlParams.get(TAB_COUNT_PARAM) || 0;
-
-  document.title = `${title} (${innerTabsCount})`;
+  // Incase this is called pre putting group tab in storage
+  if (groupTab) {
+    document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;
+  }
 }
 
 handleTabTitle();

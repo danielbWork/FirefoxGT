@@ -5,6 +5,7 @@ import {
   toggleGroupTabVisibility,
   updateGroupTab,
 } from "../../Storage/StorageHandler.js";
+import { TOGGLE_GROUP_TAB_ID } from "../../Consts.js";
 
 /**
  * The timeout id used to mark how long until a tab click
@@ -21,29 +22,55 @@ let isDraggingFlag = false;
  * Handles setup code for handling group tab click
  */
 export function setupOnClickHandler() {
-  browser.tabs.onActivated.addListener(async (activeInfo) => {
-    try {
-      let groupTab = await getGroupTabByID(activeInfo.tabId);
+  browser.tabs.onActivated.addListener(onGroupTabActivated);
+  browser.contextMenus.onClicked.addListener(onToggleContextMenu);
+}
 
-      if (groupTab) {
-        // Checks if currently dragging the tab
-        if (draggingTimeout || isDraggingFlag) {
-          if (draggingTimeout) {
-            browser.tabs.hide(groupTab.innerTabs);
-            isDraggingFlag = true;
-          }
+//#region Listeners
 
-          handleTabNewActiveTab(groupTab, activeInfo.previousTabId);
-          return;
+/**
+ *  Reacts to user activating a tab, if tab is group tab toggles it on or off
+ * @param {*} activeInfo The activation info
+ */
+async function onGroupTabActivated(activeInfo) {
+  try {
+    let groupTab = await getGroupTabByID(activeInfo.tabId);
+
+    if (groupTab) {
+      // Checks if currently dragging the tab
+      if (draggingTimeout || isDraggingFlag) {
+        if (draggingTimeout) {
+          browser.tabs.hide(groupTab.innerTabs);
+          isDraggingFlag = true;
         }
 
-        onGroupTabClick(groupTab, activeInfo.previousTabId);
+        handleTabNewActiveTab(groupTab, activeInfo.previousTabId);
+        return;
       }
-    } catch (error) {
-      console.log({ error, activeInfo });
+
+      onGroupTabClick(groupTab, activeInfo.previousTabId);
     }
-  });
+  } catch (error) {
+    console.log({ error, activeInfo });
+  }
 }
+
+/**
+ * Toggles the group tab on visibility state
+ * @param {*} info The info regarding the tab that was pressed
+ * @param {*} tab The tab that the user added to the group
+ */
+async function onToggleContextMenu(info, tab) {
+  if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
+    const groupTab = await getGroupTabByID(tab.id);
+
+    const activeTab = (await browser.tabs.query({ active: true }))[0];
+
+    await onGroupTabClick(groupTab, activeTab.id);
+  }
+}
+
+//#endregion
 
 //#region Dragging tab
 
@@ -65,9 +92,6 @@ export async function onStopDragging(groupTab) {
   } else {
     await browser.tabs.hide(groupTab.innerTabs);
   }
-
-  // Makes sure the browser is discarded
-  browser.tabs.discard(groupTab.id);
 
   isDraggingFlag = false;
 
@@ -95,11 +119,6 @@ async function onGroupTabClick(groupTab, previousTabId) {
   toggleGroupTabVisibility(groupTab);
 
   handleTabNewActiveTab(groupTab, previousTabId);
-
-  // Need to wait for tab to actually not be active to discard
-  setTimeout(() => {
-    browser.tabs.discard(groupTab.id);
-  }, 100);
 
   // Handles dragging timeout to recognize user dragging the tab
   clearTimeout(draggingTimeout);

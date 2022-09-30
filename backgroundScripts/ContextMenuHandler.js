@@ -11,6 +11,9 @@ import {
   CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
   REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
   OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
+  GROUP_TAB_ACTIONS_PARENT_ID,
+  EDIT_GROUP_TAB_NAME_ID,
+  TOGGLE_GROUP_TAB_ID,
 } from "../Consts.js";
 import {
   getAllGroupTabIDs,
@@ -105,8 +108,28 @@ function createContextMenuItems() {
   browser.contextMenus.create({
     id: OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
     type: "separator",
-    contexts: ["tab"],
+    contexts: ["link"],
     parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+  });
+
+  browser.contextMenus.create({
+    id: GROUP_TAB_ACTIONS_PARENT_ID,
+    title: "Group Tab Actions",
+    contexts: ["tab"],
+  });
+
+  browser.contextMenus.create({
+    id: TOGGLE_GROUP_TAB_ID,
+    title: "Toggle Group tab",
+    contexts: ["tab"],
+    parentId: GROUP_TAB_ACTIONS_PARENT_ID,
+  });
+
+  browser.contextMenus.create({
+    id: EDIT_GROUP_TAB_NAME_ID,
+    title: "Edit Group Tab Name",
+    contexts: ["tab"],
+    parentId: GROUP_TAB_ACTIONS_PARENT_ID,
   });
 
   loadAllGroupTabsItems();
@@ -221,6 +244,8 @@ async function resetGroupTabMenuItemsVisibility() {
 
   // Link only needs to hide separator
   updateContextMenuItemVisibility(OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID, true);
+
+  updateContextMenuItemVisibility(GROUP_TAB_ACTIONS_PARENT_ID, true);
 }
 
 /**
@@ -297,6 +322,23 @@ async function handleTabClick(info, tab) {
     // Hide current tab from move
     updateEvents.push(
       updateContextMenuItemVisibility(hiddenMoveToItemID, false)
+    );
+  }
+
+  // Only shows if group tab
+  updateEvents.push(
+    updateContextMenuItemVisibility(
+      GROUP_TAB_ACTIONS_PARENT_ID,
+      isFromGroup && !isInnerTab
+    )
+  );
+
+  // Only cares when group tab actions should be displayed
+  if (isFromGroup && !isInnerTab) {
+    updateEvents.push(
+      updateContextMenuItem(TOGGLE_GROUP_TAB_ID, {
+        title: groupTab.isOpen ? "Close Group Tab" : "Open Group Tab",
+      })
     );
   }
 
