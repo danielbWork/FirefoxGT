@@ -141,6 +141,24 @@ async function checkMovedIntoGroupTab(index) {
   return { groupTab: undefined, groupTabInfo: undefined };
 }
 
+/**
+ * Creates a confirm dialog for the user to confirm their action
+ *
+ * @param {string} message The message displayed in the confirm dialog
+ * @returns the results of the confirm script
+ */
+async function handleConfirmMove(message) {
+  const confirmCode = `confirm("${message}");`;
+
+  const activeTab = (await browser.tabs.query({ active: true }))[0];
+
+  const results = await browser.tabs.executeScript(activeTab.id, {
+    code: confirmCode,
+  });
+
+  return results;
+}
+
 //#endregion
 
 //#region OnTabMove
@@ -174,14 +192,23 @@ async function onMoveIntoGroupTab(tabId, moveInfo) {
 
     const movedTabInfo = await browser.tabs.get(tabId);
 
-    addInnerTab(groupTab, tabId, moveInfo.toIndex - groupTabInfo.index - 1);
+    const results = await handleConfirmMove(
+      `Are you sure you want to move tab ${movedTabInfo.title} to group ${groupTab.name}?`
+    );
 
-    await browser.notifications.create({
-      type: "basic",
-      // TODO Add Icon
-      title: "Tab Moved",
-      message: `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`,
-    });
+    if (results[0]) {
+      addInnerTab(groupTab, tabId, moveInfo.toIndex - groupTabInfo.index - 1);
+
+      await browser.notifications.create({
+        type: "basic",
+        // TODO Add Icon
+        title: "Tab Moved",
+        message: `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`,
+      });
+    } else {
+      // Puts the tab outside of the group tab
+      moveGroupTab(groupTab, groupTabInfo.index, [tabId]);
+    }
   }
 }
 
@@ -278,13 +305,9 @@ async function onMoveFromOneGroupToOther(
     groupTab.innerTabs[innerTabIndex]
   );
 
-  const moveConfirm = `confirm("Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?")`;
-
-  const results = await browser.tabs.executeScript(movedTabInfo.id, {
-    code: moveConfirm,
-  });
-
-  console.log(results);
+  const results = await handleConfirmMove(
+    `Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?`
+  );
 
   if (results[0]) {
     await removeInnerTab(groupTab, movedTabInfo.id);
@@ -324,13 +347,9 @@ async function onRemoveTabFromGroup(groupTab, groupTabInfo, innerTabIndex) {
     groupTab.innerTabs[innerTabIndex]
   );
 
-  const removeConfirm = `confirm("Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?")`;
-
-  const results = await browser.tabs.executeScript(movedTabInfo.id, {
-    code: removeConfirm,
-  });
-
-  console.log(results);
+  const results = await handleConfirmMove(
+    `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
+  );
 
   if (results[0]) {
     await removeInnerTab(groupTab, movedTabInfo.id);
