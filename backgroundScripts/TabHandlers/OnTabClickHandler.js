@@ -33,25 +33,20 @@ export function setupOnClickHandler() {
  * @param {*} activeInfo The activation info
  */
 async function onGroupTabActivated(activeInfo) {
-  try {
-    let groupTab = await getGroupTabByID(activeInfo.tabId);
+  let groupTab = await getGroupTabByID(activeInfo.tabId);
 
-    if (groupTab) {
-      // Checks if currently dragging the tab
-      if (draggingTimeout || isDraggingFlag) {
-        if (draggingTimeout) {
-          browser.tabs.hide(groupTab.innerTabs);
-          isDraggingFlag = true;
-        }
-
-        handleTabNewActiveTab(groupTab, activeInfo.previousTabId);
-        return;
+  if (groupTab) {
+    // Checks if currently dragging the tab
+    if (draggingTimeout || isDraggingFlag) {
+      if (draggingTimeout) {
+        browser.tabs.hide(groupTab.innerTabs);
+        isDraggingFlag = true;
       }
 
+      findNewActiveTab(groupTab, activeInfo.previousTabId);
+    } else {
       onGroupTabClick(groupTab, activeInfo.previousTabId);
     }
-  } catch (error) {
-    console.log({ error, activeInfo });
   }
 }
 
@@ -118,13 +113,13 @@ async function onGroupTabClick(groupTab, previousTabId) {
 
   toggleGroupTabVisibility(groupTab);
 
-  handleTabNewActiveTab(groupTab, previousTabId);
+  findNewActiveTab(groupTab, previousTabId);
 
   // Handles dragging timeout to recognize user dragging the tab
   clearTimeout(draggingTimeout);
   draggingTimeout = setTimeout(async () => {
     draggingTimeout = undefined;
-  }, 300);
+  }, 100);
 }
 
 /**
@@ -133,7 +128,7 @@ async function onGroupTabClick(groupTab, previousTabId) {
  * @param {GroupTab} groupTab The group tab that we want to move from
  * @param {number} previousTabId The id of tab this was moved from
  */
-async function handleTabNewActiveTab(groupTab, previousTabId) {
+async function findNewActiveTab(groupTab, previousTabId) {
   // Called when user closes tab which leads to moving to group tab
   if (!previousTabId) {
     browser.tabs.create({ active: true });

@@ -169,12 +169,8 @@ async function handleConfirmMove(message) {
  * @param {} moveInfo Info regarding moving the group tab
  */
 async function onGroupTabMove(groupTab, moveInfo) {
-  try {
-    await moveGroupTab(groupTab, moveInfo.toIndex);
-    await onStopDragging(groupTab);
-  } catch (error) {
-    console.log(error);
-  }
+  await moveGroupTab(groupTab, moveInfo.toIndex);
+  await onStopDragging(groupTab);
 }
 
 /**
