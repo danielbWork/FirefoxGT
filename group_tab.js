@@ -12,6 +12,8 @@ async function handleTabTitle() {
   if (groupTab) {
     document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;
   }
+
+  // TODO upgrade to react/ typescript
 }
 
 handleTabTitle();

@@ -107,7 +107,7 @@ async function moveGroupTab(groupTab, index, additionalTab) {
  *
  * @returns {{groupTab : GroupTab| undefined, groupTabInfo : Tab| undefined }} The group tab and it's info that the index is a part of (can return undefined vars if not in a group)
  */
-async function checkMovedIntoGroupTab(index) {
+export async function checkMovedIntoGroupTab(index) {
   const groupTabPromises = [];
 
   const groupTabIDs = await getAllGroupTabIDs();

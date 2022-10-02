@@ -20,7 +20,6 @@ export function setupRemoveHandler() {
  */
 async function onRemoveTabFromScreen(tabId, removeInfo) {
   await removeTabFromStorage(tabId);
-  // TODO Handle showing the inner tabs/removing after this
 }
 
 /**

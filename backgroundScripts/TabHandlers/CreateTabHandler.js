@@ -3,14 +3,23 @@ import {
   GROUP_TAB_URL,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
 } from "../../Consts.js";
-import { addGroupTab } from "../../Storage/StorageHandler.js";
+import {
+  addGroupTab,
+  addInnerTab,
+  getGroupTabOrInnerTabByID,
+} from "../../Storage/StorageHandler.js";
+import { checkMovedIntoGroupTab } from "./MoveTabHandler.js";
 
 /**
  * Handles setup for group tab creation
  */
 export function setupCreateHandler() {
   browser.contextMenus.onClicked.addListener(onCreateGroupTabMenuClick);
+
+  browser.tabs.onCreated.addListener(onCreateTab);
 }
+
+//#region Listeners
 
 /**
  * Creates a group tab with the given tab as it's inner tab
@@ -25,6 +34,50 @@ async function onCreateGroupTabMenuClick(info, tab) {
     openLinkInGroupTab(info.linkUrl, info.linkText, tab.index);
   }
 }
+
+/**
+ *  Checks to see if tab was created inside a group tab area and adds it to the group
+ * @param {Tab} tab The tab that was added to ui
+ */
+async function onCreateTab(tab) {
+  const { groupTab } = await getGroupTabOrInnerTabByID(tab.id);
+
+  // Only cares about tabs that are not part of group
+  if (groupTab) return;
+
+  let openInGroupTab, openInGroupTabInfo;
+
+  // Checks to see if the tab was opened from an inner tab
+  if (tab.openerTabId !== undefined) {
+    const { groupTab: openerGroupTab } = await getGroupTabOrInnerTabByID(
+      tab.openerTabId
+    );
+
+    openInGroupTab = openerGroupTab;
+
+    openInGroupTabInfo = await browser.tabs.get(openerGroupTab.id);
+  } else {
+    // This checks mostly for reopened (ctrl shift t) tabs
+    const { groupTab: openedGroupTab, groupTabInfo: openedGroupTabInfo } =
+      await checkMovedIntoGroupTab(tab.index);
+
+    openInGroupTab = openedGroupTab;
+    openInGroupTabInfo = openedGroupTabInfo;
+  }
+
+  // If inside a group in any way compliantly adds it
+  if (openInGroupTab && openInGroupTabInfo) {
+    const index = tab.index - openInGroupTabInfo.index - 1;
+
+    addInnerTab(openInGroupTab, tab.id, index);
+
+    await browser.tabs.reload(openInGroupTab.id);
+  }
+}
+
+//#endregion
+
+//#region Create Group Tab
 
 /**
  * Creates a new group tab with the given tab as it's inner tab
@@ -131,3 +184,5 @@ async function handleGroupTabCreation(
   // Refreshes the group tab to have the info from storage
   await browser.tabs.reload(groupTab.id);
 }
+
+//#endregion
