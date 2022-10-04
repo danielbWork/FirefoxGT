@@ -2,44 +2,73 @@ import {
   CREATE_NEW_GROUP_TAB_ID,
   GROUP_TAB_URL,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
-} from "../../Consts.js";
+} from "../../components/Consts.js";
 import {
   addGroupTab,
   addInnerTab,
   getGroupTabOrInnerTabByID,
-} from "../../Storage/StorageHandler.js";
+} from "../../components/Storage/StorageHandler.js";
 import { checkMovedIntoGroupTab } from "./MoveTabHandler.js";
+import browser, {Tabs, Menus, tabs} from "webextension-polyfill";
 
-/**
+
+export class CreateTabHandler {
+
+   //#region Singleton
+
+   private static instance : CreateTabHandler;
+
+   private constructor() {}
+
+   /**
+    * @returns The instance of the class
+    */
+   public static getInstance(): CreateTabHandler {
+    if (!CreateTabHandler.instance) {
+    CreateTabHandler.instance = new CreateTabHandler();
+    }
+
+    return CreateTabHandler.instance;
+   }
+
+   //#endregion
+
+   /**
  * Handles setup for group tab creation
  */
-export function setupCreateHandler() {
-  browser.contextMenus.onClicked.addListener(onCreateGroupTabMenuClick);
+setupCreateHandler() {
+  browser.contextMenus.onClicked.addListener(this.onCreateGroupTabMenuClick.bind(this));
 
-  browser.tabs.onCreated.addListener(onCreateTab);
+  tabs.onCreated.addListener(this.onCreateTab.bind(this));
 }
+
+
 
 //#region Listeners
 
 /**
  * Creates a group tab with the given tab as it's inner tab
- * @param {*} info The info regarding the tab that was pressed
- * @param {*} tab The tab that the user added to the group
+ * @param info The info regarding the tab that was pressed
+ * @param tab The tab that the user added to the group
  */
-async function onCreateGroupTabMenuClick(info, tab) {
+ private async onCreateGroupTabMenuClick(info : Menus.OnClickData, tab? : Tabs.Tab) {
+
+  // Only cares if we receive a tab
+  if(!tab) return;
+
   // Sends to appropriate create method
   if (info.menuItemId === CREATE_NEW_GROUP_TAB_ID) {
-    addTabToGroupTab(tab);
+    this.addTabToGroupTab(tab);
   } else if (info.menuItemId === OPEN_LINK_IN_NEW_GROUP_TAB_ID) {
-    openLinkInGroupTab(info.linkUrl, info.linkText, tab.index);
+    this.openLinkInGroupTab(info.linkUrl!, info.linkText!, tab.index);
   }
 }
 
 /**
  *  Checks to see if tab was created inside a group tab area and adds it to the group
- * @param {Tab} tab The tab that was added to ui
+ * @param tab The tab that was added to ui
  */
-async function onCreateTab(tab) {
+private async onCreateTab(tab: Tabs.Tab) {
   const { groupTab } = await getGroupTabOrInnerTabByID(tab.id);
 
   // Only cares about tabs that are not part of group
@@ -53,9 +82,14 @@ async function onCreateTab(tab) {
       tab.openerTabId
     );
 
-    openInGroupTab = openerGroupTab;
+      // Makes sure invalid value wasn't passed
+      if(openerGroupTab){
 
-    openInGroupTabInfo = await browser.tabs.get(openerGroupTab.id);
+        openInGroupTab = openerGroupTab;
+
+        openInGroupTabInfo = await tabs.get(openerGroupTab.id);
+      }
+
   } else {
     // This checks mostly for reopened (ctrl shift t) tabs
     const { groupTab: openedGroupTab, groupTabInfo: openedGroupTabInfo } =
@@ -69,7 +103,7 @@ async function onCreateTab(tab) {
   if (openInGroupTab && openInGroupTabInfo) {
     const index = tab.index - openInGroupTabInfo.index - 1;
 
-    addInnerTab(openInGroupTab, tab.id, index);
+    addInnerTab(openInGroupTab, tab.id!, index);
 
     await browser.tabs.reload(openInGroupTab.id);
   }
@@ -81,26 +115,26 @@ async function onCreateTab(tab) {
 
 /**
  * Creates a new group tab with the given tab as it's inner tab
- * @param {Tab} tab The tab that we add to group tab
+ * @param tab The tab that we add to group tab
  */
-async function addTabToGroupTab(tab) {
-  const groupTabTitle = await handleEnterGroupTabName(tab.title);
+private async addTabToGroupTab(tab : Tabs.Tab) {
+  const groupTabTitle = await this.handleEnterGroupTabName(tab.title);
 
   // Incase something went wrong with input
-  if (groupTabTitle) {
-    handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
+  if (groupTabTitle && tab.id) {
+    this.handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
   }
 }
 
 /**
  * Create a new group tab with a new inner tab from the link
  *
- * @param {string} linkUrl The url of link of the to be inner tab
- * @param {string} linkText The text of the link we want to open
- * @param {number} index The location we want to put the group at
+ * @param linkUrl The url of link of the to be inner tab
+ * @param linkText The text of the link we want to open
+ * @param index The location we want to put the group at
  */
-async function openLinkInGroupTab(linkUrl, linkText, index) {
-  const groupTabTitle = await handleEnterGroupTabName(linkText);
+private async openLinkInGroupTab(linkUrl: string, linkText: string, index: number) {
+  const groupTabTitle = await this.handleEnterGroupTabName(linkText);
 
   // Incase something went wrong with input
   if (groupTabTitle) {
@@ -110,15 +144,16 @@ async function openLinkInGroupTab(linkUrl, linkText, index) {
       active: false,
     });
 
-    handleGroupTabCreation(groupTabTitle, [newTab.id], index + 1);
+    this.handleGroupTabCreation(groupTabTitle, [newTab.id!], index + 1);
   }
 }
 
 /**
  * Requests the group tab name from the user
- * @returns {string | undefined} The group tab name or undefined if user chose or couldn't enter name
+ * @param defaultTitle The default title for the group tab, defaults to "Group Tab"
+ * @returns The group tab name or undefined if user chose or couldn't enter name
  */
-async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
+private async handleEnterGroupTabName(defaultTitle = "Group Tab") : Promise<string | undefined> {
   const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}");`;
 
   const results = await browser.tabs.executeScript({ code: createPrompt });
@@ -159,14 +194,14 @@ async function handleEnterGroupTabName(defaultTitle = "Group Tab") {
 
 /**
  *  Handles the actual creation of the group tab
- * @param {string} name The name of the group tab defaults to "Group tab"
- * @param {number[]} innerTabs The id's of the inner tabs or just an empty array if nothing is passed
- * @param {number} index The index to put the group tab if nothing is passed then end of window
+ * @param name The name of the group tab defaults to "Group tab"
+ * @param innerTabs The id's of the inner tabs or just an empty array if nothing is passed
+ * @param index The index to put the group tab if nothing is passed then end of window
  */
-async function handleGroupTabCreation(
+private async handleGroupTabCreation(
   name = "Group tab",
-  innerTabs = [],
-  index = undefined
+  innerTabs : number[] = [],
+  index?: number
 ) {
   // Creates the group tab with the relevant info
   const groupTab = await browser.tabs.create({
@@ -176,7 +211,7 @@ async function handleGroupTabCreation(
   });
 
   try {
-    await addGroupTab(groupTab.id, name, innerTabs);
+    await addGroupTab(groupTab.id!, name, innerTabs);
   } catch (error) {
     console.log({ error });
   }
@@ -186,3 +221,8 @@ async function handleGroupTabCreation(
 }
 
 //#endregion
+
+
+}
+
+

@@ -1,10 +1,10 @@
-import { EDIT_GROUP_TAB_NAME_ID } from "../../Consts.js";
+import { EDIT_GROUP_TAB_NAME_ID } from "../../components/Consts.js";
 import {
   getGroupTabByID,
   storageNotifier,
   updateGroupTabName,
-} from "../../Storage/StorageHandler.js";
-import { GroupTab } from "../GroupTab.js";
+} from "../../components/Storage/StorageHandler.js";
+import { GroupTab } from "../../components/GroupTab.js";
 
 export function setupEditHandler() {
   storageNotifier.onEditTab.addListener(onGroupTabEdit);
@@ -25,9 +25,9 @@ async function onGroupTabEdit(groupTab) {
 /**
  * Checks if the inner tab was added/removed from the group tab and updates it accordingly
  * @param {GroupTab} groupTab The group tab that was edited
- * @param {number | undefined} innerTab index or id of the inner tab that was updated
+ * @param {number | undefined} indexOrInnerTabID index or id of the inner tab that was updated
  */
-async function onInnerTabEdit(groupTab, index) {
+async function onInnerTabEdit(groupTab, indexOrInnerTabID) {
   // Does this check because 0 is false
   if (index !== undefined) {
     await onGroupTabEdit(groupTab);

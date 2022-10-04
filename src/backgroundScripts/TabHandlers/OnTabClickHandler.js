@@ -1,11 +1,11 @@
-import { GroupTab } from "../GroupTab.js";
+import { GroupTab } from "../../components/GroupTab.js";
 import {
   getAllGroupTabIDs,
   getGroupTabByID,
   toggleGroupTabVisibility,
   updateGroupTab,
-} from "../../Storage/StorageHandler.js";
-import { TOGGLE_GROUP_TAB_ID } from "../../Consts.js";
+} from "../../components/Storage/StorageHandler.js";
+import { TOGGLE_GROUP_TAB_ID } from "../../components/Consts.js";
 
 /**
  * The timeout id used to mark how long until a tab click

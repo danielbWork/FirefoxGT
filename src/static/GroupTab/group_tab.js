@@ -1,4 +1,4 @@
-import { getGroupTabByID } from "./Storage/StorageHandler.js";
+import { getGroupTabByID } from "../../components/Storage/StorageHandler";
 
 /**
  * Updates the tab title to match the given values in the url

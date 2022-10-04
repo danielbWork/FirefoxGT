@@ -53,6 +53,6 @@ export const EDIT_GROUP_TAB_NAME_ID = "edit-group-tab-name";
 
 //#region URL
 
-export const GROUP_TAB_URL = "/group_tab.html";
+export const GROUP_TAB_URL = "/src/static/GroupTab/group_tab.html";
 
 //#endregion

@@ -1,4 +1,4 @@
-import { GroupTab } from "../GroupTab.js";
+import { GroupTab } from "../../components/GroupTab.js";
 import {
   addInnerTab,
   getAllGroupTabIDs,
@@ -8,13 +8,13 @@ import {
   removeTabFromStorage,
   toggleGroupTabVisibility,
   updateGroupTab,
-} from "../../Storage/StorageHandler.js";
+} from "../../components/Storage/StorageHandler.js";
 import { onStopDragging } from "./OnTabClickHandler.js";
 import {
   ADD_TO_GROUP_TAB_ID,
   MOVE_TO_GROUP_TAB_ID,
   REMOVE_FROM_GROUP_TAB_ID,
-} from "../../Consts.js";
+} from "../../components/Consts.js";
 
 /**
  * Handles setup code for moving group tabs and their inner tabs

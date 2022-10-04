@@ -14,162 +14,188 @@ import {
   GROUP_TAB_ACTIONS_PARENT_ID,
   EDIT_GROUP_TAB_NAME_ID,
   TOGGLE_GROUP_TAB_ID,
-} from "../Consts.js";
+} from "../components/Consts.js";
 import {
   getAllGroupTabIDs,
   getGroupTabByID,
   getGroupTabOrInnerTabByID,
   storageNotifier,
-} from "../Storage/StorageHandler.js";
-import { GroupTab } from "./GroupTab.js";
+} from "../components/Storage/StorageHandler.js";
+import { GroupTab } from "../components/GroupTab.js";
+import {contextMenus, Menus, Tabs} from "webextension-polyfill";
 
 /**
+ * Handles Creating and managing the context menu items
+ */
+export class ContextMenuHandler {
+
+  /**
  * The id of the move menu item that was hidden when menu was opened
  * because you can't move item to same group
  */
-let hiddenMoveToItemID = undefined;
+  private hiddenMoveToItemID?: string = undefined;
 
-//#region Setup
+  //#region Singleton
+
+  private static instance : ContextMenuHandler;
+
+  private constructor() {}
+
+  /**
+   * @returns The instance of the class
+   */
+  public static getInstance(): ContextMenuHandler {
+    if (!ContextMenuHandler.instance) {
+        ContextMenuHandler.instance = new ContextMenuHandler();
+    }
+
+    return ContextMenuHandler.instance;
+}
+
+  //#endregion
+
+  //#region Setup
 
 /**
  * Handles setting up everything relating to context menus
  */
-export function setupContextMenuItems() {
-  createContextMenuItems();
-  resetGroupTabMenuItemsVisibility();
-  browser.contextMenus.onShown.addListener(handleShowGroupTabMenuItems);
-  browser.contextMenus.onHidden.addListener(resetGroupTabMenuItemsVisibility);
+setupContextMenuItems() {
+  this.createContextMenuItems();
+  this.resetGroupTabMenuItemsVisibility();
+  
+  contextMenus.onShown.addListener(this.handleShowGroupTabMenuItems.bind(this));
+  contextMenus.onHidden.addListener(this.resetGroupTabMenuItemsVisibility.bind(this));
 
   // TODO ON REMOVE
 
   // Notifier callbacks
-  storageNotifier.onAddTab.addListener(addGroupTabToContextMenu);
-  storageNotifier.onRemoveTab.addListener(removeGroupTabFromContextMenu);
+  storageNotifier.onAddTab.addListener(this.addGroupTabToContextMenu.bind(this));
+  storageNotifier.onRemoveTab.addListener(this.removeGroupTabFromContextMenu.bind(this));
 }
 
 /**
  * Creates all the context menu items need for the app
  */
-function createContextMenuItems() {
+private createContextMenuItems() {
   // TODO See if commands will be better once pop up is added
-  browser.contextMenus.create({
+  contextMenus.create({
     id: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
     title: "Add to group tab",
     contexts: ["tab"],
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: CREATE_NEW_GROUP_TAB_ID,
     title: "Create New",
     contexts: ["tab"],
     parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
     type: "separator",
     contexts: ["tab"],
     parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: MOVE_TAB_FROM_GROUP_PARENT_ID,
     title: "Move tab from group",
     contexts: ["tab"],
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: REMOVE_FROM_GROUP_TAB_ID,
     title: "Remove from group",
     contexts: ["tab"],
     parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
     type: "separator",
     contexts: ["tab"],
     parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
     title: "Open link tab in group tab",
     contexts: ["link"],
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: OPEN_LINK_IN_NEW_GROUP_TAB_ID,
     title: "Create New",
     contexts: ["link"],
     parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
     type: "separator",
     contexts: ["link"],
     parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: GROUP_TAB_ACTIONS_PARENT_ID,
     title: "Group Tab Actions",
     contexts: ["tab"],
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: TOGGLE_GROUP_TAB_ID,
     title: "Toggle Group tab",
     contexts: ["tab"],
     parentId: GROUP_TAB_ACTIONS_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: EDIT_GROUP_TAB_NAME_ID,
     title: "Edit Group Tab Name",
     contexts: ["tab"],
     parentId: GROUP_TAB_ACTIONS_PARENT_ID,
   });
 
-  loadAllGroupTabsItems();
+  this.loadAllGroupTabsItems();
 }
 
 /**
  * Loads all group tab based items and adds them to list
  */
-async function loadAllGroupTabsItems() {
+private async loadAllGroupTabsItems() {
   const groupTabIDs = await getAllGroupTabIDs();
 
   groupTabIDs.forEach(async (value) => {
-    const groupTab = getGroupTabByID(value);
+    const groupTab = getGroupTabByID(parseInt(value));
 
     // Shouldn't ever be true but just in case
     if (!groupTab) return;
-    addGroupTabToContextMenu(groupTab);
+    this.addGroupTabToContextMenu(groupTab);
   });
 }
 
 //#endregion
 
-//#region Util Functions
+//#region Util privates
 
 /**
  * Updates the context menu item's visibility
- * @param {string} itemID The id of the contextMenu Item
- * @param {boolean} isVisible Wether or not the contextMenu item should be visible
+ * @param itemID The id of the contextMenu Item
+ * @param isVisible Wether or not the contextMenu item should be visible
  */
-async function updateContextMenuItemVisibility(itemID, isVisible) {
-  await updateContextMenuItem(itemID, { visible: isVisible });
+private async updateContextMenuItemVisibility(itemID: string | number, isVisible: boolean) {
+  await this.updateContextMenuItem(itemID, { visible: isVisible });
 }
 
 /**
  * Updates the context menu item
- * @param {string} itemID The id of the contextMenu Item
- * @param {*} updateInfo The info to update
+ * @param itemID The id of the contextMenu Item
+ * @param updateInfo The info to update
  */
-async function updateContextMenuItem(itemID, updateInfo) {
-  await browser.contextMenus.update(itemID, updateInfo);
+private async updateContextMenuItem(itemID: string | number, updateInfo: Menus.UpdateUpdatePropertiesType) {
+  await contextMenus.update(itemID, updateInfo);
 }
 
 //#endregion
@@ -178,13 +204,13 @@ async function updateContextMenuItem(itemID, updateInfo) {
 
 /**
  * Updates context menu and adds the appropriate items based on group tabs
- * @param {GroupTab} groupTab The group tab that was added
- * @param {number | undefined} isInnerTabIndex The number marking if the update was for an inner tab (if so exists function)
+ * @param groupTab The group tab that was added
+ * @param isInnerTabIndex The number marking if the update was for an inner tab (if so exists private)
  */
-async function addGroupTabToContextMenu(groupTab, isInnerTabIndex) {
+private async addGroupTabToContextMenu(groupTab: GroupTab, isInnerTabIndex?: number) {
   if (isInnerTabIndex) return;
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: ADD_TO_GROUP_TAB_ID + groupTab.id,
     title: groupTab.name,
     contexts: ["tab"],
@@ -192,7 +218,7 @@ async function addGroupTabToContextMenu(groupTab, isInnerTabIndex) {
     parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: MOVE_TO_GROUP_TAB_ID + groupTab.id,
     title: groupTab.name,
     contexts: ["tab"],
@@ -200,7 +226,7 @@ async function addGroupTabToContextMenu(groupTab, isInnerTabIndex) {
     parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
   });
 
-  browser.contextMenus.create({
+  contextMenus.create({
     id: OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
     title: groupTab.name,
     contexts: ["link"],
@@ -211,15 +237,15 @@ async function addGroupTabToContextMenu(groupTab, isInnerTabIndex) {
 
 /**
  * Updates context menu and removes the appropriate items based on group tabs
- * @param {GroupTab} groupTab The group tab that was remove
- * @param {number| undefined} innerTabID The id marking if the update was for an inner tab (if so exists function)
+ * @param groupTab The group tab that was remove
+ * @param innerTabID The id marking if the update was for an inner tab (if so exists private)
  */
-async function removeGroupTabFromContextMenu(groupTab, innerTabID) {
+private async removeGroupTabFromContextMenu(groupTab: GroupTab, innerTabID?: number) {
   if (innerTabID) return;
 
-  browser.contextMenus.remove(ADD_TO_GROUP_TAB_ID + groupTab.id);
-  browser.contextMenus.remove(MOVE_TO_GROUP_TAB_ID + groupTab.id);
-  browser.contextMenus.remove(OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id);
+  contextMenus.remove(ADD_TO_GROUP_TAB_ID + groupTab.id);
+  contextMenus.remove(MOVE_TO_GROUP_TAB_ID + groupTab.id);
+  contextMenus.remove(OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id);
 }
 
 //#endregion
@@ -229,51 +255,54 @@ async function removeGroupTabFromContextMenu(groupTab, innerTabID) {
 /**
  * Makes all menu items visible so we won't have to load all of them on show every time
  */
-async function resetGroupTabMenuItemsVisibility() {
-  updateContextMenuItemVisibility(ADD_TAB_TO_GROUP_TAB_PARENT_ID, true);
-  updateContextMenuItemVisibility(CREATE_NEW_GROUP_TAB_SEPARATOR_ID, true);
+private async resetGroupTabMenuItemsVisibility() {
+  this.updateContextMenuItemVisibility(ADD_TAB_TO_GROUP_TAB_PARENT_ID, true);
+  this.updateContextMenuItemVisibility(CREATE_NEW_GROUP_TAB_SEPARATOR_ID, true);
 
-  updateContextMenuItemVisibility(MOVE_TAB_FROM_GROUP_PARENT_ID, true);
-  updateContextMenuItemVisibility(REMOVE_FROM_GROUP_TAB_SEPARATOR_ID, true);
+  this.updateContextMenuItemVisibility(MOVE_TAB_FROM_GROUP_PARENT_ID, true);
+  this.updateContextMenuItemVisibility(REMOVE_FROM_GROUP_TAB_SEPARATOR_ID, true);
 
   // Reshow the hidden group item if needed
-  if (hiddenMoveToItemID) {
-    updateContextMenuItemVisibility(hiddenMoveToItemID, true);
-    hiddenMoveToItemID = undefined;
+  if (this.hiddenMoveToItemID) {
+    this.updateContextMenuItemVisibility(this.hiddenMoveToItemID, true);
+    this.hiddenMoveToItemID = undefined;
   }
 
   // Link only needs to hide separator
-  updateContextMenuItemVisibility(OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID, true);
+  this.updateContextMenuItemVisibility(OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID, true);
 
-  updateContextMenuItemVisibility(GROUP_TAB_ACTIONS_PARENT_ID, true);
+  this.updateContextMenuItemVisibility(GROUP_TAB_ACTIONS_PARENT_ID, true);
 }
 
 /**
  * Updates the visibility of the appropriate context menus
  *
- * @param {*} info The info about the the context menu click
- * @param {Tab} tab The tab the user pressed
+ * @param info The info about the the context menu click
+ * @param tab The tab the user pressed
  */
-async function handleShowGroupTabMenuItems(info, tab) {
+private async handleShowGroupTabMenuItems(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
+  
   if (info.contexts.includes("tab")) {
-    await handleTabClick(info, tab);
+    await this.handleTabClick(info, tab);
   }
 
   if (info.contexts.includes("link")) {
-    await handleLinkClick(info, tab);
+    await this.handleLinkClick(info, tab);
   }
 
-  browser.contextMenus.refresh();
+  contextMenus.refresh();
 }
 
 /**
  * Handles showing right items for tab's context menu
- * @param {*} info The info about the the context menu click
- * @param {Tab} tab The tab the user pressed
+ * @param info The info about the the context menu click
+ * @param tab The tab the user pressed
  */
-async function handleTabClick(info, tab) {
+private async handleTabClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
+
   // Gets info on the pressed tab
   const { groupTab, index } = await getGroupTabOrInnerTabByID(tab.id);
+
 
   const allGroupIDs = await getAllGroupTabIDs();
 
@@ -284,7 +313,7 @@ async function handleTabClick(info, tab) {
   const updateEvents = [];
 
   updateEvents.push(
-    updateContextMenuItemVisibility(
+    this.updateContextMenuItemVisibility(
       ADD_TAB_TO_GROUP_TAB_PARENT_ID,
       !isFromGroup
     )
@@ -293,7 +322,7 @@ async function handleTabClick(info, tab) {
   // Only cares when add tab should be displayed
   if (!isFromGroup) {
     updateEvents.push(
-      updateContextMenuItemVisibility(
+      this.updateContextMenuItemVisibility(
         CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
         allGroupIDs.length > 0
       )
@@ -301,7 +330,7 @@ async function handleTabClick(info, tab) {
   }
 
   updateEvents.push(
-    updateContextMenuItemVisibility(
+    this.updateContextMenuItemVisibility(
       MOVE_TAB_FROM_GROUP_PARENT_ID,
       isFromGroup && isInnerTab
     )
@@ -311,23 +340,23 @@ async function handleTabClick(info, tab) {
   if (isFromGroup && isInnerTab) {
     // Makes sure to display separator only when we have other group tabs to show
     updateEvents.push(
-      updateContextMenuItemVisibility(
+      this.updateContextMenuItemVisibility(
         REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
         allGroupIDs.length > 1
       )
     );
 
-    hiddenMoveToItemID = MOVE_TO_GROUP_TAB_ID + groupTab.id;
+    this.hiddenMoveToItemID = MOVE_TO_GROUP_TAB_ID + groupTab.id;
 
     // Hide current tab from move
     updateEvents.push(
-      updateContextMenuItemVisibility(hiddenMoveToItemID, false)
+      this.updateContextMenuItemVisibility(this.hiddenMoveToItemID, false)
     );
   }
 
   // Only shows if group tab
   updateEvents.push(
-    updateContextMenuItemVisibility(
+    this.updateContextMenuItemVisibility(
       GROUP_TAB_ACTIONS_PARENT_ID,
       isFromGroup && !isInnerTab
     )
@@ -336,7 +365,7 @@ async function handleTabClick(info, tab) {
   // Only cares when group tab actions should be displayed
   if (isFromGroup && !isInnerTab) {
     updateEvents.push(
-      updateContextMenuItem(TOGGLE_GROUP_TAB_ID, {
+      this.updateContextMenuItem(TOGGLE_GROUP_TAB_ID, {
         title: groupTab.isOpen ? "Close Group Tab" : "Open Group Tab",
       })
     );
@@ -348,17 +377,22 @@ async function handleTabClick(info, tab) {
 
 /**
  * Handles showing right items for link's context menu
- * @param {*} info The info about the the context menu click
- * @param {Tab} tab The tab the user is in
+ * @param info The info about the the context menu click
+ * @param tab The tab the user is in
  */
-async function handleLinkClick(info, tab) {
+private async handleLinkClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
   const allGroupIDs = await getAllGroupTabIDs();
 
   // Hides separator when needed
-  await updateContextMenuItemVisibility(
+  await this.updateContextMenuItemVisibility(
     OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
     allGroupIDs.length > 0
   );
 }
 
 //#endregion
+
+
+}
+
+

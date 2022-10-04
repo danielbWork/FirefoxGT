@@ -1,4 +1,4 @@
-import { GroupTab } from "../backgroundScripts/GroupTab.js";
+import { GroupTab } from "../GroupTab.js";
 import {
   onAddTabNotifier,
   onEditGroupTabNotifier,
@@ -66,11 +66,11 @@ export async function getGroupTabByID(id) {
 
 /**
  * Goes over the group tabs and checks to see if the id is either theirs or one of the inner tabs
- * @param {number} id The id of the tab
+ * @param {number} id The id of the tab or 0 if nothing is passed
  * @returns {{groupTab: GroupTab | undefined, index: number| undefined}} Object holding group tab with the id or if the
  *  id belongs to a inner tab then the object returns the index of the inner tab as well as the group tab
  */
-export async function getGroupTabOrInnerTabByID(id) {
+export async function getGroupTabOrInnerTabByID(id = 0) {
   const groupTabs = await getAllGroupTabs();
 
   if (groupTabs[id]) {

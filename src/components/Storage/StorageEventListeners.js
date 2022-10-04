@@ -1,4 +1,4 @@
-import { GroupTab } from "../backgroundScripts/GroupTab.js";
+import { GroupTab } from "../GroupTab.js";
 
 //TODO Maybe change to classes (check if matters)
 

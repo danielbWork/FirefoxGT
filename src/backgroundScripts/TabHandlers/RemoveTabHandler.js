@@ -1,8 +1,8 @@
 import {
   removeTabFromStorage,
   storageNotifier,
-} from "../../Storage/StorageHandler.js";
-import { GroupTab } from "../GroupTab.js";
+} from "../../components/Storage/StorageHandler.js";
+import { GroupTab } from "../../components/GroupTab.js";
 
 /**
  * Handles setup for group tab removing
