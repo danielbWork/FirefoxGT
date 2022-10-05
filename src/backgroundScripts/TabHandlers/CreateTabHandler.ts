@@ -2,33 +2,33 @@ import {
   CREATE_NEW_GROUP_TAB_ID,
   GROUP_TAB_URL,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
-} from "../../components/Consts.js";
+} from "../../utils/Consts";
 import {
-  addGroupTab,
-  addInnerTab,
-  getGroupTabOrInnerTabByID,
-} from "../../components/Storage/StorageHandler.js";
-import { checkMovedIntoGroupTab } from "./MoveTabHandler.js";
+  StorageHandler
+} from "../../utils/Storage/StorageHandler";
 import browser, {Tabs, Menus, tabs} from "webextension-polyfill";
+import { checkMovedIntoGroupTab } from "../../utils/Utils";
 
-
+/**
+ * Handles group tab creation and other tab creation
+ */
 export class CreateTabHandler {
 
    //#region Singleton
 
-   private static instance : CreateTabHandler;
+   private static _instance : CreateTabHandler;
 
    private constructor() {}
 
    /**
     * @returns The instance of the class
     */
-   public static getInstance(): CreateTabHandler {
-    if (!CreateTabHandler.instance) {
-    CreateTabHandler.instance = new CreateTabHandler();
+   public static get instance(): CreateTabHandler {
+    if (!CreateTabHandler._instance) {
+    CreateTabHandler._instance = new CreateTabHandler();
     }
 
-    return CreateTabHandler.instance;
+    return CreateTabHandler._instance;
    }
 
    //#endregion
@@ -69,7 +69,7 @@ setupCreateHandler() {
  * @param tab The tab that was added to ui
  */
 private async onCreateTab(tab: Tabs.Tab) {
-  const { groupTab } = await getGroupTabOrInnerTabByID(tab.id);
+  const { groupTab } = await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
 
   // Only cares about tabs that are not part of group
   if (groupTab) return;
@@ -78,7 +78,7 @@ private async onCreateTab(tab: Tabs.Tab) {
 
   // Checks to see if the tab was opened from an inner tab
   if (tab.openerTabId !== undefined) {
-    const { groupTab: openerGroupTab } = await getGroupTabOrInnerTabByID(
+    const { groupTab: openerGroupTab } = await StorageHandler.instance.getGroupTabOrInnerTabByID(
       tab.openerTabId
     );
 
@@ -103,9 +103,9 @@ private async onCreateTab(tab: Tabs.Tab) {
   if (openInGroupTab && openInGroupTabInfo) {
     const index = tab.index - openInGroupTabInfo.index - 1;
 
-    addInnerTab(openInGroupTab, tab.id!, index);
+    StorageHandler.instance.addInnerTab(openInGroupTab, tab.id!, index);
 
-    await browser.tabs.reload(openInGroupTab.id);
+    await tabs.reload(openInGroupTab.id);
   }
 }
 
@@ -138,7 +138,7 @@ private async openLinkInGroupTab(linkUrl: string, linkText: string, index: numbe
 
   // Incase something went wrong with input
   if (groupTabTitle) {
-    const newTab = await browser.tabs.create({
+    const newTab = await tabs.create({
       url: linkUrl,
       index: index + 1,
       active: false,
@@ -156,7 +156,7 @@ private async openLinkInGroupTab(linkUrl: string, linkText: string, index: numbe
 private async handleEnterGroupTabName(defaultTitle = "Group Tab") : Promise<string | undefined> {
   const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}");`;
 
-  const results = await browser.tabs.executeScript({ code: createPrompt });
+  const results = await tabs.executeScript({ code: createPrompt });
 
   // TODO Use pop up instead
   // Checks if user is in special tab
@@ -204,20 +204,20 @@ private async handleGroupTabCreation(
   index?: number
 ) {
   // Creates the group tab with the relevant info
-  const groupTab = await browser.tabs.create({
+  const groupTab = await tabs.create({
     url: GROUP_TAB_URL,
     index,
     active: false,
   });
 
   try {
-    await addGroupTab(groupTab.id!, name, innerTabs);
+    await StorageHandler.instance.addGroupTab(groupTab.id!, name, innerTabs);
   } catch (error) {
     console.log({ error });
   }
 
   // Refreshes the group tab to have the info from storage
-  await browser.tabs.reload(groupTab.id);
+  await tabs.reload(groupTab.id);
 }
 
 //#endregion

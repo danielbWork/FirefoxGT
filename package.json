@@ -5,8 +5,8 @@
   "author": "danielbwork <danielbwork12@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "parcel manifest.json src/static/GroupTab/* --host localhost --config @parcel/config-webextension",
-    "build": "parcel build manifest.json src/static/GroupTab/* --config @parcel/config-webextension"
+    "start": "parcel watch manifest.json src/webPages/*/* --host localhost --config @parcel/config-webextension",
+    "build": "parcel build manifest.json src/webPages/*/* --config @parcel/config-webextension --target webext-prod"
   },
   "dependencies": {
     "eslint": "^8.24.0",

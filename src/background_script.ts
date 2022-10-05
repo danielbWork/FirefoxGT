@@ -1,24 +1,22 @@
-import { setupStorage } from "./components/Storage/StorageHandler.js";
+import { StorageHandler } from "./utils/Storage/StorageHandler";
 import { ContextMenuHandler } from "./backgroundScripts/ContextMenuHandler";
 import { CreateTabHandler } from "./backgroundScripts/TabHandlers/CreateTabHandler";
-import { setupEditHandler } from "./backgroundScripts/TabHandlers/EditTabHandler.js";
-import { setupMoveHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler.js";
-import { setupOnClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler.js";
-import { setupRemoveHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler.js";
+import { EditTabHandler } from "./backgroundScripts/TabHandlers/EditTabHandler";
+import { MoveTabHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler";
+import { RemoveTabHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler";
 import browser from "webextension-polyfill";
-
+import { OnTabClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler";
 
 browser.runtime.onInstalled.addListener(() => {
-  ContextMenuHandler.getInstance().setupContextMenuItems();
-  setupStorage();
+  ContextMenuHandler.instance.setupContextMenuItems();
+  StorageHandler.instance.setupStorage();
 });
 
 // FOR TESTING/DEVELOPMENT ONLY NOT PRODUCTION AT ALL!!!!!!!!!!!!!!!!!!!!!!!!!
-setupStorage();
+StorageHandler.instance.setupStorage();
 
-CreateTabHandler.getInstance().setupCreateHandler();
-
-setupOnClickHandler();
-setupRemoveHandler();
-setupMoveHandler();
-setupEditHandler();
+CreateTabHandler.instance.setupCreateHandler();
+OnTabClickHandler.instance.setupOnClickHandler();
+RemoveTabHandler.instance.setupRemoveHandler();
+MoveTabHandler.instance.setupMoveHandler();
+EditTabHandler.instance.setupEditHandler();

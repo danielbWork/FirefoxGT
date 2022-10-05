@@ -14,14 +14,11 @@ import {
   GROUP_TAB_ACTIONS_PARENT_ID,
   EDIT_GROUP_TAB_NAME_ID,
   TOGGLE_GROUP_TAB_ID,
-} from "../components/Consts.js";
+} from "../utils/Consts";
 import {
-  getAllGroupTabIDs,
-  getGroupTabByID,
-  getGroupTabOrInnerTabByID,
-  storageNotifier,
-} from "../components/Storage/StorageHandler.js";
-import { GroupTab } from "../components/GroupTab.js";
+  StorageHandler
+} from "../utils/Storage/StorageHandler";
+import { GroupTab } from "../utils/GroupTab.js";
 import {contextMenus, Menus, Tabs} from "webextension-polyfill";
 
 /**
@@ -37,19 +34,19 @@ export class ContextMenuHandler {
 
   //#region Singleton
 
-  private static instance : ContextMenuHandler;
+  private static _instance : ContextMenuHandler;
 
   private constructor() {}
 
   /**
    * @returns The instance of the class
    */
-  public static getInstance(): ContextMenuHandler {
-    if (!ContextMenuHandler.instance) {
-        ContextMenuHandler.instance = new ContextMenuHandler();
+  public static get instance(): ContextMenuHandler {
+    if (!ContextMenuHandler._instance) {
+        ContextMenuHandler._instance = new ContextMenuHandler();
     }
 
-    return ContextMenuHandler.instance;
+    return ContextMenuHandler._instance;
 }
 
   //#endregion
@@ -69,8 +66,8 @@ setupContextMenuItems() {
   // TODO ON REMOVE
 
   // Notifier callbacks
-  storageNotifier.onAddTab.addListener(this.addGroupTabToContextMenu.bind(this));
-  storageNotifier.onRemoveTab.addListener(this.removeGroupTabFromContextMenu.bind(this));
+  StorageHandler.instance.onAddTab.addListener(this.addGroupTabToContextMenu.bind(this));
+  StorageHandler.instance.onRemoveTab.addListener(this.removeGroupTabFromContextMenu.bind(this));
 }
 
 /**
@@ -165,10 +162,10 @@ private createContextMenuItems() {
  * Loads all group tab based items and adds them to list
  */
 private async loadAllGroupTabsItems() {
-  const groupTabIDs = await getAllGroupTabIDs();
+  const groupTabIDs = await StorageHandler.instance.getAllGroupTabIDs();
 
   groupTabIDs.forEach(async (value) => {
-    const groupTab = getGroupTabByID(parseInt(value));
+    const groupTab = await StorageHandler.instance.getGroupTabByID(parseInt(value));
 
     // Shouldn't ever be true but just in case
     if (!groupTab) return;
@@ -301,10 +298,10 @@ private async handleShowGroupTabMenuItems(info: Menus.OnShownInfoType, tab: Tabs
 private async handleTabClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
 
   // Gets info on the pressed tab
-  const { groupTab, index } = await getGroupTabOrInnerTabByID(tab.id);
+  const { groupTab, index } = await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
 
 
-  const allGroupIDs = await getAllGroupTabIDs();
+  const allGroupIDs = await StorageHandler.instance.getAllGroupTabIDs();
 
   // Boolean for convenience
   const isFromGroup = groupTab !== undefined;
@@ -381,7 +378,7 @@ private async handleTabClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
  * @param tab The tab the user is in
  */
 private async handleLinkClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
-  const allGroupIDs = await getAllGroupTabIDs();
+  const allGroupIDs = await StorageHandler.instance.getAllGroupTabIDs();
 
   // Hides separator when needed
   await this.updateContextMenuItemVisibility(
