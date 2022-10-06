@@ -5,10 +5,15 @@
   "author": "danielbwork <danielbwork12@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "parcel watch manifest.json src/webPages/*/* --host localhost --config @parcel/config-webextension",
+    "start": "parcel manifest.json src/webPages/*/* --host localhost --config @parcel/config-webextension",
     "build": "parcel build manifest.json src/webPages/*/* --config @parcel/config-webextension --target webext-prod"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@fontsource/roboto": "^4.5.8",
+    "@mui/icons-material": "^5.10.6",
+    "@mui/material": "^5.10.8",
     "eslint": "^8.24.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -18,6 +23,8 @@
   },
   "devDependencies": {
     "@parcel/config-webextension": "^2.7.0",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "parcel": "^2.7.0"
   },
