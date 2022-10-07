@@ -1,15 +1,16 @@
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import React, { useEffect, useMemo, useState } from "react";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 import browser from "webextension-polyfill";
 import { Container } from "@mui/material";
 import { GroupTab } from "utils/GroupTab";
 import { InvalidGroupTab } from "./InvalidGroupTab";
+import { useOnMount } from "../../utils/ui/useOnMount";
 
 const App = () => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
 
-  useEffect(() => {
+  useOnMount(() => {
     browser.tabs.getCurrent().then(async (tab) => {
       const groupTab = await StorageHandler.instance.getGroupTabByID(tab.id!);
 
@@ -18,14 +19,17 @@ const App = () => {
         setGroupTab(groupTab);
       }
     });
-  }, []);
+  });
 
   return (
     <Container maxWidth="sm">{!groupTab && <InvalidGroupTab />}</Container>
   );
 };
 
-const newDiv = document.createElement("div");
-newDiv.setAttribute("id", "content-app-root");
-document.body.appendChild(newDiv);
-ReactDOM.render(<App />, newDiv);
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

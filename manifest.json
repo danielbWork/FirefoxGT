@@ -23,7 +23,7 @@
 		"default_icon": {
 			"64": "icons/icon.png"
 		},
-		"default_popup": "browserAction/index.html",
+		"default_popup": "src/popup.html",
 		"default_title": "FirefoxGroupTabs"
 	},
 	"page_action": {
