@@ -6,6 +6,7 @@ import { MoveTabHandler } from "./backgroundScripts/TabHandlers/MoveTabHandler";
 import { RemoveTabHandler } from "./backgroundScripts/TabHandlers/RemoveTabHandler";
 import browser from "webextension-polyfill";
 import { OnTabClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler";
+import { BackgroundMessageHandler } from "./backgroundScripts/BackgroundMessageHandler";
 
 browser.runtime.onInstalled.addListener(() => {
   ContextMenuHandler.instance.setupContextMenuItems();
@@ -20,3 +21,4 @@ OnTabClickHandler.instance.setupOnClickHandler();
 RemoveTabHandler.instance.setupRemoveHandler();
 MoveTabHandler.instance.setupMoveHandler();
 EditTabHandler.instance.setupEditHandler();
+BackgroundMessageHandler.instance.setupMessageHandler();

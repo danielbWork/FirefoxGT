@@ -2,6 +2,9 @@ import { Popup } from "./popupComponents/Popup";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { CustomThemeProvider } from "./utils/ui/CustomThemeProvider";
+import { PopupMessageHandler } from "./popupComponents/PopupMessageHandler";
+
+PopupMessageHandler.instance.setupMessageHandler();
 
 const App = () => {
   return (

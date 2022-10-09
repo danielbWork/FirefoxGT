@@ -1,5 +1,4 @@
 import {
-  Box,
   createTheme,
   CssBaseline,
   ThemeProvider,

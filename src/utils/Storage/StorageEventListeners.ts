@@ -7,10 +7,9 @@ abstract class BaseEventNotifier<T> {
   /**
    * @property The array of listeners notified
    */
-  protected listeners : T[] = [];
+  protected listeners: T[] = [];
 
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Adds a listener to be notified when events happen
@@ -37,7 +36,9 @@ abstract class BaseEventNotifier<T> {
  * passed is the index of the inner tab if it was added otherwise undefined.
  *
  */
-export class onAddTabNotifier extends BaseEventNotifier<(groupTab: GroupTab, index?: number )=>void> {
+export class onAddTabNotifier extends BaseEventNotifier<
+  (groupTab: GroupTab, index?: number) => void
+> {
   constructor() {
     super();
   }
@@ -72,7 +73,9 @@ export class onAddTabNotifier extends BaseEventNotifier<(groupTab: GroupTab, ind
  * passed is the id of the inner tab if it was removed otherwise undefined.
  *
  */
-export class onRemoveTabNotifier extends BaseEventNotifier<(groupTab : GroupTab, id?: number)=>void> {
+export class onRemoveTabNotifier extends BaseEventNotifier<
+  (groupTab: GroupTab, id?: number) => void
+> {
   constructor() {
     super();
   }
@@ -92,7 +95,7 @@ export class onRemoveTabNotifier extends BaseEventNotifier<(groupTab : GroupTab,
    * @param groupTab The group tab which held the inner tab
    * @param id The id of the removed inner tab
    */
-  removedInnerTab(groupTab: GroupTab, id?: number) {
+  removedInnerTab(groupTab: GroupTab, id: number) {
     this.listeners.forEach((listener) => {
       listener(groupTab, id);
     });
@@ -104,7 +107,9 @@ export class onRemoveTabNotifier extends BaseEventNotifier<(groupTab : GroupTab,
  *
  * Uses Listeners of type (groupTab : GroupTab)=>void where groupTab is the group tab that was edited
  */
-export class onEditGroupTabNotifier extends BaseEventNotifier<(groupTab : GroupTab)=>void> {
+export class onEditGroupTabNotifier extends BaseEventNotifier<
+  (groupTab: GroupTab) => void
+> {
   constructor() {
     super();
   }
