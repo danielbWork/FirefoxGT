@@ -26,14 +26,6 @@
 		"default_popup": "src/popup.html",
 		"default_title": "FirefoxGroupTabs"
 	},
-	"page_action": {
-		"default_icon": {
-			"64": "icons/icon.png"
-		},
-		"default_popup": "pageAction/index.html",
-		"default_title": "FirefoxGroupTabs",
-		"show_matches": ["<all_urls>"]
-	},
 	"options_ui": {
 		"page": "options/index.html"
 	},

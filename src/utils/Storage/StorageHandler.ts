@@ -134,7 +134,7 @@ export class StorageHandler {
    *
    * @throws Error when user adds a group tab that was already in the list
    */
-  async addGroupTab(id: number, name: string, innerTabs: number[]) {
+  async addGroupTab(id: number, name: string, innerTabs: number[] = []) {
     let groupTabs = await this.getAllGroupTabs();
 
     if (groupTabs[id]) {

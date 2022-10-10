@@ -1,5 +1,4 @@
 import { Stack, Typography } from "@mui/material";
-import Box from "@mui/material/Box";
 import React from "react";
 import { GroupTabList } from "./GroupTabList/GroupTabList";
 
@@ -20,8 +19,19 @@ export const Popup = () => {
 
   */
 
+  //TODO Fix this ui
+
   return (
-    <Stack style={{ minWidth: 400, minHeight: 500, padding: 8 }} spacing={1}>
+    <Stack
+      sx={{
+        minWidth: 500,
+        maxWidth: 500,
+        minHeight: 600,
+        padding: 2,
+        paddingTop: 4,
+      }}
+      spacing={1}
+    >
       <Typography variant="h4" color="InfoText" align="center">
         Group Tabs Header
       </Typography>

@@ -1,44 +1,171 @@
-import React, { useState } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { GroupTab } from "../../utils/GroupTab";
 import { useOnMount } from "../../utils/ui/useOnMount";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
-import { ListItem, ListItemText } from "@mui/material";
+import {
+  Avatar,
+  Collapse,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { InnerTabItem } from "./InnerTabItem";
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
+
+import { tabs } from "webextension-polyfill";
+import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
 
 type Props = {
   /**
    * Id of the group tab that this item represents
    */
   groupTabID: number;
+
+  /**
+   * Callback to notify when group tab should be removed
+   */
+  onRemoveGroupTab: (id: number) => void;
 };
 
 /**
  * Represents a group tab in the list
  */
-export const GroupTabItem = ({ groupTabID }: Props) => {
+export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
 
-  // Only calls once since should be the same group tab
+  const [isSubListOpen, setIsSubListOpen] = useState(false);
+
+  const handleLoadGroupTab = useCallback(async () => {
+    const loadedTab = await StorageHandler.instance.getGroupTabByID(groupTabID);
+
+    setGroupTab(loadedTab);
+  }, [groupTabID]);
+
+  // First load
   useOnMount(() => {
-    StorageHandler.instance
-      .getGroupTabByID(groupTabID)
-      .then((loadedGroupTab) => {
-        setGroupTab(loadedGroupTab);
-      });
+    handleLoadGroupTab();
   });
 
-  return (
-    <ListItem divider>
-      <ListItemText
-        primary={
-          groupTab
-            ? `${groupTab.name} (${groupTab.innerTabs.length})`
-            : "Group Tab"
-        }
-        secondary={groupTab && (groupTab.isOpen ? "Opened" : "Closed")}
-        secondaryTypographyProps={
-          groupTab && { color: groupTab.isOpen ? "green" : "red" }
-        }
-      />
-    </ListItem>
+  const handleToggleGroup = useCallback(async () => {
+    setIsSubListOpen(!isSubListOpen);
+  }, [isSubListOpen]);
+
+  const handleRemoveGroupTab = useCallback(() => {
+    onRemoveGroupTab(groupTabID);
+  }, [onRemoveGroupTab, groupTabID]);
+
+  const handleRemoveInnerTab = useCallback(
+    async (tabID: number) => {
+      if (!groupTab) return;
+      await StorageHandler.instance.removeInnerTab(groupTab, tabID);
+
+      await handleLoadGroupTab();
+
+      // Needed for index of group tab
+      const groupTabInfo = await tabs.get(groupTabID);
+      tabs.move([groupTabID, ...groupTab.innerTabs, tabID], {
+        index: groupTabInfo.index,
+      });
+    },
+    [groupTab]
   );
-};
+
+  const handleGoToInnerTab = useCallback(
+    (tabID: number) => {
+      if (!groupTab) return;
+
+      tabs.update(tabID, { active: true });
+
+      if (!groupTab.isOpen) {
+        StorageHandler.instance.toggleGroupTabVisibility(groupTab);
+        tabs.show(groupTab.innerTabs);
+      }
+    },
+    [groupTab]
+  );
+
+  const handleEditGroupTabName = useCallback(
+    async (newName: string) => {
+      await StorageHandler.instance.updateGroupTabName(groupTab!, newName);
+      handleLoadGroupTab();
+    },
+    [groupTab]
+  );
+
+  const { dialog, openDialog } = useGroupTabNameDialog(
+    "Edit Group tab name",
+    "Please enter the Group tab's new name",
+    handleEditGroupTabName
+  );
+
+  return (
+    <>
+      {dialog}
+      <ListItem
+        role={undefined}
+        dense
+        divider
+        secondaryAction={
+          <IconButton
+            edge="end"
+            aria-label="edit"
+            onClick={() => {
+              //TODO fix me
+              openDialog(groupTab?.name);
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        }
+      >
+        <ListItemIcon onClick={handleRemoveGroupTab}>
+          <IconButton>
+            <CloseIcon />
+          </IconButton>
+        </ListItemIcon>
+        <ListItemAvatar>
+          <Avatar src={"icons/icon.png"} sx={{ width: 24, height: 24 }} />
+        </ListItemAvatar>
+        <ListItemButton
+          disabled={!groupTab || groupTab.innerTabs.length === 0}
+          onClick={() => {
+            handleToggleGroup();
+          }}
+        >
+          <ListItemText
+            primary={
+              groupTab
+                ? `${groupTab.name} (${groupTab.innerTabs.length})`
+                : "Group Tab"
+            }
+          />
+
+          {groupTab &&
+            groupTab.innerTabs.length > 0 &&
+            (isSubListOpen ? <ExpandLess /> : <ExpandMore />)}
+        </ListItemButton>
+      </ListItem>
+
+      <Collapse in={isSubListOpen} sx={{ paddingLeft: 4 }}>
+        <List dense>
+          {groupTab?.innerTabs.map((value) => {
+            return (
+              <InnerTabItem
+                key={value}
+                tabID={value}
+                onRemoveInnerTab={handleRemoveInnerTab}
+                onTabClick={handleGoToInnerTab}
+              />
+            );
+          })}
+        </List>
+      </Collapse>
+    </>
+  );
+});
