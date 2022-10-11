@@ -68,7 +68,7 @@ export class RemoveTabHandler {
     if (groupTab.isOpen) {
       notifications.create({
         type: "basic",
-        iconUrl: "icons/icon.png",
+        iconUrl: "/icons/group_tab_icon.png",
         title: `Removed ${groupTab.name}`,
         message: "All inner tabs are currently available",
       });
@@ -77,7 +77,7 @@ export class RemoveTabHandler {
 
       notifications.create({
         type: "basic",
-        iconUrl: "icons/icon.png",
+        iconUrl: "/icons/group_tab_icon.png",
         title: `Removed ${groupTab.name}`,
         message: "Displaying all of its hidden tabs",
       });

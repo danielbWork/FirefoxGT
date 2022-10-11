@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { GroupTab } from "../../utils/GroupTab";
 import { useOnMount } from "../../utils/ui/useOnMount";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
@@ -18,7 +18,7 @@ import { InnerTabItem } from "./InnerTabItem";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 
-import { tabs } from "webextension-polyfill";
+import browser, { Tabs, tabs } from "webextension-polyfill";
 import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
 
 type Props = {
@@ -38,18 +38,22 @@ type Props = {
  */
 export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
+  const [groupTabInfo, setGroupTabInfo] = useState<Tabs.Tab>();
 
   const [isSubListOpen, setIsSubListOpen] = useState(false);
 
-  const handleLoadGroupTab = useCallback(async () => {
+  // Gets group tab and it's info
+  const loadGroupTab = useCallback(async () => {
     const loadedTab = await StorageHandler.instance.getGroupTabByID(groupTabID);
+    const info = await tabs.get(groupTabID);
 
     setGroupTab(loadedTab);
+    setGroupTabInfo(info);
   }, [groupTabID]);
 
   // First load
   useOnMount(() => {
-    handleLoadGroupTab();
+    loadGroupTab();
   });
 
   const handleToggleGroup = useCallback(async () => {
@@ -60,17 +64,17 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     onRemoveGroupTab(groupTabID);
   }, [onRemoveGroupTab, groupTabID]);
 
+  // Removes the inner tab from the group and moves it
   const handleRemoveInnerTab = useCallback(
     async (tabID: number) => {
       if (!groupTab) return;
       await StorageHandler.instance.removeInnerTab(groupTab, tabID);
 
-      await handleLoadGroupTab();
+      await loadGroupTab();
 
       // Needed for index of group tab
-      const groupTabInfo = await tabs.get(groupTabID);
       tabs.move([groupTabID, ...groupTab.innerTabs, tabID], {
-        index: groupTabInfo.index,
+        index: groupTabInfo!.index,
       });
     },
     [groupTab]
@@ -93,7 +97,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   const handleEditGroupTabName = useCallback(
     async (newName: string) => {
       await StorageHandler.instance.updateGroupTabName(groupTab!, newName);
-      handleLoadGroupTab();
+      loadGroupTab();
     },
     [groupTab]
   );
@@ -103,6 +107,16 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     "Please enter the Group tab's new name",
     handleEditGroupTabName
   );
+
+  const icon = useMemo(() => {
+    // Icon isn't always loaded
+    if (groupTabInfo?.favIconUrl) {
+      return groupTabInfo.favIconUrl;
+    }
+
+    // Always get the official icon
+    return browser.runtime.getManifest().icons![48];
+  }, [groupTabInfo]);
 
   return (
     <>
@@ -130,7 +144,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
           </IconButton>
         </ListItemIcon>
         <ListItemAvatar>
-          <Avatar src={"icons/icon.png"} sx={{ width: 24, height: 24 }} />
+          <Avatar src={icon} sx={{ width: 24, height: 24 }} />
         </ListItemAvatar>
         <ListItemButton
           disabled={!groupTab || groupTab.innerTabs.length === 0}

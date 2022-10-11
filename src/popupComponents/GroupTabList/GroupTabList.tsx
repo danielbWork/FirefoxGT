@@ -29,20 +29,21 @@ export const GroupTabList = () => {
     handleLoadGroupTabs();
   }, []);
 
-  const handleEditGroupTabName = useCallback(async (name: string) => {
+  const handleAddGroupTab = useCallback(async (name: string) => {
     const groupTab = await tabs.create({
       url: GROUP_TAB_URL,
       active: false,
     });
 
     await StorageHandler.instance.addGroupTab(groupTab.id!, name);
+
     handleLoadGroupTabs();
   }, []);
 
   const { dialog, openDialog } = useGroupTabNameDialog(
     "Add Group Tab",
     "Please enter the Group tab's name",
-    handleEditGroupTabName
+    handleAddGroupTab
   );
 
   //TODO Fix this ui
