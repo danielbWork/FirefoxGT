@@ -1,6 +1,7 @@
 import {
   CREATE_NEW_GROUP_TAB_ID,
   GROUP_TAB_URL,
+  OPEN_LINK_IN_GROUP_TAB_ID,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
@@ -53,13 +54,22 @@ export class CreateTabHandler {
     tab?: Tabs.Tab
   ) {
     // Only cares if we receive a tab
-    if (!tab) return;
+    if (!tab || typeof info.menuItemId !== "string") return;
 
     // Sends to appropriate create method
     if (info.menuItemId === CREATE_NEW_GROUP_TAB_ID) {
       this.addTabToGroupTab(tab);
-    } else if (info.menuItemId === OPEN_LINK_IN_NEW_GROUP_TAB_ID) {
-      this.openLinkInGroupTab(info.linkUrl!, info.linkText!, tab.index);
+    }
+
+    if (info.menuItemId === OPEN_LINK_IN_NEW_GROUP_TAB_ID) {
+      this.openLinkInNewGroupTab(info.linkUrl!, info.linkText!, tab.index);
+    }
+
+    if (info.menuItemId.startsWith(OPEN_LINK_IN_GROUP_TAB_ID)) {
+      this.openLinkInGroupTab(
+        info.linkUrl!,
+        parseInt(info.menuItemId.substring(OPEN_LINK_IN_GROUP_TAB_ID.length))
+      );
     }
   }
 
@@ -135,7 +145,7 @@ export class CreateTabHandler {
    * @param linkText The text of the link we want to open
    * @param index The location we want to put the group at
    */
-  private async openLinkInGroupTab(
+  private async openLinkInNewGroupTab(
     linkUrl: string,
     linkText: string,
     index: number
@@ -152,6 +162,31 @@ export class CreateTabHandler {
 
       this.handleGroupTabCreation(groupTabTitle, [newTab.id!], index + 1);
     }
+  }
+
+  /**
+   * Create a new tab with the inner link with a inside the group tab
+   *
+   * @param linkUrl The url of link of the to be inner tab
+   * @param groupTabID id of the group tab we want to add the tab to
+   */
+  private async openLinkInGroupTab(linkUrl: string, groupTabID: number) {
+    const groupTabInfo = await tabs.get(groupTabID);
+    const groupTab = (await StorageHandler.instance.getGroupTabByID(
+      groupTabID
+    ))!;
+
+    const newTab = await tabs.create({
+      url: linkUrl,
+      index: groupTabInfo.index + groupTab.innerTabs.length,
+      active: false,
+    });
+
+    await StorageHandler.instance.addInnerTab(groupTab, newTab.id!);
+
+    tabs.move([groupTabID, ...groupTab.innerTabs, newTab.id!], {
+      index: groupTabInfo.index,
+    });
   }
 
   /**

@@ -477,6 +477,14 @@ export class ContextMenuHandler {
       }
     }
 
+    // Only shows the edit parent if can change the icon in some way
+    updateEvents.push(
+      this.updateContextMenuItemVisibility(
+        EDIT_GROUP_TAB_ICON_PARENT_ID,
+        groupTab.icon !== undefined || this.iconItemIDs.length > 0
+      )
+    );
+
     // Waits for all updates to finish
     await Promise.all(updateEvents);
   }
