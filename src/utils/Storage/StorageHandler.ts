@@ -213,8 +213,20 @@ export class StorageHandler {
    * @param groupTab The group tab that we update the name of
    * @param name The new name of the group tab
    */
-  async updateGroupTabName(groupTab: GroupTab, name: any) {
+  async updateGroupTabName(groupTab: GroupTab, name: string) {
     groupTab.name = name;
+    await this.updateGroupTab(groupTab);
+
+    this.onEditTab.editedGroupTab(groupTab);
+  }
+
+  /**
+   * Updates the icon of the group tab
+   * @param groupTab The group tab that we update the icon of
+   * @param name The new icon of the group tab if nothing is passed resets to default icon
+   */
+  async updateGroupTabIcon(groupTab: GroupTab, icon?: string) {
+    groupTab.icon = icon;
     await this.updateGroupTab(groupTab);
 
     this.onEditTab.editedGroupTab(groupTab);

@@ -47,6 +47,15 @@ export const TOGGLE_GROUP_TAB_ID = "toggle-group-tab";
 
 export const EDIT_GROUP_TAB_NAME_ID = "edit-group-tab-name";
 
+export const EDIT_GROUP_TAB_ICON_PARENT_ID = "parent-edit-group-tab-icon";
+
+export const RESTORE_DEFAULT_ICON_ID = "restore-default-icon";
+
+export const RESTORE_DEFAULT_ICON_SEPARATOR_ID =
+  "restore-default-icon-separator";
+
+export const SELECT_INNER_TAB_ICON_ID = "select-from-inner-tabs-icon-";
+
 //#endregion
 
 //#endregion

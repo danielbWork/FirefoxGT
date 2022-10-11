@@ -16,6 +16,11 @@ const App = () => {
 
       if (groupTab) {
         document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;
+
+        // Handles custom icons
+        const favIcon = groupTab.icon || "/icons/group_tab_icon.png";
+        document.getElementById("favicon")?.setAttribute("href", favIcon);
+
         setGroupTab(groupTab);
       }
     });
