@@ -73,8 +73,6 @@ export class ContextMenuHandler {
       this.resetGroupTabMenuItemsVisibility.bind(this)
     );
 
-    // TODO ON REMOVE
-
     // Notifier callbacks
     StorageHandler.instance.onAddTab.addListener(
       this.addGroupTabToContextMenu.bind(this)
@@ -88,107 +86,86 @@ export class ContextMenuHandler {
    * Creates all the context menu items need for the app
    */
   private createContextMenuItems() {
-    // TODO See if commands will be better once pop up is added
-    contextMenus.create({
-      id: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-      title: "Add to group tab",
-      contexts: ["tab"],
-    });
+    this.createMenuItem(ADD_TAB_TO_GROUP_TAB_PARENT_ID, "Add to group tab");
 
-    contextMenus.create({
-      id: CREATE_NEW_GROUP_TAB_ID,
-      title: "Create New",
-      contexts: ["tab"],
-      parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      CREATE_NEW_GROUP_TAB_ID,
+      "Create New",
+      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
-      type: "separator",
-      contexts: ["tab"],
-      parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
+      undefined,
+      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: MOVE_TAB_FROM_GROUP_PARENT_ID,
-      title: "Move tab from group",
-      contexts: ["tab"],
-    });
+    this.createMenuItem(MOVE_TAB_FROM_GROUP_PARENT_ID, "Move tab from group");
 
-    contextMenus.create({
-      id: REMOVE_FROM_GROUP_TAB_ID,
-      title: "Remove from group",
-      contexts: ["tab"],
-      parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
-    });
+    this.createMenuItem(
+      REMOVE_FROM_GROUP_TAB_ID,
+      "Remove from group",
+      MOVE_TAB_FROM_GROUP_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
-      type: "separator",
-      contexts: ["tab"],
-      parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
-    });
+    this.createMenuItem(
+      REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
+      undefined,
+      MOVE_TAB_FROM_GROUP_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-      title: "Open link tab in group tab",
-      contexts: ["link"],
-    });
+    this.createMenuItem(
+      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      "Open link tab in group tab",
+      undefined,
+      ["link"]
+    );
 
-    contextMenus.create({
-      id: OPEN_LINK_IN_NEW_GROUP_TAB_ID,
-      title: "Create New",
-      contexts: ["link"],
-      parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      OPEN_LINK_IN_NEW_GROUP_TAB_ID,
+      "Create New",
+      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      ["link"]
+    );
 
-    contextMenus.create({
-      id: OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
-      type: "separator",
-      contexts: ["link"],
-      parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
+      undefined,
+      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      ["link"]
+    );
 
-    contextMenus.create({
-      id: GROUP_TAB_ACTIONS_PARENT_ID,
-      title: "Group Tab Actions",
-      contexts: ["tab"],
-    });
+    this.createMenuItem(GROUP_TAB_ACTIONS_PARENT_ID, "Group Tab Actions");
 
-    contextMenus.create({
-      id: TOGGLE_GROUP_TAB_ID,
-      title: "Toggle Group tab",
-      contexts: ["tab"],
-      parentId: GROUP_TAB_ACTIONS_PARENT_ID,
-    });
+    this.createMenuItem(
+      TOGGLE_GROUP_TAB_ID,
+      "Toggle Group tab",
+      GROUP_TAB_ACTIONS_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: EDIT_GROUP_TAB_NAME_ID,
-      title: "Edit Group Tab Name",
-      contexts: ["tab"],
-      parentId: GROUP_TAB_ACTIONS_PARENT_ID,
-    });
+    this.createMenuItem(
+      EDIT_GROUP_TAB_NAME_ID,
+      "Edit Group Tab Name",
+      GROUP_TAB_ACTIONS_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: EDIT_GROUP_TAB_ICON_PARENT_ID,
-      title: "Edit Group Tab Icon",
-      contexts: ["tab"],
-      parentId: GROUP_TAB_ACTIONS_PARENT_ID,
-    });
+    this.createMenuItem(
+      EDIT_GROUP_TAB_ICON_PARENT_ID,
+      "Edit Group Tab Icon",
+      GROUP_TAB_ACTIONS_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: RESTORE_DEFAULT_ICON_ID,
-      title: "Restore to default icon",
-      contexts: ["tab"],
-      parentId: EDIT_GROUP_TAB_ICON_PARENT_ID,
-    });
+    this.createMenuItem(
+      RESTORE_DEFAULT_ICON_ID,
+      "Restore to default icon",
+      EDIT_GROUP_TAB_ICON_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: RESTORE_DEFAULT_ICON_SEPARATOR_ID,
-      contexts: ["tab"],
-      type: "separator",
-      parentId: EDIT_GROUP_TAB_ICON_PARENT_ID,
-    });
+    this.createMenuItem(
+      RESTORE_DEFAULT_ICON_SEPARATOR_ID,
+      undefined,
+      EDIT_GROUP_TAB_ICON_PARENT_ID
+    );
 
     this.loadAllGroupTabsItems();
   }
@@ -211,6 +188,28 @@ export class ContextMenuHandler {
   //#endregion
 
   //#region Util
+
+  /**
+   * Utility for creating menu items
+   * @param id The id of the menu item
+   * @param title The text to be displayed in the item
+   * @param parentId Id of the parent item
+   * @param contexts List of contexts this menu item will appear in default to ["tab"]
+   */
+  private createMenuItem(
+    id: string,
+    title?: string,
+    parentId?: string,
+    contexts: Menus.ContextType[] = ["tab"]
+  ) {
+    contextMenus.create({
+      id,
+      contexts,
+      type: !title ? "separator" : undefined,
+      parentId,
+      title,
+    });
+  }
 
   /**
    * Updates the context menu item's visibility
@@ -248,29 +247,24 @@ export class ContextMenuHandler {
   private async addGroupTabToContextMenu(groupTab: GroupTab, index?: number) {
     if (index) return;
 
-    contextMenus.create({
-      id: ADD_TO_GROUP_TAB_ID + groupTab.id,
-      title: groupTab.name,
-      contexts: ["tab"],
-      visible: true,
-      parentId: ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      ADD_TO_GROUP_TAB_ID + groupTab.id,
+      groupTab.name,
+      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: MOVE_TO_GROUP_TAB_ID + groupTab.id,
-      title: groupTab.name,
-      contexts: ["tab"],
-      visible: true,
-      parentId: MOVE_TAB_FROM_GROUP_PARENT_ID,
-    });
+    this.createMenuItem(
+      MOVE_TO_GROUP_TAB_ID + groupTab.id,
+      groupTab.name,
+      MOVE_TAB_FROM_GROUP_PARENT_ID
+    );
 
-    contextMenus.create({
-      id: OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
-      title: groupTab.name,
-      contexts: ["link"],
-      visible: true,
-      parentId: OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-    });
+    this.createMenuItem(
+      OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
+      groupTab.name,
+      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      ["link"]
+    );
   }
 
   /**
