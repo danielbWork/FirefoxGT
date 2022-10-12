@@ -66,3 +66,39 @@ export async function createNotification(title: string, message: string) {
     message,
   });
 }
+
+/**
+ * Moves the group tabs it's inner tabs and the postfix to the index
+ * @param groupTab The group tab or it's id that we want to move
+ * @param postfix Tabs to be added after the group tab and it's inner tabs
+ * @param index The starting index for the group tab (if undefined uses group tab's current index)
+ */
+export async function moveGroupTab(
+  groupTab: number | GroupTab,
+  postfix: number[] = [],
+  index?: number
+) {
+  let groupTabValue;
+
+  // Gets the actual group tab no matter what
+  if (typeof groupTab === "number") {
+    groupTabValue = (await StorageHandler.instance.getGroupTabByID(groupTab))!;
+  } else {
+    groupTabValue = groupTab;
+  }
+
+  const groupTabInfo = await tabs.get(groupTabValue.id);
+
+  let indexValue = index;
+
+  // Gets  group tab index if nothing was passed
+  if (indexValue === undefined) {
+    indexValue = groupTabInfo.index;
+  }
+
+  // Moves all tabs to be after the group tab and in it's window
+  tabs.move([groupTabValue.id, ...groupTabValue.innerTabs, ...postfix], {
+    index: indexValue,
+    windowId: groupTabInfo.windowId,
+  });
+}

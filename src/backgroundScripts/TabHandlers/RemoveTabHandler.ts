@@ -1,7 +1,8 @@
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
-import { Tabs, tabs } from "webextension-polyfill";
-import { createNotification } from "../../utils/Utils";
+import browser, { Menus, Tabs, tabs } from "webextension-polyfill";
+import { createNotification, moveGroupTab } from "../../utils/Utils";
+import { REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
 
 /**
  * Handles tabs and group tabs being removed
@@ -34,6 +35,44 @@ export class RemoveTabHandler {
     StorageHandler.instance.onRemoveTab.addListener(
       this.onRemoveTabFromStorage.bind(this)
     );
+
+    browser.contextMenus.onClicked.addListener(
+      this.onRemoveContextMenuItem.bind(this)
+    );
+  }
+
+  /**
+   * Removes the tabs based on which item was clicked
+   * @param info The info regarding the tab that was pressed
+   * @param tab The tab that the user wants to move
+   */
+  private async onRemoveContextMenuItem(
+    info: Menus.OnClickData,
+    tab?: Tabs.Tab
+  ) {
+    if (info.menuItemId === REMOVE_FROM_GROUP_TAB_ID && tab) {
+      const { groupTab, index } =
+        await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
+
+      await this.removeTabFromGroupMenuClick(groupTab!, tab.id!);
+    }
+  }
+
+  /**
+   * Removes the inner tab from the group and puts it outside the group
+   * @param groupTab The group tab that contains the inner tab
+   * @param id The id of the inner tab we want to remove from the group tab
+   */
+  private async removeTabFromGroupMenuClick(groupTab: GroupTab, id: number) {
+    await StorageHandler.instance.removeInnerTab(groupTab, id);
+
+    // Gets groupTab now after it's value was updated
+    const updatedGroupTab = (await StorageHandler.instance.getGroupTabByID(
+      groupTab.id
+    ))!;
+
+    // Makes sure that move keeps the order of the group and put removed tab outside of it
+    await moveGroupTab(updatedGroupTab, [id]);
   }
 
   /**
@@ -51,7 +90,7 @@ export class RemoveTabHandler {
 
   /**
    * Handles the inner tab being removed
-   *   *
+   *
    * @param groupTab The group tab that had an inner tab removed
    * @param innerTabID The id of the inner tab that was removed
    */
@@ -61,14 +100,8 @@ export class RemoveTabHandler {
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
 
-    const groupTabInfo = await tabs.get(groupTab.id);
-
     // Makes sure to show the inner tab if needed
     tabs.show(innerTabID);
-
-    tabs.move([groupTab.id, ...groupTab.innerTabs, innerTabID], {
-      index: groupTabInfo.index,
-    });
   }
 
   /**

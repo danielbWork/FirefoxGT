@@ -6,7 +6,11 @@ import {
   REMOVE_FROM_GROUP_TAB_ID,
 } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
-import { checkMovedIntoGroupTab, createNotification } from "../../utils/Utils";
+import {
+  checkMovedIntoGroupTab,
+  createNotification,
+  moveGroupTab,
+} from "../../utils/Utils";
 import { OnTabClickHandler } from "./OnTabClickHandler";
 
 /**
@@ -100,35 +104,11 @@ export class MoveTabHandler {
         parseInt(newGroupID)
       );
     }
-    // Check tabs was moved outside of group
-    else if (info.menuItemId === REMOVE_FROM_GROUP_TAB_ID) {
-      await this.removeTabFromGroupMenuClick(groupTab, tab.id);
-    }
   }
 
   //#endregion
 
   //#region Utils
-
-  /**
-   * Moves the group the tab and it's inner tab to a new location
-   *
-   * @param groupTab The group tab we move
-   * @param index The index we move the group tab to
-   * @param additionalTabs other tabs to that should be moved after the group
-   */
-  private async moveGroupTab(
-    groupTab: GroupTab,
-    index: number,
-    additionalTabs: number[] = []
-  ) {
-    // Makes sure that move keeps the order of the group
-    const allTabs = [groupTab.id, ...groupTab.innerTabs, ...additionalTabs];
-
-    await tabs.move(allTabs, {
-      index: index,
-    });
-  }
 
   /**
    * Creates a confirm dialog for the user to confirm their action
@@ -161,7 +141,7 @@ export class MoveTabHandler {
     groupTab: GroupTab,
     moveInfo: Tabs.OnMovedMoveInfoType
   ) {
-    await this.moveGroupTab(groupTab, moveInfo.toIndex);
+    await moveGroupTab(groupTab, undefined, moveInfo.toIndex);
 
     await OnTabClickHandler.instance.onStopDragging(groupTab);
   }
@@ -201,7 +181,7 @@ export class MoveTabHandler {
         );
       } else {
         // Puts the tab outside of the group tab
-        this.moveGroupTab(groupTab, groupTabInfo.index, [tabId]);
+        moveGroupTab(groupTab, [tabId]);
       }
     }
   }
@@ -256,7 +236,7 @@ export class MoveTabHandler {
       return;
     }
 
-    await this.onRemoveTabFromGroup(groupTab, groupTabInfo, index);
+    await this.onRemoveTabFromGroup(groupTab, index);
   }
 
   /**
@@ -301,7 +281,7 @@ export class MoveTabHandler {
     groupTabInfo: Tabs.Tab,
     innerTabIndex: number,
     newGroupTab: GroupTab,
-    newGroupTabInfo: { index: number },
+    newGroupTabInfo: Tabs.Tab,
     moveInfo: Tabs.OnMovedMoveInfoType
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
@@ -310,17 +290,15 @@ export class MoveTabHandler {
       `Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?`
     );
 
+    // Checks if user confirmed inner tab swap
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
+      const newIndex = moveInfo.toIndex - groupTabInfo.index - 1;
 
-      // Adds it temporarily to the end so it can be reordered
-      newGroupTab.innerTabs.push(movedTabInfo.id!);
-
-      await this.onReorderInGroupTab(
+      await StorageHandler.instance.addInnerTab(
         newGroupTab,
-        newGroupTabInfo.index,
-        newGroupTab.innerTabs.length - 1,
-        moveInfo
+        movedTabInfo.id!,
+        newIndex
       );
 
       await createNotification(
@@ -329,7 +307,7 @@ export class MoveTabHandler {
       );
     } else {
       // Resets the inner tab inside the group tab
-      this.moveGroupTab(groupTab, groupTabInfo.index);
+      moveGroupTab(groupTab);
     }
   }
 
@@ -338,12 +316,10 @@ export class MoveTabHandler {
    * Asks user if they are sure they want to remove the inner tab from group
    *
    * @param groupTab The group tab who originally had the inner tab
-   * @param groupTabInfo The tab info regarding the group tab
    * @param innerTabIndex The index of the inner tab in the group tab
    */
   private async onRemoveTabFromGroup(
     groupTab: GroupTab,
-    groupTabInfo: Tabs.Tab,
     innerTabIndex: number
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
@@ -355,13 +331,13 @@ export class MoveTabHandler {
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
 
-      await createNotification(
+      createNotification(
         "Tab Removed",
         `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`
       );
     } else {
       // Resets the inner tab inside the group tab
-      this.moveGroupTab(groupTab, groupTabInfo.index);
+      moveGroupTab(groupTab);
     }
   }
 
@@ -381,9 +357,7 @@ export class MoveTabHandler {
 
     await StorageHandler.instance.addInnerTab(groupTab, tabId);
 
-    const groupTabInfo = await tabs.get(groupId);
-
-    await this.moveGroupTab(groupTab, groupTabInfo.index);
+    await moveGroupTab(groupTab);
   }
 
   /**
@@ -405,25 +379,6 @@ export class MoveTabHandler {
 
     // Moves the inner tab to the group
     await this.addTabToGroupMenuClick(newGroupId, movedTabID);
-  }
-
-  /**
-   * Removes the inner tab from the group and puts it outside the group
-   * @param groupTab The group tab that contains the inner tab
-   * @param id The id of the inner tab we want to remove from the group in the group tab
-   */
-  private async removeTabFromGroupMenuClick(groupTab: GroupTab, id: number) {
-    await StorageHandler.instance.removeInnerTab(groupTab, id);
-
-    // Gets groupTab now after it's value was updated
-    const updatedGroupTab = (await StorageHandler.instance.getGroupTabByID(
-      groupTab.id
-    ))!;
-    const groupTabInfo = await tabs.get(updatedGroupTab.id);
-
-    // Makes sure that move keeps the order of the group and put removed tab outside of it
-
-    await this.moveGroupTab(updatedGroupTab, groupTabInfo.index, [id]);
   }
 
   //#endregion

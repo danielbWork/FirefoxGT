@@ -20,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 
 import browser, { Tabs, tabs } from "webextension-polyfill";
 import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
+import { moveGroupTab } from "../../utils/Utils";
 
 type Props = {
   /**
@@ -72,10 +73,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
 
       await loadGroupTab();
 
-      // Needed for index of group tab
-      tabs.move([groupTabID, ...groupTab.innerTabs, tabID], {
-        index: groupTabInfo!.index,
-      });
+      moveGroupTab(groupTabID, [tabID]);
     },
     [groupTab]
   );

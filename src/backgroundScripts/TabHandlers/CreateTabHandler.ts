@@ -6,7 +6,11 @@ import {
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import browser, { Tabs, Menus, tabs, bookmarks } from "webextension-polyfill";
-import { checkMovedIntoGroupTab, createNotification } from "../../utils/Utils";
+import {
+  checkMovedIntoGroupTab,
+  createNotification,
+  moveGroupTab,
+} from "../../utils/Utils";
 
 /**
  * Handles group tab creation and other tab creation
@@ -209,9 +213,7 @@ export class CreateTabHandler {
 
     await StorageHandler.instance.addInnerTab(groupTab, newTab.id!);
 
-    tabs.move([groupTabID, ...groupTab.innerTabs, newTab.id!], {
-      index: groupTabInfo.index,
-    });
+    await moveGroupTab(groupTab, [newTab.id!]);
   }
 
   /**
@@ -276,9 +278,7 @@ export class CreateTabHandler {
     await StorageHandler.instance.addGroupTab(groupTab.id!, name, innerTabs);
 
     // Moves the inner tabs to make sure they are after group tab
-    await tabs.move([groupTab.id!, ...innerTabs], {
-      index: groupTab.index,
-    });
+    await moveGroupTab(groupTab.id!);
   }
 
   //#endregion
