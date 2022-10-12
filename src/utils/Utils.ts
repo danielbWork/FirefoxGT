@@ -1,7 +1,6 @@
-import { Tabs, tabs } from "webextension-polyfill";
+import { notifications, Tabs, tabs } from "webextension-polyfill";
 import { GroupTab } from "./GroupTab.js";
 import { StorageHandler } from "./Storage/StorageHandler";
-
 
 /**
  * Checks to see if the given index is inside a group tab
@@ -11,10 +10,13 @@ import { StorageHandler } from "./Storage/StorageHandler";
  * @returns The group tab and it's info that the index is a part of (can return undefined vars if not in a group)
  */
 export async function checkMovedIntoGroupTab(index: number) {
-  const groupTabPromises: Promise<{
-    groupTab: GroupTab;
-    groupTabInfo: Tabs.Tab;
-} | undefined>[] = [];
+  const groupTabPromises: Promise<
+    | {
+        groupTab: GroupTab;
+        groupTabInfo: Tabs.Tab;
+      }
+    | undefined
+  >[] = [];
 
   const groupTabIDs = await StorageHandler.instance.getAllGroupTabIDs();
 
@@ -48,4 +50,19 @@ export async function checkMovedIntoGroupTab(index: number) {
   if (groupTabValues) return groupTabValues;
 
   return { groupTab: undefined, groupTabInfo: undefined };
+}
+
+/**
+ * Creates a notification and displays to user
+ * @param title The title of notification
+ * @param message The message of the notification
+ * @returns The notification id
+ */
+export async function createNotification(title: string, message: string) {
+  return notifications.create({
+    type: "basic",
+    iconUrl: "icons/group_tab_icon.png",
+    title,
+    message,
+  });
 }

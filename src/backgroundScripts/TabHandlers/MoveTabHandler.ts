@@ -6,7 +6,7 @@ import {
   REMOVE_FROM_GROUP_TAB_ID,
 } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
-import { checkMovedIntoGroupTab } from "../../utils/Utils";
+import { checkMovedIntoGroupTab, createNotification } from "../../utils/Utils";
 import { OnTabClickHandler } from "./OnTabClickHandler";
 
 /**
@@ -195,12 +195,10 @@ export class MoveTabHandler {
           moveInfo.toIndex - groupTabInfo.index - 1
         );
 
-        await browser.notifications.create({
-          type: "basic",
-          iconUrl: "icons/group_tab_icon.png",
-          title: "Tab Moved",
-          message: `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`,
-        });
+        await createNotification(
+          "Tab Moved",
+          `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`
+        );
       } else {
         // Puts the tab outside of the group tab
         this.moveGroupTab(groupTab, groupTabInfo.index, [tabId]);
@@ -325,12 +323,10 @@ export class MoveTabHandler {
         moveInfo
       );
 
-      await browser.notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: "Tab Moved",
-        message: `Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}`,
-      });
+      await createNotification(
+        "Tab Moved",
+        `Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}`
+      );
     } else {
       // Resets the inner tab inside the group tab
       this.moveGroupTab(groupTab, groupTabInfo.index);
@@ -359,12 +355,10 @@ export class MoveTabHandler {
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
 
-      await browser.notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: "Tab Removed",
-        message: `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`,
-      });
+      await createNotification(
+        "Tab Removed",
+        `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`
+      );
     } else {
       // Resets the inner tab inside the group tab
       this.moveGroupTab(groupTab, groupTabInfo.index);

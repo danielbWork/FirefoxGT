@@ -11,6 +11,7 @@ import browser, {
   tabs,
   notifications,
 } from "webextension-polyfill";
+import { createNotification } from "../../utils/Utils";
 
 /**
  * Handles editing group tabs, as well as editing events such as inner tab changes
@@ -86,13 +87,10 @@ export class EditTabHandler {
     // TODO Use pop up instead
     // Checks if user is in special tab
     if (!results || results[0] === undefined) {
-      notifications.create({
-        type: "basic",
-        // TODO Add Icon
-        title: "Create Failed",
-        message:
-          "Can't edit in this tab as it is blocked by firefox, please move to another tab and try again",
-      });
+      createNotification(
+        "Create Failed",
+        "Can't edit in this tab as it is blocked by firefox, please move to another tab and try again"
+      );
 
       return;
     }
@@ -104,12 +102,10 @@ export class EditTabHandler {
 
     // Makes sure to block empty names
     if (results[0].trim() === "") {
-      notifications.create({
-        type: "basic",
-        // TODO Add Icon
-        title: "Create Failed",
-        message: "Can't create group tab with empty name",
-      });
+      createNotification(
+        "Create Failed",
+        "Can't create group tab with empty name"
+      );
 
       return;
     }

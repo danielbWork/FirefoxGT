@@ -1,11 +1,7 @@
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
-import browser, {
-  Tabs,
-  Menus,
-  tabs,
-  notifications,
-} from "webextension-polyfill";
+import { Tabs, tabs } from "webextension-polyfill";
+import { createNotification } from "../../utils/Utils";
 
 /**
  * Handles tabs and group tabs being removed
@@ -85,21 +81,17 @@ export class RemoveTabHandler {
   private async onRemoveGroupTab(groupTab: GroupTab) {
     // Checks if the group tab is empty and has no inner tabs and makes sure it's visible
     if (groupTab.isOpen) {
-      notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: `Removed ${groupTab.name}`,
-        message: "All inner tabs are currently available",
-      });
+      createNotification(
+        `Removed ${groupTab.name}`,
+        "All inner tabs are currently available"
+      );
     } else {
       tabs.show(groupTab.innerTabs);
 
-      notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: `Removed ${groupTab.name}`,
-        message: "Displaying all of its hidden tabs",
-      });
+      createNotification(
+        `Removed ${groupTab.name}`,
+        "Displaying all of its hidden tabs"
+      );
     }
   }
 

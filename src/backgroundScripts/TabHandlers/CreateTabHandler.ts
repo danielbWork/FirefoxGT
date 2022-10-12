@@ -6,7 +6,7 @@ import {
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import browser, { Tabs, Menus, tabs, bookmarks } from "webextension-polyfill";
-import { checkMovedIntoGroupTab } from "../../utils/Utils";
+import { checkMovedIntoGroupTab, createNotification } from "../../utils/Utils";
 
 /**
  * Handles group tab creation and other tab creation
@@ -169,12 +169,7 @@ export class CreateTabHandler {
       } catch (error: any) {
         console.log(error);
 
-        browser.notifications.create({
-          type: "basic",
-          iconUrl: "icons/group_tab_icon.png",
-          title: "Create Failed",
-          message: error.message || "Invalid url",
-        });
+        createNotification("Create Failed", error.message || "Invalid url");
       }
     }
   }
@@ -234,13 +229,10 @@ export class CreateTabHandler {
     // TODO Use pop up instead
     // Checks if user is in special tab
     if (!results || results[0] === undefined) {
-      browser.notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: "Create Failed",
-        message:
-          "Can't create in this tab as it is blocked by firefox, please move to another tab and try again",
-      });
+      createNotification(
+        "Create Failed",
+        "Can't create in this tab as it is blocked by firefox, please move to another tab and try again"
+      );
 
       return;
     }
@@ -252,12 +244,10 @@ export class CreateTabHandler {
 
     // Makes sure to block empty names
     if (results[0].trim() === "") {
-      browser.notifications.create({
-        type: "basic",
-        iconUrl: "icons/group_tab_icon.png",
-        title: "Create Failed",
-        message: "Can't create group tab with empty name",
-      });
+      createNotification(
+        "Create Failed",
+        "Can't create group tab with empty name"
+      );
 
       return;
     }
