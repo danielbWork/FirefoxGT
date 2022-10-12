@@ -18,6 +18,7 @@ const App = () => {
         document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;
 
         // Handles custom icons, otherwise get's official icon
+        // Uses manifest as url doesn't work
         const favIcon =
           groupTab.icon || browser.runtime.getManifest().icons![48];
 

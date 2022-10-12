@@ -197,7 +197,7 @@ export class MoveTabHandler {
 
         await browser.notifications.create({
           type: "basic",
-          // TODO Add Icon
+          iconUrl: "icons/group_tab_icon.png",
           title: "Tab Moved",
           message: `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`,
         });
@@ -327,7 +327,7 @@ export class MoveTabHandler {
 
       await browser.notifications.create({
         type: "basic",
-        // TODO Add Icon
+        iconUrl: "icons/group_tab_icon.png",
         title: "Tab Moved",
         message: `Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}`,
       });
@@ -361,7 +361,7 @@ export class MoveTabHandler {
 
       await browser.notifications.create({
         type: "basic",
-        // TODO Add Icon
+        iconUrl: "icons/group_tab_icon.png",
         title: "Tab Removed",
         message: `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`,
       });

@@ -5,8 +5,8 @@
   "author": "danielbwork <danielbwork12@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "parcel manifest.json src/webPages/*/* --host localhost --config @parcel/config-webextension",
-    "build": "parcel build manifest.json src/webPages/*/* --config @parcel/config-webextension --target webext-prod"
+    "start": "parcel manifest.json src/webPages/*/* icons/* --host localhost --config @parcel/config-webextension",
+    "build": "parcel build manifest.json src/webPages/*/* icons/* --config @parcel/config-webextension --target webext-prod"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",

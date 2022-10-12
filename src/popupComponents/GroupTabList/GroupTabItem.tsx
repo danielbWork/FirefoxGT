@@ -114,8 +114,8 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
       return groupTabInfo.favIconUrl;
     }
 
-    // Always get the official icon
-    return browser.runtime.getManifest().icons![48];
+    // Default icon
+    return "icons/group_tab_icon.png";
   }, [groupTabInfo]);
 
   return (

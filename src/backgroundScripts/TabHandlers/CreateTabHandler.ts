@@ -206,7 +206,7 @@ export class CreateTabHandler {
     if (!results || results[0] === undefined) {
       browser.notifications.create({
         type: "basic",
-        // TODO Add Icon
+        iconUrl: "icons/group_tab_icon.png",
         title: "Create Failed",
         message:
           "Can't create in this tab as it is blocked by firefox, please move to another tab and try again",
@@ -224,7 +224,7 @@ export class CreateTabHandler {
     if (results[0].trim() === "") {
       browser.notifications.create({
         type: "basic",
-        // TODO Add Icon
+        iconUrl: "icons/group_tab_icon.png",
         title: "Create Failed",
         message: "Can't create group tab with empty name",
       });
