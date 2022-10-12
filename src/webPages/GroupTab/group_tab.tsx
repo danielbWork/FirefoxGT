@@ -17,9 +17,23 @@ const App = () => {
       if (groupTab) {
         document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;
 
-        // Handles custom icons
-        const favIcon = groupTab.icon || "/icons/group_tab_icon.png";
-        document.getElementById("favicon")?.setAttribute("href", favIcon);
+        // Handles custom icons, otherwise get's official icon
+        const favIcon =
+          groupTab.icon || browser.runtime.getManifest().icons![48];
+
+        // Creates the element here to make the ui updates cleaner
+        const iconElement = document.createElement("link");
+        iconElement.id = "favicon";
+        iconElement.rel = "shortcut icon";
+        iconElement.href = favIcon;
+
+        const oldIcon = document.getElementById("favicon");
+
+        // Reloads icon
+        if (oldIcon) {
+          document.head.removeChild(oldIcon);
+        }
+        document.head.appendChild(iconElement);
 
         setGroupTab(groupTab);
       }
