@@ -54,17 +54,36 @@ export class RemoveTabHandler {
   }
 
   /**
-   * Handles showing inner tabs once group tab is removed
+   * Handles the inner tab being removed
+   *   *
+   * @param groupTab The group tab that had an inner tab removed
+   * @param innerTabID The id of the inner tab that was removed
+   */
+  private async onRemoveInnerTab(groupTab: GroupTab, innerTabID: number) {
+    // Checks if the group tab is empty and has no inner tabs and makes sure it's visible
+    if (!groupTab.innerTabs.length && !groupTab.isOpen) {
+      StorageHandler.instance.toggleGroupTabVisibility(groupTab);
+    }
+
+    const groupTabInfo = await tabs.get(groupTab.id);
+
+    // Makes sure to show the inner tab if needed
+    tabs.show(innerTabID);
+
+    tabs.move([groupTab.id, ...groupTab.innerTabs, innerTabID], {
+      index: groupTabInfo.index,
+    });
+  }
+
+  /**
+   * Handles the inner tab being removed
    *
    * TODO: in future have in setting page setting for doing this or deleting tabs
    *
-   * @param groupTab The group tab that was removed (or had an inner tab removed)
-   * @param innerTabID The id of the inner tab if this has a value function does nothing
+   * @param groupTab The group tab that was removed
    */
-  private onRemoveTabFromStorage(groupTab: GroupTab, innerTabID?: number) {
-    // Only cares when it's group tab
-    if (innerTabID !== undefined) return;
-
+  private async onRemoveGroupTab(groupTab: GroupTab) {
+    // Checks if the group tab is empty and has no inner tabs and makes sure it's visible
     if (groupTab.isOpen) {
       notifications.create({
         type: "basic",
@@ -81,6 +100,25 @@ export class RemoveTabHandler {
         title: `Removed ${groupTab.name}`,
         message: "Displaying all of its hidden tabs",
       });
+    }
+  }
+
+  /**
+   * Handles showing inner tabs once group tab is removed
+   *
+   * TODO: in future have in setting page setting for doing this or deleting tabs
+   *
+   * @param groupTab The group tab that was removed (or had an inner tab removed)
+   * @param innerTabID The id of the inner tab if this was the value that was removed
+   */
+  private async onRemoveTabFromStorage(
+    groupTab: GroupTab,
+    innerTabID?: number
+  ) {
+    if (innerTabID !== undefined) {
+      this.onRemoveInnerTab(groupTab, innerTabID);
+    } else {
+      this.onRemoveGroupTab(groupTab);
     }
   }
 }

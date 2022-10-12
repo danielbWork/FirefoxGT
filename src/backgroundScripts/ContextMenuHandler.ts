@@ -422,9 +422,11 @@ export class ContextMenuHandler {
 
     // Only cares when group tab actions should be displayed
     if (isFromGroup && !isInnerTab) {
+      // Makes sure the toggle option only shows if the group tab has inner tabs
       updateEvents.push(
         this.updateContextMenuItem(TOGGLE_GROUP_TAB_ID, {
           title: groupTab.isOpen ? "Close Group Tab" : "Open Group Tab",
+          visible: groupTab.innerTabs.length > 0,
         })
       );
 
