@@ -1,24 +1,4 @@
-import {
-  ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-  ADD_TO_GROUP_TAB_ID,
-  CREATE_NEW_GROUP_TAB_ID,
-  MOVE_TAB_FROM_GROUP_PARENT_ID,
-  MOVE_TO_GROUP_TAB_ID,
-  REMOVE_FROM_GROUP_TAB_ID,
-  OPEN_LINK_IN_GROUP_TAB_ID,
-  OPEN_LINK_IN_NEW_GROUP_TAB_ID,
-  OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-  CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
-  REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
-  OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
-  GROUP_TAB_ACTIONS_PARENT_ID,
-  EDIT_GROUP_TAB_NAME_ID,
-  TOGGLE_GROUP_TAB_ID,
-  EDIT_GROUP_TAB_ICON_PARENT_ID,
-  RESTORE_DEFAULT_ICON_ID,
-  RESTORE_DEFAULT_ICON_SEPARATOR_ID,
-  SELECT_INNER_TAB_ICON_ID,
-} from "../utils/Consts";
+import * as Consts from "../utils/Consts";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import { GroupTab } from "../utils/GroupTab.js";
 import { contextMenus, Menus, tabs, Tabs } from "webextension-polyfill";
@@ -86,85 +66,94 @@ export class ContextMenuHandler {
    * Creates all the context menu items need for the app
    */
   private createContextMenuItems() {
-    this.createMenuItem(ADD_TAB_TO_GROUP_TAB_PARENT_ID, "Add to group tab");
+    this.createMenuItem(
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID,
+      "Add to group tab"
+    );
 
     this.createMenuItem(
-      CREATE_NEW_GROUP_TAB_ID,
+      Consts.CREATE_NEW_GROUP_TAB_ID,
       "Create New",
-      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID
     );
 
     this.createMenuItem(
-      CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
+      Consts.CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
       undefined,
-      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID
     );
 
-    this.createMenuItem(MOVE_TAB_FROM_GROUP_PARENT_ID, "Move tab from group");
+    this.createMenuItem(
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID,
+      "Move tab from group"
+    );
 
     this.createMenuItem(
-      REMOVE_FROM_GROUP_TAB_ID,
+      Consts.REMOVE_FROM_GROUP_TAB_ID,
       "Remove from group",
-      MOVE_TAB_FROM_GROUP_PARENT_ID
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID
     );
 
     this.createMenuItem(
-      REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
+      Consts.REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
       undefined,
-      MOVE_TAB_FROM_GROUP_PARENT_ID
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID
     );
 
     this.createMenuItem(
-      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
       "Open link tab in group tab",
       undefined,
       ["link"]
     );
 
     this.createMenuItem(
-      OPEN_LINK_IN_NEW_GROUP_TAB_ID,
+      Consts.OPEN_LINK_IN_NEW_GROUP_TAB_ID,
       "Create New",
-      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
       ["link"]
     );
 
     this.createMenuItem(
-      OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       undefined,
-      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
       ["link"]
     );
 
-    this.createMenuItem(GROUP_TAB_ACTIONS_PARENT_ID, "Group Tab Actions");
+    this.createMenuItem(
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID,
+      "Group Tab Actions"
+    );
 
     this.createMenuItem(
-      TOGGLE_GROUP_TAB_ID,
+      Consts.TOGGLE_GROUP_TAB_ID,
       "Toggle Group tab",
-      GROUP_TAB_ACTIONS_PARENT_ID
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID
     );
 
     this.createMenuItem(
-      EDIT_GROUP_TAB_NAME_ID,
+      Consts.EDIT_GROUP_TAB_NAME_ID,
       "Edit Group Tab Name",
-      GROUP_TAB_ACTIONS_PARENT_ID
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID
     );
 
     this.createMenuItem(
-      EDIT_GROUP_TAB_ICON_PARENT_ID,
+      Consts.EDIT_GROUP_TAB_ICON_PARENT_ID,
       "Edit Group Tab Icon",
-      GROUP_TAB_ACTIONS_PARENT_ID
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID
     );
 
     this.createMenuItem(
-      RESTORE_DEFAULT_ICON_ID,
+      Consts.RESTORE_DEFAULT_ICON_ID,
       "Restore to default icon",
-      EDIT_GROUP_TAB_ICON_PARENT_ID
+      Consts.EDIT_GROUP_TAB_ICON_PARENT_ID
     );
 
     this.createMenuItem(
-      RESTORE_DEFAULT_ICON_SEPARATOR_ID,
+      Consts.RESTORE_DEFAULT_ICON_SEPARATOR_ID,
       undefined,
-      EDIT_GROUP_TAB_ICON_PARENT_ID
+      Consts.EDIT_GROUP_TAB_ICON_PARENT_ID
     );
 
     this.loadAllGroupTabsItems();
@@ -248,21 +237,21 @@ export class ContextMenuHandler {
     if (index) return;
 
     this.createMenuItem(
-      ADD_TO_GROUP_TAB_ID + groupTab.id,
+      Consts.ADD_TO_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
-      ADD_TAB_TO_GROUP_TAB_PARENT_ID
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID
     );
 
     this.createMenuItem(
-      MOVE_TO_GROUP_TAB_ID + groupTab.id,
+      Consts.MOVE_TO_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
-      MOVE_TAB_FROM_GROUP_PARENT_ID
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID
     );
 
     this.createMenuItem(
-      OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
+      Consts.OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
-      OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
       ["link"]
     );
   }
@@ -278,9 +267,9 @@ export class ContextMenuHandler {
   ) {
     if (innerTabID) return;
 
-    contextMenus.remove(ADD_TO_GROUP_TAB_ID + groupTab.id);
-    contextMenus.remove(MOVE_TO_GROUP_TAB_ID + groupTab.id);
-    contextMenus.remove(OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id);
+    contextMenus.remove(Consts.ADD_TO_GROUP_TAB_ID + groupTab.id);
+    contextMenus.remove(Consts.MOVE_TO_GROUP_TAB_ID + groupTab.id);
+    contextMenus.remove(Consts.OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id);
   }
 
   //#endregion
@@ -291,15 +280,21 @@ export class ContextMenuHandler {
    * Makes all menu items visible so we won't have to load all of them on show every time
    */
   private async resetGroupTabMenuItemsVisibility() {
-    this.updateContextMenuItemVisibility(ADD_TAB_TO_GROUP_TAB_PARENT_ID, true);
     this.updateContextMenuItemVisibility(
-      CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID,
+      true
+    );
+    this.updateContextMenuItemVisibility(
+      Consts.CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
       true
     );
 
-    this.updateContextMenuItemVisibility(MOVE_TAB_FROM_GROUP_PARENT_ID, true);
     this.updateContextMenuItemVisibility(
-      REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID,
+      true
+    );
+    this.updateContextMenuItemVisibility(
+      Consts.REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
       true
     );
 
@@ -311,16 +306,19 @@ export class ContextMenuHandler {
 
     // Link only needs to hide separator
     this.updateContextMenuItemVisibility(
-      OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       true
     );
 
-    this.updateContextMenuItemVisibility(GROUP_TAB_ACTIONS_PARENT_ID, true);
+    this.updateContextMenuItemVisibility(
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID,
+      true
+    );
 
     // Handle icon items to be removed when needed
-    this.updateContextMenuItemVisibility(RESTORE_DEFAULT_ICON_ID, false);
+    this.updateContextMenuItemVisibility(Consts.RESTORE_DEFAULT_ICON_ID, false);
     this.updateContextMenuItemVisibility(
-      RESTORE_DEFAULT_ICON_SEPARATOR_ID,
+      Consts.RESTORE_DEFAULT_ICON_SEPARATOR_ID,
       false
     );
 
@@ -372,7 +370,7 @@ export class ContextMenuHandler {
 
     updateEvents.push(
       this.updateContextMenuItemVisibility(
-        ADD_TAB_TO_GROUP_TAB_PARENT_ID,
+        Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID,
         !isFromGroup
       )
     );
@@ -381,7 +379,7 @@ export class ContextMenuHandler {
     if (!isFromGroup) {
       updateEvents.push(
         this.updateContextMenuItemVisibility(
-          CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
+          Consts.CREATE_NEW_GROUP_TAB_SEPARATOR_ID,
           allGroupIDs.length > 0
         )
       );
@@ -389,7 +387,7 @@ export class ContextMenuHandler {
 
     updateEvents.push(
       this.updateContextMenuItemVisibility(
-        MOVE_TAB_FROM_GROUP_PARENT_ID,
+        Consts.MOVE_TAB_FROM_GROUP_PARENT_ID,
         isFromGroup && isInnerTab
       )
     );
@@ -399,12 +397,12 @@ export class ContextMenuHandler {
       // Makes sure to display separator only when we have other group tabs to show
       updateEvents.push(
         this.updateContextMenuItemVisibility(
-          REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
+          Consts.REMOVE_FROM_GROUP_TAB_SEPARATOR_ID,
           allGroupIDs.length > 1
         )
       );
 
-      this.hiddenMoveToItemID = MOVE_TO_GROUP_TAB_ID + groupTab.id;
+      this.hiddenMoveToItemID = Consts.MOVE_TO_GROUP_TAB_ID + groupTab.id;
 
       // Hide current tab from move
       updateEvents.push(
@@ -415,7 +413,7 @@ export class ContextMenuHandler {
     // Only shows if group tab
     updateEvents.push(
       this.updateContextMenuItemVisibility(
-        GROUP_TAB_ACTIONS_PARENT_ID,
+        Consts.GROUP_TAB_ACTIONS_PARENT_ID,
         isFromGroup && !isInnerTab
       )
     );
@@ -424,7 +422,7 @@ export class ContextMenuHandler {
     if (isFromGroup && !isInnerTab) {
       // Makes sure the toggle option only shows if the group tab has inner tabs
       updateEvents.push(
-        this.updateContextMenuItem(TOGGLE_GROUP_TAB_ID, {
+        this.updateContextMenuItem(Consts.TOGGLE_GROUP_TAB_ID, {
           title: groupTab.isOpen ? "Close Group Tab" : "Open Group Tab",
           visible: groupTab.innerTabs.length > 0,
         })
@@ -451,28 +449,31 @@ export class ContextMenuHandler {
       if (info.favIconUrl) {
         updateEvents.push(
           contextMenus.create({
-            id: SELECT_INNER_TAB_ICON_ID + innerID,
+            id: Consts.SELECT_INNER_TAB_ICON_ID + innerID,
             title: info.title,
             icons: { "16": info.favIconUrl },
             contexts: ["tab"],
-            parentId: EDIT_GROUP_TAB_ICON_PARENT_ID,
+            parentId: Consts.EDIT_GROUP_TAB_ICON_PARENT_ID,
           })
         );
-        this.iconItemIDs.push(SELECT_INNER_TAB_ICON_ID + innerID);
+        this.iconItemIDs.push(Consts.SELECT_INNER_TAB_ICON_ID + innerID);
       }
     }
 
     // Displays rest if needed
     if (groupTab.icon) {
       updateEvents.push(
-        this.updateContextMenuItemVisibility(RESTORE_DEFAULT_ICON_ID, true)
+        this.updateContextMenuItemVisibility(
+          Consts.RESTORE_DEFAULT_ICON_ID,
+          true
+        )
       );
 
       // Separator only if inner tab is included
       if (this.iconItemIDs.length > 0) {
         updateEvents.push(
           this.updateContextMenuItemVisibility(
-            RESTORE_DEFAULT_ICON_SEPARATOR_ID,
+            Consts.RESTORE_DEFAULT_ICON_SEPARATOR_ID,
             true
           )
         );
@@ -482,7 +483,7 @@ export class ContextMenuHandler {
     // Only shows the edit parent if can change the icon in some way
     updateEvents.push(
       this.updateContextMenuItemVisibility(
-        EDIT_GROUP_TAB_ICON_PARENT_ID,
+        Consts.EDIT_GROUP_TAB_ICON_PARENT_ID,
         groupTab.icon !== undefined || this.iconItemIDs.length > 0
       )
     );
@@ -501,7 +502,7 @@ export class ContextMenuHandler {
 
     // Hides separator when needed
     await this.updateContextMenuItemVisibility(
-      OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
+      Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       allGroupIDs.length > 0
     );
   }
