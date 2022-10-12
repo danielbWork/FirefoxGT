@@ -157,6 +157,11 @@ export class StorageHandler {
    * @param index the index to put the new tab in if undefined put in the end of array
    */
   async addInnerTab(groupTab: GroupTab, innerTabID: number, index?: number) {
+    // Avoid repeat enters
+    if (groupTab.innerTabs.includes(innerTabID)) {
+      return;
+    }
+
     if (index !== undefined) {
       groupTab.innerTabs.splice(index, 0, innerTabID);
     } else {

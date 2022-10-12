@@ -5,7 +5,7 @@ import {
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
-import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
+import browser, { Tabs, Menus, tabs, bookmarks } from "webextension-polyfill";
 import { checkMovedIntoGroupTab } from "../../utils/Utils";
 
 /**
@@ -54,22 +54,19 @@ export class CreateTabHandler {
     tab?: Tabs.Tab
   ) {
     // Only cares if we receive a tab
-    if (!tab || typeof info.menuItemId !== "string") return;
+    if (typeof info.menuItemId !== "string") return;
 
     // Sends to appropriate create method
     if (info.menuItemId === CREATE_NEW_GROUP_TAB_ID) {
-      this.addTabToGroupTab(tab);
+      this.addTabToGroupTab(tab!);
     }
 
     if (info.menuItemId === OPEN_LINK_IN_NEW_GROUP_TAB_ID) {
-      this.openLinkInNewGroupTab(info.linkUrl!, info.linkText!, tab.index);
+      this.openLinkInNewGroupTab(info);
     }
 
     if (info.menuItemId.startsWith(OPEN_LINK_IN_GROUP_TAB_ID)) {
-      this.openLinkInGroupTab(
-        info.linkUrl!,
-        parseInt(info.menuItemId.substring(OPEN_LINK_IN_GROUP_TAB_ID.length))
-      );
+      this.openLinkInGroupTab(info);
     }
   }
 
@@ -81,7 +78,7 @@ export class CreateTabHandler {
     const { groupTab } =
       await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
 
-    // Only cares about reloading the group tab if needed
+    // Makes sure group tab was created properly with inner tabs after it
     if (groupTab) {
       await tabs.reload(groupTab.id);
       return;
@@ -139,46 +136,79 @@ export class CreateTabHandler {
   }
 
   /**
-   * Create a new group tab with a new inner tab from the link
+   * Create a new group tab with a new inner tab from the link/bookmark
    *
-   * @param linkUrl The url of link of the to be inner tab
-   * @param linkText The text of the link we want to open
-   * @param index The location we want to put the group at
+   * @param info The info of the link/bookmark that was pressed
    */
-  private async openLinkInNewGroupTab(
-    linkUrl: string,
-    linkText: string,
-    index: number
-  ) {
-    const groupTabTitle = await this.handleEnterGroupTabName(linkText);
+  private async openLinkInNewGroupTab(info: Menus.OnClickData) {
+    let text;
+    let url;
+
+    // Gets the text and url value from were it's needed
+    if (info.linkText) {
+      text = info.linkText;
+      url = info.linkUrl;
+    } else if (info.bookmarkId) {
+      const bookmark = (await bookmarks.get(info.bookmarkId))[0];
+
+      text = bookmark.title;
+      url = bookmark.url;
+    }
+
+    const groupTabTitle = await this.handleEnterGroupTabName(text);
 
     // Incase something went wrong with input
     if (groupTabTitle) {
-      const newTab = await tabs.create({
-        url: linkUrl,
-        index: index + 1,
-        active: false,
-      });
+      try {
+        const newTab = await tabs.create({
+          url,
+          active: false,
+        });
 
-      this.handleGroupTabCreation(groupTabTitle, [newTab.id!], index + 1);
+        this.handleGroupTabCreation(groupTabTitle, [newTab.id!]);
+      } catch (error: any) {
+        console.log(error);
+
+        browser.notifications.create({
+          type: "basic",
+          iconUrl: "icons/group_tab_icon.png",
+          title: "Create Failed",
+          message: error.message || "Invalid url",
+        });
+      }
     }
   }
 
   /**
-   * Create a new tab with the inner link with a inside the group tab
+   * Create a new tab with the inner link/bookmark with a inside the group tab
    *
-   * @param linkUrl The url of link of the to be inner tab
-   * @param groupTabID id of the group tab we want to add the tab to
+   * @param info The info of the link/bookmark that was pressed
    */
-  private async openLinkInGroupTab(linkUrl: string, groupTabID: number) {
+  private async openLinkInGroupTab(info: Menus.OnClickData) {
+    let url;
+
+    // Gets the url value from were it's needed
+    if (info.linkUrl) {
+      url = info.linkUrl;
+    } else if (info.bookmarkId) {
+      const bookmark = (await bookmarks.get(info.bookmarkId))[0];
+      url = bookmark.url;
+    }
+
+    // Removes warning
+    if (typeof info.menuItemId !== "string") return;
+
+    const groupTabID = parseInt(
+      info.menuItemId.substring(OPEN_LINK_IN_GROUP_TAB_ID.length)
+    );
+
     const groupTabInfo = await tabs.get(groupTabID);
     const groupTab = (await StorageHandler.instance.getGroupTabByID(
       groupTabID
     ))!;
 
     const newTab = await tabs.create({
-      url: linkUrl,
-      index: groupTabInfo.index + groupTab.innerTabs.length,
+      url,
       active: false,
     });
 
@@ -253,11 +283,12 @@ export class CreateTabHandler {
       active: false,
     });
 
-    try {
-      await StorageHandler.instance.addGroupTab(groupTab.id!, name, innerTabs);
-    } catch (error) {
-      console.log({ error });
-    }
+    await StorageHandler.instance.addGroupTab(groupTab.id!, name, innerTabs);
+
+    // Moves the inner tabs to make sure they are after group tab
+    await tabs.move([groupTab.id!, ...innerTabs], {
+      index: groupTab.index,
+    });
   }
 
   //#endregion

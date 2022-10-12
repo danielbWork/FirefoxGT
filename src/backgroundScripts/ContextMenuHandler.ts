@@ -3,6 +3,9 @@ import { StorageHandler } from "../utils/Storage/StorageHandler";
 import { GroupTab } from "../utils/GroupTab.js";
 import { contextMenus, Menus, tabs, Tabs } from "webextension-polyfill";
 
+const OPEN_LINK_IN_TEXT = "Open link tab in group tab";
+const OPEN_BOOKMARK_IN_TEXT = "Open bookmark tab in group tab";
+
 /**
  * Handles Creating and managing the context menu items
  */
@@ -102,23 +105,23 @@ export class ContextMenuHandler {
 
     this.createMenuItem(
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-      "Open link tab in group tab",
+      OPEN_LINK_IN_TEXT,
       undefined,
-      ["link"]
+      ["link", "bookmark"]
     );
 
     this.createMenuItem(
       Consts.OPEN_LINK_IN_NEW_GROUP_TAB_ID,
       "Create New",
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-      ["link"]
+      ["link", "bookmark"]
     );
 
     this.createMenuItem(
       Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       undefined,
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-      ["link"]
+      ["link", "bookmark"]
     );
 
     this.createMenuItem(
@@ -252,7 +255,7 @@ export class ContextMenuHandler {
       Consts.OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
-      ["link"]
+      ["link", "bookmark"]
     );
   }
 
@@ -343,7 +346,7 @@ export class ContextMenuHandler {
       await this.handleTabClick(info, tab);
     }
 
-    if (info.contexts.includes("link")) {
+    if (info.contexts.includes("link") || info.contexts.includes("bookmark")) {
       await this.handleLinkClick(info, tab);
     }
 
@@ -505,6 +508,13 @@ export class ContextMenuHandler {
       Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       allGroupIDs.length > 0
     );
+
+    // Updates the title if using link or bookmark
+    await this.updateContextMenuItem(Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID, {
+      title: info.contexts.includes("link")
+        ? OPEN_LINK_IN_TEXT
+        : OPEN_BOOKMARK_IN_TEXT,
+    });
   }
 
   //#endregion

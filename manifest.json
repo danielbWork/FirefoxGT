@@ -39,7 +39,8 @@
         "contextMenus",
 		"storage",
 		"<all_urls>",
-		"notifications"
+		"notifications",
+		"bookmarks"
     ],
 	"browser_specific_settings": {
 		"gecko": {
