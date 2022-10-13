@@ -374,7 +374,7 @@ export class ContextMenuHandler {
     updateEvents.push(
       this.updateContextMenuItemVisibility(
         Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID,
-        !isFromGroup
+        !isFromGroup && !tab.pinned
       )
     );
 

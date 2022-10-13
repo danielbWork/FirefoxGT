@@ -324,11 +324,20 @@ export class MoveTabHandler {
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
-    const results = await this.handleConfirmMove(
-      `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
-    );
+    let shouldBeRemoved = false;
 
-    if (results[0]) {
+    // Pinning a inner tab automatically removes it from the group
+    if (movedTabInfo.pinned) {
+      shouldBeRemoved = true;
+    } else {
+      const results = await this.handleConfirmMove(
+        `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
+      );
+
+      shouldBeRemoved = results[0];
+    }
+
+    if (shouldBeRemoved) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
 
       createNotification(
