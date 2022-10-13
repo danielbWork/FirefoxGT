@@ -1,51 +1,31 @@
-import { Stack, Typography } from "@mui/material";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 import React from "react";
 import { GroupTabList } from "./GroupTabList/GroupTabList";
+import { PopupFooter } from "./PopupFooter";
+import { PopupHeader } from "./PopupHeader";
 
 /**
  * The base Popup element for the code
  */
 export const Popup = () => {
-  /*
-  TODO
-    -Header
-      Title?
-      settings button?
-    - GroupTabList
-      grouptabs
-      add button
-      custom display for no group tabs
-    -Footer?
-
-  */
-
-  //TODO Fix this ui
-
+  //TODO Fix this ui colors
   return (
-    <Stack
+    <Box
+      display="flex"
       sx={{
         minWidth: 500,
         maxWidth: 500,
         minHeight: 600,
-        padding: 2,
-        paddingTop: 4,
+        maxHeight: 600,
+
+        flexDirection: "column",
       }}
-      spacing={1}
     >
-      <Typography variant="h4" color="InfoText" align="center">
-        Group Tabs Header
-      </Typography>
-
+      <PopupHeader />
+      <Divider sx={{ backgroundColor: "white", height: 2 }} />
       <GroupTabList />
-
-      <Typography
-        variant="h4"
-        color="InfoText"
-        align="center"
-        sx={{ position: "fixed", bottom: 0, width: "100%" }}
-      >
-        Group Tabs Footer
-      </Typography>
-    </Stack>
+      <Divider sx={{ backgroundColor: "white", height: 2 }} />
+      <PopupFooter />
+    </Box>
   );
 };
