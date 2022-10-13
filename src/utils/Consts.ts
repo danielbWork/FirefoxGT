@@ -60,8 +60,9 @@ export const SELECT_INNER_TAB_ICON_ID = "select-from-inner-tabs-icon-";
 
 //#endregion
 
-//#region URL
+//#region URLs
 
-export const GROUP_TAB_URL = "/src/webPages/GroupTab/group_tab.html";
+export const GROUP_TAB_URL = "src/webPages/GroupTab/group_tab.html";
+export const ICON_URL = "icons/group_tab_icon.png";
 
 //#endregion

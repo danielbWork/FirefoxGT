@@ -21,6 +21,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import browser, { Tabs, tabs } from "webextension-polyfill";
 import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
 import { moveGroupTab } from "../../utils/Utils";
+import { ICON_URL } from "../../utils/Consts";
 
 type Props = {
   /**
@@ -113,7 +114,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     }
 
     // Default icon
-    return "icons/group_tab_icon.png";
+    return ICON_URL;
   }, [groupTabInfo]);
 
   return (

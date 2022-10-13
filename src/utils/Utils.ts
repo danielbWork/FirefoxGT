@@ -1,5 +1,6 @@
 import { notifications, Tabs, tabs } from "webextension-polyfill";
-import { GroupTab } from "./GroupTab.js";
+import { ICON_URL } from "./Consts";
+import { GroupTab } from "./GroupTab";
 import { StorageHandler } from "./Storage/StorageHandler";
 
 /**
@@ -61,7 +62,7 @@ export async function checkMovedIntoGroupTab(index: number) {
 export async function createNotification(title: string, message: string) {
   return notifications.create({
     type: "basic",
-    iconUrl: "icons/group_tab_icon.png",
+    iconUrl: ICON_URL,
     title,
     message,
   });

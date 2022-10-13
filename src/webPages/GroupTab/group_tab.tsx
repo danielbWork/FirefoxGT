@@ -6,6 +6,7 @@ import { Container } from "@mui/material";
 import { GroupTab } from "utils/GroupTab";
 import { InvalidGroupTab } from "./InvalidGroupTab";
 import { useOnMount } from "../../utils/ui/useOnMount";
+import { ICON_URL } from "../../utils/Consts";
 
 const App = () => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
@@ -19,8 +20,7 @@ const App = () => {
 
         // Handles custom icons, otherwise get's official icon
         // Uses manifest as url doesn't work
-        const favIcon =
-          groupTab.icon || browser.runtime.getManifest().icons![48];
+        const favIcon = groupTab.icon || browser.runtime.getURL(ICON_URL);
 
         // Creates the element here to make the ui updates cleaner
         const iconElement = document.createElement("link");

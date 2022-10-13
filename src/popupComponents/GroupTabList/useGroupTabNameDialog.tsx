@@ -44,6 +44,8 @@ export const useGroupTabNameDialog = (
     []
   );
 
+  const inputRef = React.useRef<any>();
+
   const dialog = useMemo(() => {
     return (
       <Dialog open={isOpen}>
@@ -57,6 +59,7 @@ export const useGroupTabNameDialog = (
             type="text"
             label="Group Tab Name"
             fullWidth
+            inputRef={inputRef}
             variant="outlined"
             value={value}
             error={value.trim() === ""}
@@ -87,6 +90,11 @@ export const useGroupTabNameDialog = (
     openDialog: (defaultValue = "Group Tab") => {
       setValue(defaultValue);
       setIsOpen(true);
+
+      // Timeout is needed to let dialog open up and then focus
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
     },
   };
 };
