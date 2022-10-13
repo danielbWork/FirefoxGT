@@ -1,5 +1,6 @@
 import {
   EDIT_GROUP_TAB_NAME_ID,
+  GROUP_TAB_URL,
   RESTORE_DEFAULT_ICON_ID,
   SELECT_INNER_TAB_ICON_ID,
 } from "../../utils/Consts";
@@ -11,7 +12,7 @@ import browser, {
   tabs,
   notifications,
 } from "webextension-polyfill";
-import { createNotification } from "../../utils/Utils";
+import { createNotification, moveGroupTab } from "../../utils/Utils";
 
 /**
  * Handles editing group tabs, as well as editing events such as inner tab changes
@@ -50,6 +51,69 @@ export class EditTabHandler {
     browser.contextMenus.onClicked.addListener(
       this.handleContextMenuEdit.bind(this)
     );
+
+    tabs.onUpdated.addListener(this.onPinTab.bind(this), {
+      properties: ["pinned"],
+    });
+  }
+
+  /**
+   * Reacts to tab being pinned or not
+   * @param tabId The id of the tab that was pinned
+   * @param changeInfo Whether or not the tab was pinned
+   * @param tabInfo The tab info
+   */
+  private async onPinTab(
+    tabId: number,
+    changeInfo: Tabs.OnUpdatedChangeInfoType,
+    tabInfo: Tabs.Tab
+  ) {
+    const { groupTab, index } =
+      await StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
+
+    // Don't care about other tabs
+    if (!groupTab) return;
+
+    // Removes inner tabs that were pinned
+    if (index !== undefined) {
+      await StorageHandler.instance.removeInnerTab(
+        groupTab,
+        groupTab.innerTabs[index]
+      );
+
+      createNotification(
+        "Pinned Tab Removed",
+        `Tab ${tabInfo.title} was removed from group ${groupTab.name} because it was pinned`
+      );
+
+      return;
+    }
+
+    // Moves all inner tabs to be next to group tab again accordingly
+    if (!tabInfo.pinned) {
+      // promises as async is sadly required here
+      const promises = groupTab.innerTabs.map(async (id) => {
+        const info = await tabs.get(id);
+
+        return { id, index: info.index };
+      });
+
+      const tabsToOrder = await Promise.all(promises);
+
+      // Sort to reorder in groupTab
+      tabsToOrder.sort((tab1, tab2) => {
+        return tab1.index - tab2.index;
+      });
+
+      // reset tabs to match there new order
+      groupTab.innerTabs = tabsToOrder.map((value) => {
+        return value.id;
+      });
+
+      await StorageHandler.instance.updateGroupTab(groupTab);
+
+      moveGroupTab(groupTab);
+    }
   }
 
   /**

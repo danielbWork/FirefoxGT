@@ -29,8 +29,8 @@ export async function checkMovedIntoGroupTab(index: number) {
         tabs.get(id),
       ]);
 
-      // Just to shut up warning
-      if (!groupTab) return undefined;
+      // Uses to shut up groupTab warning, and ignore pinned group tabs
+      if (!groupTab || groupTabInfo.pinned) return undefined;
 
       // Checks if was put between group tabs
       return index > groupTabInfo.index && // min
@@ -70,6 +70,7 @@ export async function createNotification(title: string, message: string) {
 
 /**
  * Moves the group tabs it's inner tabs and the postfix to the index
+ * if group tab is pinned only moves it and not it's inner tabs or postfix
  * @param groupTab The group tab or it's id that we want to move
  * @param postfix Tabs to be added after the group tab and it's inner tabs
  * @param index The starting index for the group tab (if undefined uses group tab's current index)
@@ -97,8 +98,18 @@ export async function moveGroupTab(
     indexValue = groupTabInfo.index;
   }
 
+  let tabsToMove;
+
+  // If group tab is pinned inner tabs have unrestricted movements and are
+  // unaffected by it's movements
+  if (groupTabInfo.pinned) {
+    tabsToMove = [groupTabValue.id];
+  } else {
+    tabsToMove = [groupTabValue.id, ...groupTabValue.innerTabs, ...postfix];
+  }
+
   // Moves all tabs to be after the group tab and in it's window
-  tabs.move([groupTabValue.id, ...groupTabValue.innerTabs, ...postfix], {
+  tabs.move(tabsToMove, {
     index: indexValue,
     windowId: groupTabInfo.windowId,
   });

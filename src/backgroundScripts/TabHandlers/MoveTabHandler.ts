@@ -160,8 +160,6 @@ export class MoveTabHandler {
     );
 
     if (groupTab && groupTabInfo) {
-      // TODO Add dialog asking user if they are sure
-
       const movedTabInfo = await tabs.get(tabId);
 
       const results = await this.handleConfirmMove(
@@ -206,8 +204,9 @@ export class MoveTabHandler {
 
     const groupTabInfo = await tabs.get(groupTab.id);
 
-    // Checks if the tab is inside of group range
+    // Checks if the tab is inside of group range (pinned groups have max range so we ignore them)
     if (
+      !groupTabInfo.pinned &&
       moveInfo.toIndex > groupTabInfo.index && // min
       moveInfo.toIndex <= groupTabInfo.index + groupTab.innerTabs.length // max
     ) {
@@ -236,7 +235,10 @@ export class MoveTabHandler {
       return;
     }
 
-    await this.onRemoveTabFromGroup(groupTab, index);
+    // Moving a tab in pinned group should never remove it
+    if (!groupTabInfo.pinned) {
+      await this.onRemoveTabFromGroup(groupTab, index);
+    }
   }
 
   /**
@@ -324,20 +326,11 @@ export class MoveTabHandler {
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
-    let shouldBeRemoved = false;
+    const results = await this.handleConfirmMove(
+      `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
+    );
 
-    // Pinning a inner tab automatically removes it from the group
-    if (movedTabInfo.pinned) {
-      shouldBeRemoved = true;
-    } else {
-      const results = await this.handleConfirmMove(
-        `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
-      );
-
-      shouldBeRemoved = results[0];
-    }
-
-    if (shouldBeRemoved) {
+    if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
 
       createNotification(
