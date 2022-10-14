@@ -51,8 +51,9 @@ export class RemoveTabHandler {
     tab?: Tabs.Tab
   ) {
     if (info.menuItemId === REMOVE_FROM_GROUP_TAB_ID && tab) {
-      const { groupTab, index } =
-        await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
+      const { groupTab } = StorageHandler.instance.getGroupTabOrInnerTabByID(
+        tab.id
+      );
 
       await this.removeTabFromGroupMenuClick(groupTab!, tab.id!);
     }
@@ -67,9 +68,9 @@ export class RemoveTabHandler {
     await StorageHandler.instance.removeInnerTab(groupTab, id);
 
     // Gets groupTab now after it's value was updated
-    const updatedGroupTab = (await StorageHandler.instance.getGroupTabByID(
+    const updatedGroupTab = StorageHandler.instance.getGroupTabByID(
       groupTab.id
-    ))!;
+    )!;
 
     // Makes sure that move keeps the order of the group and put removed tab outside of it
     await moveGroupTab(updatedGroupTab, [id]);

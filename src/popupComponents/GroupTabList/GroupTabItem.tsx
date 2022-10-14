@@ -46,7 +46,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
 
   // Gets group tab and it's info
   const loadGroupTab = useCallback(async () => {
-    const loadedTab = await StorageHandler.instance.getGroupTabByID(groupTabID);
+    const loadedTab = StorageHandler.instance.getGroupTabByID(groupTabID);
     const info = await tabs.get(groupTabID);
 
     setGroupTab(loadedTab);

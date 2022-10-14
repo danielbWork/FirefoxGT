@@ -69,7 +69,7 @@ export class EditTabHandler {
     tabInfo: Tabs.Tab
   ) {
     const { groupTab, index } =
-      await StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
+      StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
 
     // Don't care about other tabs
     if (!groupTab) return;
@@ -142,7 +142,7 @@ export class EditTabHandler {
    * @param tab The group tab that the user wants to rename
    */
   private async onEditNameMenuClick(info: Menus.OnClickData, tab: Tabs.Tab) {
-    const groupTab = await StorageHandler.instance.getGroupTabByID(tab.id!);
+    const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!);
 
     const editPrompt = `prompt("Please enter the Group tab's new name", "${groupTab?.name}");`;
 
@@ -185,7 +185,7 @@ export class EditTabHandler {
   private async updateGroupTabIcon(groupTabID: number, itemID: string) {
     let icon;
 
-    const groupTab = await StorageHandler.instance.getGroupTabByID(groupTabID);
+    const groupTab = StorageHandler.instance.getGroupTabByID(groupTabID);
 
     // Makes sure not resting
     if (itemID !== RESTORE_DEFAULT_ICON_ID) {

@@ -53,12 +53,8 @@ export class OnTabClickHandler {
    *  Reacts to user activating a tab, if tab is group tab toggles it on or off
    * @param activeInfo The activation info
    */
-  private async onGroupTabActivated(
-    activeInfo: Tabs.OnActivatedActiveInfoType
-  ) {
-    let groupTab = await StorageHandler.instance.getGroupTabByID(
-      activeInfo.tabId
-    );
+  private onGroupTabActivated(activeInfo: Tabs.OnActivatedActiveInfoType) {
+    let groupTab = StorageHandler.instance.getGroupTabByID(activeInfo.tabId);
 
     if (groupTab) {
       // Checks if currently dragging the tab
@@ -82,7 +78,7 @@ export class OnTabClickHandler {
    */
   private async onToggleContextMenu(info: Menus.OnClickData, tab?: Tabs.Tab) {
     if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
-      const groupTab = await StorageHandler.instance.getGroupTabByID(tab!.id!);
+      const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!);
 
       const activeTab = (await tabs.query({ active: true }))[0];
 
@@ -195,7 +191,7 @@ export class OnTabClickHandler {
       return;
     }
 
-    const groupTabIDs = await StorageHandler.instance.getAllGroupTabIDs();
+    const groupTabIDs = StorageHandler.instance.getAllGroupTabIDs();
 
     // Filters for tabs that are neither a group tab or one of the inner tab about to be hidden
     const validTabs = otherTabs.filter((value) => {

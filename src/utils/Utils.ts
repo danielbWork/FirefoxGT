@@ -19,15 +19,13 @@ export async function checkMovedIntoGroupTab(index: number) {
     | undefined
   >[] = [];
 
-  const groupTabIDs = await StorageHandler.instance.getAllGroupTabIDs();
+  const groupTabIDs = StorageHandler.instance.getAllGroupTabIDs();
 
   groupTabIDs.forEach((id) => {
     const checkIsInRange = async (id: number) => {
       // Get's all info we need
-      const [groupTab, groupTabInfo] = await Promise.all([
-        StorageHandler.instance.getGroupTabByID(id),
-        tabs.get(id),
-      ]);
+      const groupTab = StorageHandler.instance.getGroupTabByID(id);
+      const groupTabInfo = await tabs.get(id);
 
       // Uses to shut up groupTab warning, and ignore pinned group tabs
       if (!groupTab || groupTabInfo.pinned) return undefined;
@@ -84,7 +82,7 @@ export async function moveGroupTab(
 
   // Gets the actual group tab no matter what
   if (typeof groupTab === "number") {
-    groupTabValue = (await StorageHandler.instance.getGroupTabByID(groupTab))!;
+    groupTabValue = StorageHandler.instance.getGroupTabByID(groupTab)!;
   } else {
     groupTabValue = groupTab;
   }

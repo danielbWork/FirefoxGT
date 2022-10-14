@@ -14,7 +14,7 @@ const App = () => {
   useOnMount(() => {
     browser.tabs.getCurrent().then(async (tab) => {
       await StorageHandler.instance.loadStorage();
-      const groupTab = await StorageHandler.instance.getGroupTabByID(tab.id!);
+      const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!);
 
       if (groupTab) {
         document.title = `${groupTab.name} (${groupTab.innerTabs.length})`;

@@ -79,8 +79,9 @@ export class CreateTabHandler {
    * @param tab The tab that was added to ui
    */
   private async onCreateTab(tab: Tabs.Tab) {
-    const { groupTab } =
-      await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
+    const { groupTab } = StorageHandler.instance.getGroupTabOrInnerTabByID(
+      tab.id
+    );
 
     // Makes sure group tab was created properly with inner tabs after it
     if (groupTab) {
@@ -93,9 +94,7 @@ export class CreateTabHandler {
     // Checks to see if the tab was opened from an inner tab
     if (tab.openerTabId !== undefined) {
       const { groupTab: openerGroupTab } =
-        await StorageHandler.instance.getGroupTabOrInnerTabByID(
-          tab.openerTabId
-        );
+        StorageHandler.instance.getGroupTabOrInnerTabByID(tab.openerTabId);
 
       // Makes sure invalid value wasn't passed
       if (openerGroupTab) {
@@ -201,10 +200,7 @@ export class CreateTabHandler {
       info.menuItemId.substring(OPEN_LINK_IN_GROUP_TAB_ID.length)
     );
 
-    const groupTabInfo = await tabs.get(groupTabID);
-    const groupTab = (await StorageHandler.instance.getGroupTabByID(
-      groupTabID
-    ))!;
+    const groupTab = StorageHandler.instance.getGroupTabByID(groupTabID)!;
 
     const newTab = await tabs.create({
       url,

@@ -58,7 +58,7 @@ export class StorageHandler {
   /**
    * Util to make it easier to update group tabs
    */
-  private async updateAllGroupTabs() {
+  private updateAllGroupTabs() {
     return storage.local.set({ groupTabs: this.groupTabs });
   }
 
@@ -83,7 +83,7 @@ export class StorageHandler {
    * @param id The id of the tab
    * @returns the group tab belonging to the id or undefined if it doesn't exist
    */
-  async getGroupTabByID(id: number): Promise<GroupTab | undefined> {
+  getGroupTabByID(id: number): GroupTab | undefined {
     return this.groupTabs[id];
   }
 
@@ -93,7 +93,7 @@ export class StorageHandler {
    * @returns Object holding group tab with the id or if the
    *  id belongs to a inner tab then the object returns the index of the inner tab as well as the group tab
    */
-  async getGroupTabOrInnerTabByID(id = 0) {
+  getGroupTabOrInnerTabByID(id = 0) {
     if (this.groupTabs[id]) {
       return { groupTab: this.groupTabs[id] };
     }
@@ -117,7 +117,7 @@ export class StorageHandler {
    * Gets all the ids of the group tabs.
    * @returns An array of all the group tab ids
    */
-  async getAllGroupTabIDs() {
+  getAllGroupTabIDs() {
     return Object.keys(this.groupTabs);
   }
 
@@ -254,7 +254,7 @@ export class StorageHandler {
     }
     // Checks inner tabs as well
     else {
-      const { groupTab, index } = await this.getGroupTabOrInnerTabByID(id);
+      const { groupTab, index } = this.getGroupTabOrInnerTabByID(id);
 
       if (groupTab && index !== undefined) {
         // Removes the deleted inner tab

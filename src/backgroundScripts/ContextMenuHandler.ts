@@ -165,13 +165,11 @@ export class ContextMenuHandler {
   /**
    * Loads all group tab based items and adds them to list
    */
-  private async loadAllGroupTabsItems() {
-    const groupTabIDs = await StorageHandler.instance.getAllGroupTabIDs();
+  private loadAllGroupTabsItems() {
+    const groupTabIDs = StorageHandler.instance.getAllGroupTabIDs();
 
-    groupTabIDs.forEach(async (value) => {
-      const groupTab = await StorageHandler.instance.getGroupTabByID(
-        parseInt(value)
-      );
+    groupTabIDs.forEach((value) => {
+      const groupTab = StorageHandler.instance.getGroupTabByID(parseInt(value));
 
       this.addGroupTabToContextMenu(groupTab!);
     });
@@ -361,9 +359,9 @@ export class ContextMenuHandler {
   private async handleTabClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
     // Gets info on the pressed tab
     const { groupTab, index } =
-      await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
+      StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
 
-    const allGroupIDs = await StorageHandler.instance.getAllGroupTabIDs();
+    const allGroupIDs = StorageHandler.instance.getAllGroupTabIDs();
 
     // Boolean for convenience
     const isFromGroup = groupTab !== undefined;
@@ -501,7 +499,7 @@ export class ContextMenuHandler {
    * @param tab The tab the user is in
    */
   private async handleLinkClick(info: Menus.OnShownInfoType, tab: Tabs.Tab) {
-    const allGroupIDs = await StorageHandler.instance.getAllGroupTabIDs();
+    const allGroupIDs = StorageHandler.instance.getAllGroupTabIDs();
 
     // Hides separator when needed
     await this.updateContextMenuItemVisibility(

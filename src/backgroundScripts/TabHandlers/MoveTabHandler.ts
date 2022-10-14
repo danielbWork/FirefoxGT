@@ -54,9 +54,9 @@ export class MoveTabHandler {
    * @param tabId Id of the tab that was moved
    * @param moveInfo Info regarding the tab movement
    */
-  private async onTabMoved(tabId: number, moveInfo: Tabs.OnMovedMoveInfoType) {
+  private onTabMoved(tabId: number, moveInfo: Tabs.OnMovedMoveInfoType) {
     let { groupTab, index } =
-      await StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
+      StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
 
     if (groupTab) {
       if (index !== undefined) {
@@ -91,7 +91,7 @@ export class MoveTabHandler {
 
     // All other actions should only be for inner tab
     const { groupTab, index } =
-      await StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
+      StorageHandler.instance.getGroupTabOrInnerTabByID(tab.id);
 
     if (!groupTab || index === undefined) return;
 
@@ -355,7 +355,7 @@ export class MoveTabHandler {
    * @param tabId The id of the tab we want to move
    */
   private async addTabToGroupMenuClick(groupId: number, tabId: number) {
-    const groupTab = (await StorageHandler.instance.getGroupTabByID(groupId))!;
+    const groupTab = StorageHandler.instance.getGroupTabByID(groupId)!;
 
     await StorageHandler.instance.addInnerTab(groupTab, tabId);
 
