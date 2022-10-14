@@ -35,11 +35,13 @@ export class BackgroundMessageHandler {
    * @param message The message from the popup
    * @param sender Unused
    */
-  private onMessageReceive(message: any, sender: Runtime.MessageSender) {
+  private async onMessageReceive(message: any, sender: Runtime.MessageSender) {
     console.log(message);
     console.log(sender);
 
     const data = message?.data;
+
+    await StorageHandler.instance.loadStorage();
 
     switch (message.type) {
       case MessageType.ADD_TAB:

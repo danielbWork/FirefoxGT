@@ -14,6 +14,7 @@ export const GroupTabList = () => {
   const [groupTabIDs, setGroupTabIDs] = useState<string[]>([]);
 
   const handleLoadGroupTabs = useCallback(async () => {
+    await StorageHandler.instance.loadStorage();
     const groupTabsIDs = await StorageHandler.instance.getAllGroupTabIDs();
 
     setGroupTabIDs(groupTabsIDs);

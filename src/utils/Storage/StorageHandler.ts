@@ -29,6 +29,11 @@ export class StorageHandler {
    */
   readonly onEditTab = new onEditGroupTabNotifier();
 
+  /**
+   * The local value for group tabs
+   */
+  private groupTabs: Record<number, GroupTab> = {};
+
   //#region Singleton
 
   private static _instance: StorageHandler;
@@ -51,27 +56,26 @@ export class StorageHandler {
   //#region Util Functions
 
   /**
-   * Util to make it easier to get group tabs
-   * @returns The group tabs
-   */
-  private async getAllGroupTabs(): Promise<Record<number, GroupTab>> {
-    let { groupTabs } = await storage.local.get("groupTabs");
-    return groupTabs;
-  }
-
-  /**
    * Util to make it easier to update group tabs
-   * @param groupTabs The group tabs we want to set in the storage
    */
-  private async updateAllGroupTabs(groupTabs: Record<number, GroupTab>) {
-    await storage.local.set({ groupTabs });
+  private async updateAllGroupTabs() {
+    return storage.local.set({ groupTabs: this.groupTabs });
   }
 
   /**
    *  Sets up storage default values
    */
-  setupStorage() {
-    this.updateAllGroupTabs({});
+  setupDefaultStorage() {
+    this.groupTabs = {};
+    this.updateAllGroupTabs();
+  }
+
+  /**
+   * Loads storage to local copy, required to be called to get current storage info
+   */
+  async loadStorage() {
+    const data = await storage.local.get();
+    this.groupTabs = data.groupTabs;
   }
 
   /**
@@ -80,8 +84,7 @@ export class StorageHandler {
    * @returns the group tab belonging to the id or undefined if it doesn't exist
    */
   async getGroupTabByID(id: number): Promise<GroupTab | undefined> {
-    const groupTabs = await this.getAllGroupTabs();
-    return groupTabs[id];
+    return this.groupTabs[id];
   }
 
   /**
@@ -91,14 +94,12 @@ export class StorageHandler {
    *  id belongs to a inner tab then the object returns the index of the inner tab as well as the group tab
    */
   async getGroupTabOrInnerTabByID(id = 0) {
-    const groupTabs = await this.getAllGroupTabs();
-
-    if (groupTabs[id]) {
-      return { groupTab: groupTabs[id] };
+    if (this.groupTabs[id]) {
+      return { groupTab: this.groupTabs[id] };
     }
 
     // Finds the group tab with the problem index
-    const groupTab = Object.values(groupTabs).find((group) => {
+    const groupTab = Object.values(this.groupTabs).find((group) => {
       return group.innerTabs.includes(id);
     });
 
@@ -117,8 +118,7 @@ export class StorageHandler {
    * @returns An array of all the group tab ids
    */
   async getAllGroupTabIDs() {
-    const groupTabs = await this.getAllGroupTabs();
-    return Object.keys(groupTabs);
+    return Object.keys(this.groupTabs);
   }
 
   //#endregion
@@ -135,17 +135,15 @@ export class StorageHandler {
    * @throws Error when user adds a group tab that was already in the list
    */
   async addGroupTab(id: number, name: string, innerTabs: number[] = []) {
-    let groupTabs = await this.getAllGroupTabs();
-
-    if (groupTabs[id]) {
+    if (this.groupTabs[id]) {
       throw "Invalid group tab ID, already exists";
     }
 
     const newGroupTab = new GroupTab(id, name, innerTabs);
 
-    groupTabs[id] = newGroupTab;
+    this.groupTabs[id] = newGroupTab;
 
-    await this.updateAllGroupTabs(groupTabs);
+    await this.updateAllGroupTabs();
 
     this.onAddTab.addedGroupTab(newGroupTab);
   }
@@ -187,17 +185,15 @@ export class StorageHandler {
    * @throws Error when user attempts to update a group tab that doesn't exists
    */
   async updateGroupTab(newGroupTab: GroupTab) {
-    let groupTabs = await this.getAllGroupTabs();
-
     const id = newGroupTab.id;
 
-    if (!groupTabs[id]) {
+    if (!this.groupTabs[id]) {
       throw "Invalid group tab id no such group";
     }
 
-    groupTabs[id] = newGroupTab;
+    this.groupTabs[id] = newGroupTab;
 
-    await this.updateAllGroupTabs(groupTabs);
+    await this.updateAllGroupTabs();
   }
 
   /**
@@ -247,14 +243,12 @@ export class StorageHandler {
    *
    */
   async removeTabFromStorage(id: number) {
-    let groupTabs = await this.getAllGroupTabs();
-
     // If group tab doesn't exist does nothing
-    if (groupTabs[id]) {
-      const removedGroupTab = groupTabs[id];
+    if (this.groupTabs[id]) {
+      const removedGroupTab = this.groupTabs[id];
 
-      delete groupTabs[id];
-      await this.updateAllGroupTabs(groupTabs);
+      delete this.groupTabs[id];
+      await this.updateAllGroupTabs();
 
       this.onRemoveTab.removedGroupTab(removedGroupTab);
     }
@@ -266,8 +260,8 @@ export class StorageHandler {
         // Removes the deleted inner tab
         groupTab.innerTabs.splice(index, 1);
 
-        groupTabs[groupTab.id] = groupTab;
-        await this.updateAllGroupTabs(groupTabs);
+        this.groupTabs[groupTab.id] = groupTab;
+        await this.updateAllGroupTabs();
 
         this.onRemoveTab.removedInnerTab(groupTab, id);
       }

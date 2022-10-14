@@ -13,6 +13,7 @@ const App = () => {
 
   useOnMount(() => {
     browser.tabs.getCurrent().then(async (tab) => {
+      await StorageHandler.instance.loadStorage();
       const groupTab = await StorageHandler.instance.getGroupTabByID(tab.id!);
 
       if (groupTab) {

@@ -10,11 +10,10 @@ import { BackgroundMessageHandler } from "./backgroundScripts/BackgroundMessageH
 
 browser.runtime.onInstalled.addListener(() => {
   ContextMenuHandler.instance.setupContextMenuItems();
-  StorageHandler.instance.setupStorage();
+  StorageHandler.instance.setupDefaultStorage();
 });
 
-// FOR TESTING/DEVELOPMENT ONLY NOT PRODUCTION AT ALL!!!!!!!!!!!!!!!!!!!!!!!!!
-StorageHandler.instance.setupStorage();
+StorageHandler.instance.loadStorage();
 
 CreateTabHandler.instance.setupCreateHandler();
 OnTabClickHandler.instance.setupOnClickHandler();
