@@ -11,25 +11,25 @@ import { GROUP_TAB_URL } from "../../utils/Consts";
  * The list of group tabs displayed in the ui
  */
 export const GroupTabList = () => {
-  const [groupTabIDs, setGroupTabIDs] = useState<string[]>([]);
+  const [groupTabIDs, setGroupTabIDs] = useState<string[]>(
+    StorageHandler.instance.getAllGroupTabIDs()
+  );
 
-  const handleLoadGroupTabs = useCallback(async () => {
-    await StorageHandler.instance.loadStorage();
+  // Updates group tabs in the component
+  const handleUpdateGroupTabs = useCallback(() => {
     const groupTabsIDs = StorageHandler.instance.getAllGroupTabIDs();
 
     setGroupTabIDs(groupTabsIDs);
   }, []);
 
-  useOnMount(() => {
-    handleLoadGroupTabs();
-  });
-
+  // Removes group tab from ui and storage and updates the ui
   const handleRemoveGroupTab = useCallback(async (groupTabId: number) => {
     await browser.tabs.remove(groupTabId);
     await StorageHandler.instance.removeTabFromStorage(groupTabId);
-    handleLoadGroupTabs();
+    handleUpdateGroupTabs();
   }, []);
 
+  // Adds group tab to ui and storage
   const handleAddGroupTab = useCallback(async (name: string) => {
     const groupTab = await tabs.create({
       url: GROUP_TAB_URL,
@@ -38,7 +38,7 @@ export const GroupTabList = () => {
 
     await StorageHandler.instance.addGroupTab(groupTab.id!, name);
 
-    handleLoadGroupTabs();
+    handleUpdateGroupTabs();
   }, []);
 
   const { dialog, openDialog } = useGroupTabNameDialog(
@@ -46,6 +46,11 @@ export const GroupTabList = () => {
     "Please enter the Group tab's name",
     handleAddGroupTab
   );
+
+  // Opens the dialog to create a new group
+  const handleCreateDialogOpen = useCallback(() => {
+    openDialog();
+  }, [openDialog]);
 
   return (
     <Stack
@@ -57,11 +62,11 @@ export const GroupTabList = () => {
         flex: 1,
         overflow: "scroll",
       }}
-      justifyContent={groupTabIDs?.length > 0 ? "space-between" : "center"}
+      justifyContent={groupTabIDs.length > 0 ? "space-between" : "center"}
     >
       {dialog}
 
-      {groupTabIDs?.length > 0 ? (
+      {groupTabIDs.length > 0 ? (
         <List dense sx={{ width: "100%", overflow: "scroll" }}>
           {groupTabIDs.map((value) => {
             return (
@@ -80,10 +85,7 @@ export const GroupTabList = () => {
       )}
 
       <Button
-        onClick={() => {
-          //TODO fix me
-          openDialog();
-        }}
+        onClick={handleCreateDialogOpen}
         variant="contained"
         sx={{ width: "50%" }}
       >

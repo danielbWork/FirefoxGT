@@ -39,29 +39,27 @@ type Props = {
  * Represents a group tab in the list
  */
 export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
-  const [groupTab, setGroupTab] = useState<GroupTab>();
+  const [groupTab, setGroupTab] = useState<GroupTab>(
+    StorageHandler.instance.getGroupTabByID(groupTabID)!
+  );
   const [groupTabInfo, setGroupTabInfo] = useState<Tabs.Tab>();
 
   const [isSubListOpen, setIsSubListOpen] = useState(false);
 
   // Gets group tab and it's info
   const loadGroupTab = useCallback(async () => {
-    const loadedTab = StorageHandler.instance.getGroupTabByID(groupTabID);
     const info = await tabs.get(groupTabID);
 
-    setGroupTab(loadedTab);
+    setGroupTab(StorageHandler.instance.getGroupTabByID(groupTabID)!);
     setGroupTabInfo(info);
   }, [groupTabID]);
 
-  // First load
-  useOnMount(() => {
-    loadGroupTab();
-  });
-
+  // Toggles sublist to be displayed or not
   const handleToggleGroup = useCallback(async () => {
     setIsSubListOpen(!isSubListOpen);
   }, [isSubListOpen]);
 
+  // Notifies that the group tab needs to be removed
   const handleRemoveGroupTab = useCallback(() => {
     onRemoveGroupTab(groupTabID);
   }, [onRemoveGroupTab, groupTabID]);
@@ -79,6 +77,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     [groupTab]
   );
 
+  // Goes to the inner tab in the browser
   const handleGoToInnerTab = useCallback(
     (tabID: number) => {
       if (!groupTab) return;
@@ -93,6 +92,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     [groupTab]
   );
 
+  // Updates the group tab's name
   const handleEditGroupTabName = useCallback(
     async (newName: string) => {
       await StorageHandler.instance.updateGroupTabName(groupTab!, newName);
@@ -107,6 +107,12 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     handleEditGroupTabName
   );
 
+  // Opens the dialog to edit the group tab's name
+  const handleEditDialogOpen = useCallback(() => {
+    openDialog(groupTab.name);
+  }, [openDialog]);
+
+  // Loads the group tab's icon
   const icon = useMemo(() => {
     // Icon isn't always loaded
     if (groupTabInfo?.favIconUrl) {
@@ -117,6 +123,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     return ICON_URL;
   }, [groupTabInfo]);
 
+  // TODO Make sublist look better
   return (
     <>
       {dialog}
@@ -128,10 +135,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
           <IconButton
             edge="end"
             aria-label="edit"
-            onClick={() => {
-              //TODO fix me
-              openDialog(groupTab?.name);
-            }}
+            onClick={handleEditDialogOpen}
           >
             <EditIcon />
           </IconButton>
@@ -146,28 +150,23 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
           <Avatar src={icon} sx={{ width: 24, height: 24 }} />
         </ListItemAvatar>
         <ListItemButton
-          disabled={!groupTab || groupTab.innerTabs.length === 0}
+          disabled={groupTab.innerTabs.length === 0}
           onClick={() => {
             handleToggleGroup();
           }}
         >
           <ListItemText
-            primary={
-              groupTab
-                ? `${groupTab.name} (${groupTab.innerTabs.length})`
-                : "Group Tab"
-            }
+            primary={`${groupTab.name} (${groupTab.innerTabs.length})`}
           />
 
-          {groupTab &&
-            groupTab.innerTabs.length > 0 &&
+          {groupTab.innerTabs.length > 0 &&
             (isSubListOpen ? <ExpandLess /> : <ExpandMore />)}
         </ListItemButton>
       </ListItem>
 
       <Collapse in={isSubListOpen} sx={{ paddingLeft: 4 }}>
         <List dense>
-          {groupTab?.innerTabs.map((value) => {
+          {groupTab.innerTabs.map((value) => {
             return (
               <InnerTabItem
                 key={value}

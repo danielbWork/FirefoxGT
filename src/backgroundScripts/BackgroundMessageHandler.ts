@@ -86,7 +86,6 @@ export class BackgroundMessageHandler {
       StorageHandler.instance.onRemoveTab.removedGroupTab(groupTab);
     } else {
       StorageHandler.instance.onRemoveTab.removedInnerTab(groupTab, id);
-      // TODO move inner tab from group tab
     }
   }
 
@@ -95,7 +94,6 @@ export class BackgroundMessageHandler {
    * @param groupTab The group tab that was edited
    */
   private async onEditGroupTab(groupTab: GroupTab) {
-    //TODO Handle current tab
     // opening change needed here as no other listener requires this
     if (groupTab.isOpen) {
       await tabs.show(groupTab.innerTabs);

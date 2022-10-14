@@ -1,17 +1,25 @@
 import { Popup } from "./popupComponents/Popup";
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { CustomThemeProvider } from "./utils/ui/CustomThemeProvider";
 import { PopupMessageHandler } from "./popupComponents/PopupMessageHandler";
 import { StorageHandler } from "./utils/Storage/StorageHandler";
+import { useOnMount } from "./utils/ui/useOnMount";
 
 PopupMessageHandler.instance.setupMessageHandler();
 
 const App = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Loads the storage for the app
+  useOnMount(() => {
+    StorageHandler.instance.loadStorage().then(() => {
+      setIsLoaded(true);
+    });
+  });
+
   return (
-    <CustomThemeProvider>
-      <Popup />
-    </CustomThemeProvider>
+    <CustomThemeProvider>{isLoaded ? <Popup /> : <></>}</CustomThemeProvider>
   );
 };
 
