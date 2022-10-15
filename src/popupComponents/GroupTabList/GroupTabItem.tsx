@@ -19,7 +19,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 
 import browser, { Tabs, tabs } from "webextension-polyfill";
-import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
+import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
 import { moveGroupTab } from "../../utils/Utils";
 import { ICON_URL } from "../../utils/Consts";
 
@@ -101,7 +101,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     [groupTab]
   );
 
-  const { dialog, openDialog } = useGroupTabNameDialog(
+  const { dialog, openDialog } = useTextInputDialog(
     "Edit Group tab name",
     "Please enter the Group tab's new name",
     handleEditGroupTabName

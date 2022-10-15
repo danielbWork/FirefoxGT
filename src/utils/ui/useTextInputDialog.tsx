@@ -10,19 +10,20 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 
 /**
- * Hook for handling group tab name dialog,
+ * Hook for handling text input dialog,
  * this handles everything besides opening the dialog itself
  *
  * @param title Title of dialog
- * @param message Text about the dialog name
- * @param defaultName The default name to display in the input field
- * @param onSubmit Notifies when user submitted a name
- * @returns The dialog to be displayed and openDialog which opens the dialog and allows to put a default value for TextField
+ * @param message Text about the dialog input
+ * @param onSubmit Notifies when user submitted input
+ * @param onCancel Notifies when user has decided to exit out of dialog
+ * @returns The dialog to be displayed and openDialog which opens the dialog and allows to put a default input value for TextField
  */
-export const useGroupTabNameDialog = (
+export const useTextInputDialog = (
   title: string,
   message: string,
-  onSubmit: (name: string) => void
+  onSubmit: (name: string) => void,
+  onCancel?: () => void
 ) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,6 +31,10 @@ export const useGroupTabNameDialog = (
 
   const handleCancel = useCallback(() => {
     setIsOpen(false);
+
+    if (onCancel) {
+      onCancel();
+    }
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -57,13 +62,13 @@ export const useGroupTabNameDialog = (
             margin="dense"
             id="name"
             type="text"
-            label="Group Tab Name"
+            label="Input Text"
             fullWidth
             inputRef={inputRef}
             variant="outlined"
             value={value}
             error={value.trim() === ""}
-            helperText={value.trim() === "" ? "Invalid group name" : undefined}
+            helperText={value.trim() === "" ? "Invalid input" : undefined}
             onChange={handleOnChange}
           />
         </DialogContent>
@@ -87,7 +92,7 @@ export const useGroupTabNameDialog = (
 
   return {
     dialog,
-    openDialog: (defaultValue = "Group Tab") => {
+    openDialog: (defaultValue = "") => {
       setValue(defaultValue);
       setIsOpen(true);
 

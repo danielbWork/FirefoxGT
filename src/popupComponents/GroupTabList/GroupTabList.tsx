@@ -1,10 +1,9 @@
 import { Box, Button, Divider, List, Stack, Typography } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import { useOnMount } from "../../utils/ui/useOnMount";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTabItem } from "./GroupTabItem";
 import browser, { tabs } from "webextension-polyfill";
-import { useGroupTabNameDialog } from "./useGroupTabNameDialog";
+import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
 import { GROUP_TAB_URL } from "../../utils/Consts";
 
 /**
@@ -41,7 +40,7 @@ export const GroupTabList = () => {
     handleUpdateGroupTabs();
   }, []);
 
-  const { dialog, openDialog } = useGroupTabNameDialog(
+  const { dialog, openDialog } = useTextInputDialog(
     "Add Group Tab",
     "Please enter the Group tab's name",
     handleAddGroupTab
