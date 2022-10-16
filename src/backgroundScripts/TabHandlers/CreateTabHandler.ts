@@ -225,12 +225,7 @@ export class CreateTabHandler {
       '\\"'
     )}");`;
 
-    console.log("hello");
-    console.log(defaultTitle);
-
     const results = await tabs.executeScript({ code: createPrompt });
-
-    console.log(results);
 
     // TODO Use pop up instead
     // Checks if user is in special tab

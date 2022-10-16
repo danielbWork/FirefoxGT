@@ -1,8 +1,8 @@
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
-import browser, { Menus, Tabs, tabs } from "webextension-polyfill";
+import browser, { Menus, sessions, Tabs, tabs } from "webextension-polyfill";
 import { createNotification, moveGroupTab } from "../../utils/Utils";
-import { REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
+import { GROUP_TAB_URL, REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
 
 /**
  * Handles tabs and group tabs being removed
@@ -116,7 +116,7 @@ export class RemoveTabHandler {
   }
 
   /**
-   * Handles the inner tab being removed
+   * Handles the group tab being removed
    *
    * TODO: in future have in setting page setting for doing this or deleting tabs
    *
@@ -146,6 +146,53 @@ export class RemoveTabHandler {
         `Removed ${groupTab.name}`,
         "Displaying all of its hidden tabs"
       );
+    }
+
+    browser.history.deleteUrl({ url: GROUP_TAB_URL });
+
+    // Uses timeout as the tab doesn't immediately show in session list
+    setTimeout(() => {
+      this.removeGroupTabFromSessionHistory(groupTab).catch((error) => {
+        console.log(error);
+      });
+    }, 500);
+  }
+
+  /**
+   * Removes the group tab's actual tab from the session history so it won't be restored something like ctrl+shift+t
+   * @param groupTab The group tab that was removed
+   */
+  private async removeGroupTabFromSessionHistory(groupTab: GroupTab) {
+    const deletedSessions = await sessions.getRecentlyClosed();
+
+    // Finds the session the group tab was deleted in
+    const deletedGroupTabSession = deletedSessions.find((session) => {
+      // TODO CHange this to have value saved in group tab session
+      if (session.tab?.title?.startsWith(groupTab.name)) {
+        return true;
+      }
+
+      const deletedGroupTab = session.window?.tabs?.find((tab) => {
+        // TODO CHange this to have value saved in group tab session
+        return tab.title?.startsWith(groupTab.name);
+      });
+
+      return deletedGroupTab !== undefined;
+    });
+
+    let sessionTab = deletedGroupTabSession?.tab;
+
+    // if we don't have a tab must be a window
+    if (!sessionTab) {
+      // finds session tab
+      sessionTab = deletedGroupTabSession?.window!.tabs?.find((tab) => {
+        return tab.id === groupTab.id;
+      });
+    }
+
+    // Just to make sure and remove warning
+    if (sessionTab) {
+      sessions.forgetClosedTab(sessionTab.windowId!, sessionTab.sessionId!);
     }
   }
 
