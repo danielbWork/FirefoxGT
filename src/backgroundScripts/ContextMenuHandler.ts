@@ -60,6 +60,11 @@ export class ContextMenuHandler {
     StorageHandler.instance.onAddTab.addListener(
       this.addGroupTabToContextMenu.bind(this)
     );
+
+    StorageHandler.instance.onEditTab.addListener(
+      this.onGroupTabEdit.bind(this)
+    );
+
     StorageHandler.instance.onRemoveTab.addListener(
       this.removeGroupTabFromContextMenu.bind(this)
     );
@@ -107,6 +112,7 @@ export class ContextMenuHandler {
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
       OPEN_LINK_IN_TEXT,
       undefined,
+      undefined,
       ["link", "bookmark"]
     );
 
@@ -114,6 +120,7 @@ export class ContextMenuHandler {
       Consts.OPEN_LINK_IN_NEW_GROUP_TAB_ID,
       "Create New",
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      undefined,
       ["link", "bookmark"]
     );
 
@@ -121,6 +128,7 @@ export class ContextMenuHandler {
       Consts.OPEN_LINK_IN_GROUP_TAB_SEPARATOR_ID,
       undefined,
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      undefined,
       ["link", "bookmark"]
     );
 
@@ -184,20 +192,29 @@ export class ContextMenuHandler {
    * @param id The id of the menu item
    * @param title The text to be displayed in the item
    * @param parentId Id of the parent item
+   * @param icon Icon for the context menu item
    * @param contexts List of contexts this menu item will appear in default to ["tab"]
    */
   private createMenuItem(
     id: string,
     title?: string,
     parentId?: string,
+    icon?: string,
     contexts: Menus.ContextType[] = ["tab"]
   ) {
+    let icons;
+
+    if (icon) {
+      icons = { "16": icon };
+    }
+
     contextMenus.create({
       id,
       contexts,
       type: !title ? "separator" : undefined,
       parentId,
       title,
+      icons,
     });
   }
 
@@ -240,21 +257,45 @@ export class ContextMenuHandler {
     this.createMenuItem(
       Consts.ADD_TO_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
-      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID
+      Consts.ADD_TAB_TO_GROUP_TAB_PARENT_ID,
+      groupTab.icon || Consts.ICON_URL
     );
 
     this.createMenuItem(
       Consts.MOVE_TO_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
-      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID
+      Consts.MOVE_TAB_FROM_GROUP_PARENT_ID,
+      groupTab.icon || Consts.ICON_URL
     );
 
     this.createMenuItem(
       Consts.OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id,
       groupTab.name,
       Consts.OPEN_LINK_IN_GROUP_TAB_PARENT_ID,
+      groupTab.icon || Consts.ICON_URL,
       ["link", "bookmark"]
     );
+  }
+
+  /**
+   * Updates context menu and edit all menu items relating to group tab
+   * @param groupTab The group tab that was edited
+   */
+  private async onGroupTabEdit(groupTab: GroupTab) {
+    this.updateContextMenuItem(Consts.ADD_TO_GROUP_TAB_ID + groupTab.id, {
+      title: groupTab.name,
+      icons: { "16": groupTab.icon || Consts.ICON_URL },
+    });
+
+    this.updateContextMenuItem(Consts.MOVE_TO_GROUP_TAB_ID + groupTab.id, {
+      title: groupTab.name,
+      icons: { "16": groupTab.icon || Consts.ICON_URL },
+    });
+
+    this.updateContextMenuItem(Consts.OPEN_LINK_IN_GROUP_TAB_ID + groupTab.id, {
+      title: groupTab.name,
+      icons: { "16": groupTab.icon || Consts.ICON_URL },
+    });
   }
 
   /**
@@ -449,13 +490,12 @@ export class ContextMenuHandler {
       // Must have icon otherwise pointless
       if (info.favIconUrl) {
         updateEvents.push(
-          contextMenus.create({
-            id: Consts.SELECT_INNER_TAB_ICON_ID + innerID,
-            title: info.title,
-            icons: { "16": info.favIconUrl },
-            contexts: ["tab"],
-            parentId: Consts.EDIT_GROUP_TAB_ICON_PARENT_ID,
-          })
+          this.createMenuItem(
+            Consts.SELECT_INNER_TAB_ICON_ID + innerID,
+            info.title,
+            Consts.EDIT_GROUP_TAB_ICON_PARENT_ID,
+            info.favIconUrl
+          )
         );
         this.iconItemIDs.push(Consts.SELECT_INNER_TAB_ICON_ID + innerID);
       }
