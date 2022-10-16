@@ -7,10 +7,11 @@ import { StorageHandler } from "./Storage/StorageHandler";
  * Checks to see if the given index is inside a group tab
  * and returns the info regarding said group tab in needed
  * @param index The index an inner tab was moved to
+ * @param windowId The id for the window the tab is in
  *
  * @returns The group tab and it's info that the index is a part of (can return undefined vars if not in a group)
  */
-export async function checkMovedIntoGroupTab(index: number) {
+export async function checkMovedIntoGroupTab(index: number, windowId: number) {
   const groupTabPromises: Promise<
     | {
         groupTab: GroupTab;
@@ -27,8 +28,13 @@ export async function checkMovedIntoGroupTab(index: number) {
       const groupTab = StorageHandler.instance.getGroupTabByID(id);
       const groupTabInfo = await tabs.get(id);
 
-      // Uses to shut up groupTab warning, and ignore pinned group tabs
-      if (!groupTab || groupTabInfo.pinned) return undefined;
+      // Uses to shut up groupTab warning, and ignore pinned group tabs and group tabs in other windows
+      if (
+        !groupTab ||
+        groupTabInfo.pinned ||
+        groupTabInfo.windowId !== windowId
+      )
+        return undefined;
 
       // Checks if was put between group tabs
       return index > groupTabInfo.index && // min
@@ -72,11 +78,13 @@ export async function createNotification(title: string, message: string) {
  * @param groupTab The group tab or it's id that we want to move
  * @param postfix Tabs to be added after the group tab and it's inner tabs
  * @param index The starting index for the group tab (if undefined uses group tab's current index)
+ * @param windowId The id of the window to put the group tab in if not passed uses the group tabs current window
  */
 export async function moveGroupTab(
   groupTab: number | GroupTab,
   postfix: number[] = [],
-  index?: number
+  index?: number,
+  windowId?: number
 ) {
   let groupTabValue;
 
@@ -109,6 +117,6 @@ export async function moveGroupTab(
   // Moves all tabs to be after the group tab and in it's window
   tabs.move(tabsToMove, {
     index: indexValue,
-    windowId: groupTabInfo.windowId,
+    windowId: windowId !== undefined ? windowId : groupTabInfo.windowId,
   });
 }

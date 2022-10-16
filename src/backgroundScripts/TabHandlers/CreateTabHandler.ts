@@ -105,7 +105,7 @@ export class CreateTabHandler {
     } else {
       // This checks mostly for reopened (ctrl shift t) tabs
       const { groupTab: openedGroupTab, groupTabInfo: openedGroupTabInfo } =
-        await checkMovedIntoGroupTab(tab.index);
+        await checkMovedIntoGroupTab(tab.index, tab.windowId!);
 
       openInGroupTab = openedGroupTab;
       openInGroupTabInfo = openedGroupTabInfo;

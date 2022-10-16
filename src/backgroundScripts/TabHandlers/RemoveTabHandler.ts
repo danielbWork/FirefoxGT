@@ -8,6 +8,11 @@ import { REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
  * Handles tabs and group tabs being removed
  */
 export class RemoveTabHandler {
+  /**
+   * Used to mark group tab that had the entire window be removed
+   */
+  private closedWithWindow: Record<number, boolean> = {};
+
   //#region Singleton
 
   private static _instance: RemoveTabHandler;
@@ -86,6 +91,11 @@ export class RemoveTabHandler {
     tabId: number,
     removeInfo: Tabs.OnRemovedRemoveInfoType
   ) {
+    // Checks if window is being removed to update later notification
+    if (removeInfo.isWindowClosing) {
+      this.closedWithWindow[tabId] = true;
+    }
+
     await StorageHandler.instance.removeTabFromStorage(tabId);
   }
 
@@ -113,8 +123,18 @@ export class RemoveTabHandler {
    * @param groupTab The group tab that was removed
    */
   private async onRemoveGroupTab(groupTab: GroupTab) {
-    // Checks if the group tab is empty and has no inner tabs and makes sure it's visible
-    if (groupTab.isOpen) {
+    // Checks if the window of the group tab was removed
+    if (this.closedWithWindow[groupTab.id]) {
+      createNotification(
+        `Removed ${groupTab.name}`,
+        `${groupTab.name} was removed with it's window`
+      );
+      delete this.closedWithWindow[groupTab.id];
+    }
+    // Checks for empty group tab
+    else if (!groupTab.innerTabs.length) {
+      createNotification(`Removed ${groupTab.name}`, "Group tab was removed");
+    } else if (groupTab.isOpen) {
       createNotification(
         `Removed ${groupTab.name}`,
         "All inner tabs are currently available"

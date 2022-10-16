@@ -42,6 +42,8 @@ export class MoveTabHandler {
   setupMoveHandler() {
     tabs.onMoved.addListener(this.onTabMoved.bind(this));
 
+    tabs.onAttached.addListener(this.onTabWindowMoved.bind(this));
+
     browser.contextMenus.onClicked.addListener(
       this.onMoveInnerTabMenuItemClick.bind(this)
     );
@@ -60,12 +62,53 @@ export class MoveTabHandler {
 
     if (groupTab) {
       if (index !== undefined) {
-        this.onInnerTabMove(groupTab, index, moveInfo);
+        this.onInnerTabMove(
+          groupTab,
+          index,
+          moveInfo.toIndex,
+          moveInfo.windowId
+        );
       } else {
-        this.onGroupTabMove(groupTab, moveInfo);
+        this.onGroupTabMove(groupTab, moveInfo.toIndex, moveInfo.windowId);
       }
     } else {
-      this.onMoveIntoGroupTab(tabId, moveInfo);
+      this.onMoveIntoGroupTab(tabId, moveInfo.toIndex, moveInfo.windowId);
+    }
+  }
+
+  /**
+   * Identifies which type of tab was moved and calls appropriate code
+   * @param tabId The id of the tab that was moved
+   * @param attachInfo The new info regarding the tabs location
+   */
+  private onTabWindowMoved(
+    tabId: number,
+    attachInfo: Tabs.OnAttachedAttachInfoType
+  ) {
+    let { groupTab, index } =
+      StorageHandler.instance.getGroupTabOrInnerTabByID(tabId);
+
+    if (groupTab) {
+      if (index !== undefined) {
+        this.onInnerTabMove(
+          groupTab,
+          index,
+          attachInfo.newPosition,
+          attachInfo.newWindowId
+        );
+      } else {
+        this.onGroupTabMove(
+          groupTab,
+          attachInfo.newPosition,
+          attachInfo.newWindowId
+        );
+      }
+    } else {
+      this.onMoveIntoGroupTab(
+        tabId,
+        attachInfo.newPosition,
+        attachInfo.newWindowId
+      );
     }
   }
 
@@ -135,13 +178,15 @@ export class MoveTabHandler {
   /**
    *  Moves the inner tabs to follow the group tab
    * @param groupTab The group tab that was moved
-   * @param moveInfo Info regarding moving the group tab
+   * @param toIndex The index to put the group tab in
+   * @param windowId The id of the window to put the group tab in
    */
   private async onGroupTabMove(
     groupTab: GroupTab,
-    moveInfo: Tabs.OnMovedMoveInfoType
+    toIndex: number,
+    windowId: number
   ) {
-    await moveGroupTab(groupTab, undefined, moveInfo.toIndex);
+    await moveGroupTab(groupTab, undefined, toIndex, windowId);
 
     await OnTabClickHandler.instance.onStopDragging(groupTab);
   }
@@ -149,14 +194,17 @@ export class MoveTabHandler {
   /**
    * Handles user moving tab inside of the group tab area
    * @param tabId Id of the tab that was moved
-   * @param moveInfo Info regarding the tab movement
+   * @param toIndex The new index for the tab
+   * @param windowId The id of the window the tab was put in
    */
   private async onMoveIntoGroupTab(
     tabId: number,
-    moveInfo: Tabs.OnMovedMoveInfoType
+    toIndex: number,
+    windowId: number
   ) {
     const { groupTab, groupTabInfo } = await checkMovedIntoGroupTab(
-      moveInfo.toIndex
+      toIndex,
+      windowId
     );
 
     if (groupTab && groupTabInfo) {
@@ -173,7 +221,7 @@ export class MoveTabHandler {
         StorageHandler.instance.addInnerTab(
           groupTab,
           tabId,
-          moveInfo.toIndex - groupTabInfo.index - 1
+          toIndex - groupTabInfo.index - 1
         );
 
         await createNotification(
@@ -193,37 +241,43 @@ export class MoveTabHandler {
    *  Handles user moving an inner tab to a new location
    * @param groupTab The group tab who had an inner tab
    * @param index The index of the inner tab in the group tab
-   * @param moveInfo The moveInfo regarding the inner tab
+   * @param toIndex The new index of inner tab
+   * @param windowId The window id of the window the inner tab is in
    */
   private async onInnerTabMove(
     groupTab: GroupTab,
     index: number,
-    moveInfo: Tabs.OnMovedMoveInfoType
+    toIndex: number,
+    windowId: number
   ) {
-    // Block infinite loop and non important movements
-    if (moveInfo.toIndex === moveInfo.fromIndex) {
-      return;
-    }
-
     const groupTabInfo = await tabs.get(groupTab.id);
 
-    // Checks if the tab is inside of group range (pinned groups have max range so we ignore them)
+    // TODO check if this is still relevant
+    // Block infinite loop and non important movements
+    // if (moveInfo.toIndex === moveInfo.fromIndex) {
+    //   return;
+    // }
+
+    // TODO add window check here maybe
+
+    // Checks if the tab is inside of group range in window (pinned groups have max range so we ignore them)
     if (
       !groupTabInfo.pinned &&
-      moveInfo.toIndex > groupTabInfo.index && // min
-      moveInfo.toIndex <= groupTabInfo.index + groupTab.innerTabs.length // max
+      windowId === groupTabInfo.windowId &&
+      toIndex > groupTabInfo.index && // min
+      toIndex <= groupTabInfo.index + groupTab.innerTabs.length // max
     ) {
       await this.onReorderInGroupTab(
         groupTab,
         groupTabInfo.index,
         index,
-        moveInfo
+        toIndex
       );
       return;
     }
 
     const { groupTab: newGroupTab, groupTabInfo: newGroupTabInfo } =
-      await checkMovedIntoGroupTab(moveInfo.toIndex);
+      await checkMovedIntoGroupTab(toIndex, windowId);
 
     if (newGroupTab && newGroupTabInfo) {
       await this.onMoveFromOneGroupToOther(
@@ -232,14 +286,14 @@ export class MoveTabHandler {
         index,
         newGroupTab,
         newGroupTabInfo,
-        moveInfo
+        toIndex
       );
 
       return;
     }
 
-    // Moving a tab in pinned group should never remove it
-    if (!groupTabInfo.pinned) {
+    // Moving a tab in pinned group should never remove it unless in other window
+    if (!groupTabInfo.pinned || groupTabInfo.windowId !== windowId) {
       await this.onRemoveTabFromGroup(groupTab, index);
     }
   }
@@ -251,17 +305,17 @@ export class MoveTabHandler {
    * @param groupTab The group tab who has the inner tab move
    * @param groupTabIndex The index of the group tab in the browser
    * @param innerTabIndex The index of the inner tab in the group tab
-   * @param moveInfo The moveInfo regarding the inner tab
+   * @param toIndex The new index of the inner tab
    */
   private async onReorderInGroupTab(
     groupTab: GroupTab,
     groupTabIndex: number,
     innerTabIndex: number,
-    moveInfo: Tabs.OnMovedMoveInfoType
+    toIndex: number
   ) {
     const tabId = groupTab.innerTabs[innerTabIndex];
 
-    const newIndex = moveInfo.toIndex - groupTabIndex - 1;
+    const newIndex = toIndex - groupTabIndex - 1;
 
     // Removes and readds the id in the correct location
     groupTab.innerTabs.splice(innerTabIndex, 1);
@@ -279,7 +333,7 @@ export class MoveTabHandler {
    * @param innerTabIndex The index of the inner tab in the original group tab
    * @param newGroupTab The group tab who is going to hold the inner tab
    * @param newGroupTabInfo The tab info regarding the new group tab
-   * @param moveInfo The moveInfo regarding the inner tab
+   * @param toIndex The new index of inner tab
    */
   private async onMoveFromOneGroupToOther(
     groupTab: GroupTab,
@@ -287,7 +341,7 @@ export class MoveTabHandler {
     innerTabIndex: number,
     newGroupTab: GroupTab,
     newGroupTabInfo: Tabs.Tab,
-    moveInfo: Tabs.OnMovedMoveInfoType
+    toIndex: number
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
@@ -304,7 +358,7 @@ export class MoveTabHandler {
     // Checks if user confirmed inner tab swap
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
-      const newIndex = moveInfo.toIndex - groupTabInfo.index - 1;
+      const newIndex = toIndex - groupTabInfo.index - 1;
 
       await StorageHandler.instance.addInnerTab(
         newGroupTab,
