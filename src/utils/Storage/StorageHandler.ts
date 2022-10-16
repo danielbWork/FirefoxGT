@@ -65,9 +65,10 @@ export class StorageHandler {
   /**
    *  Sets up storage default values
    */
-  setupDefaultStorage() {
+  async setupDefaultStorage() {
     this.groupTabs = {};
-    this.updateAllGroupTabs();
+    await this.updateAllGroupTabs();
+    await this.loadStorage();
   }
 
   /**

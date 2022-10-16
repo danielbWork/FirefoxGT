@@ -8,9 +8,9 @@ import browser from "webextension-polyfill";
 import { OnTabClickHandler } from "./backgroundScripts/TabHandlers/OnTabClickHandler";
 import { BackgroundMessageHandler } from "./backgroundScripts/BackgroundMessageHandler";
 
-browser.runtime.onInstalled.addListener(() => {
+browser.runtime.onInstalled.addListener(async () => {
+  await StorageHandler.instance.setupDefaultStorage();
   ContextMenuHandler.instance.setupContextMenuItems();
-  StorageHandler.instance.setupDefaultStorage();
 });
 
 StorageHandler.instance.loadStorage();
