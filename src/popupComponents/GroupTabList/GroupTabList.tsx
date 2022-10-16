@@ -48,7 +48,7 @@ export const GroupTabList = () => {
 
   // Opens the dialog to create a new group
   const handleCreateDialogOpen = useCallback(() => {
-    openDialog();
+    openDialog("Group Tab");
   }, [openDialog]);
 
   return (
