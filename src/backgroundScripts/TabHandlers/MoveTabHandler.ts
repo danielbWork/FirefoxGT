@@ -163,7 +163,10 @@ export class MoveTabHandler {
       const movedTabInfo = await tabs.get(tabId);
 
       const results = await this.handleConfirmMove(
-        `Are you sure you want to move tab ${movedTabInfo.title} to group ${groupTab.name}?`
+        `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
+          '"',
+          '\\"'
+        )} to group ${groupTab.name.replaceAll('"', '\\"')}?`
       );
 
       if (results[0]) {
@@ -289,7 +292,13 @@ export class MoveTabHandler {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
     const results = await this.handleConfirmMove(
-      `Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?`
+      `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
+        '"',
+        '\\"'
+      )} from group ${groupTab.name.replaceAll(
+        '"',
+        '\\"'
+      )} to group ${newGroupTab.name.replaceAll('"', '\\"')}?`
     );
 
     // Checks if user confirmed inner tab swap
@@ -327,7 +336,10 @@ export class MoveTabHandler {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
     const results = await this.handleConfirmMove(
-      `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
+      `Are you sure you want remove tab ${movedTabInfo.title?.replaceAll(
+        '"',
+        '\\"'
+      )} from group ${groupTab.name.replaceAll('"', '\\"')}?`
     );
 
     if (results[0]) {

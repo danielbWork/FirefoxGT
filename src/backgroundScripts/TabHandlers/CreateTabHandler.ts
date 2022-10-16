@@ -220,9 +220,17 @@ export class CreateTabHandler {
   private async handleEnterGroupTabName(
     defaultTitle = "Group Tab"
   ): Promise<string | undefined> {
-    const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle}");`;
+    const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle.replaceAll(
+      '"',
+      '\\"'
+    )}");`;
+
+    console.log("hello");
+    console.log(defaultTitle);
 
     const results = await tabs.executeScript({ code: createPrompt });
+
+    console.log(results);
 
     // TODO Use pop up instead
     // Checks if user is in special tab

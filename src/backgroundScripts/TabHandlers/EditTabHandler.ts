@@ -142,9 +142,12 @@ export class EditTabHandler {
    * @param tab The group tab that the user wants to rename
    */
   private async onEditNameMenuClick(info: Menus.OnClickData, tab: Tabs.Tab) {
-    const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!);
+    const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!)!;
 
-    const editPrompt = `prompt("Please enter the Group tab's new name", "${groupTab?.name}");`;
+    const editPrompt = `prompt("Please enter the Group tab's new name", "${groupTab.name.replaceAll(
+      '"',
+      '\\"'
+    )}");`;
 
     const results = await tabs.executeScript({ code: editPrompt });
 
