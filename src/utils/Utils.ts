@@ -120,3 +120,13 @@ export async function moveGroupTab(
     windowId: windowId !== undefined ? windowId : groupTabInfo.windowId,
   });
 }
+
+/**
+ * Gets the current active tab in the current window
+ * @returns The active tab
+ */
+export async function getActiveTab() {
+  const activeTab = await tabs.query({ currentWindow: true, active: true });
+
+  return activeTab[0];
+}

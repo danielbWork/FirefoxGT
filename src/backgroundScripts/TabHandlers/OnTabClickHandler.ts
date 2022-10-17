@@ -1,7 +1,8 @@
-import { GroupTab } from "../../utils/GroupTab.js";
+import { GroupTab } from "../../utils/GroupTab";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { TOGGLE_GROUP_TAB_ID } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
+import { getActiveTab } from "../../utils/Utils";
 
 /**
  * Handles user click events on group tabs
@@ -80,7 +81,7 @@ export class OnTabClickHandler {
     if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
       const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!);
 
-      const activeTab = (await tabs.query({ active: true }))[0];
+      const activeTab = await getActiveTab();
 
       await this.onGroupTabClick(groupTab!, activeTab.id!);
     }

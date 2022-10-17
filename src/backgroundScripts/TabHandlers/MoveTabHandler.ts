@@ -9,6 +9,7 @@ import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   checkMovedIntoGroupTab,
   createNotification,
+  getActiveTab,
   moveGroupTab,
 } from "../../utils/Utils";
 import { OnTabClickHandler } from "./OnTabClickHandler";
@@ -162,7 +163,7 @@ export class MoveTabHandler {
   private async handleConfirmMove(message: string) {
     const confirmCode = `confirm("${message}");`;
 
-    const activeTab = (await tabs.query({ active: true }))[0];
+    const activeTab = await getActiveTab();
 
     const results = await tabs.executeScript(activeTab.id, {
       code: confirmCode,
