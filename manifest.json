@@ -26,8 +26,8 @@
 			"96": "icons/group_tab_icon_96x96.png"
 
 		},
-		"default_popup": "src/popup.html",
-		"default_title": "FirefoxGroupTabs"
+		"default_popup": "src/webPages/popup/popup.html",
+		"default_title": "FirefoxGT"
 	},
 	"options_ui": {
 		"page": "options/index.html"

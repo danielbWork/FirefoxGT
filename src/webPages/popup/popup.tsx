@@ -1,10 +1,10 @@
-import { Popup } from "./popupComponents/Popup";
+import { Popup } from "../../popupComponents/Popup";
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
-import { CustomThemeProvider } from "./utils/ui/CustomThemeProvider";
-import { PopupMessageHandler } from "./popupComponents/PopupMessageHandler";
-import { StorageHandler } from "./utils/Storage/StorageHandler";
-import { useOnMount } from "./utils/ui/useOnMount";
+import { CustomThemeProvider } from "../../utils/ui/CustomThemeProvider";
+import { PopupMessageHandler } from "../../popupComponents/PopupMessageHandler";
+import { StorageHandler } from "../../utils/Storage/StorageHandler";
+import { useOnMount } from "../../utils/ui/useOnMount";
 
 PopupMessageHandler.instance.setupMessageHandler();
 
