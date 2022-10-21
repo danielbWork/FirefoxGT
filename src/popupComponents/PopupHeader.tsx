@@ -1,11 +1,16 @@
 import { Avatar, Icon, IconButton, Stack, Typography } from "@mui/material";
-import React from "react";
+import React, { useCallback } from "react";
 import { ICON_URL } from "../utils/Consts";
 import SettingsIcon from "@mui/icons-material/Settings";
+import browser from "webextension-polyfill";
 /**
  * Header for popup
  */
 export const PopupHeader = () => {
+  const handleSettingsClick = useCallback(() => {
+    browser.runtime.openOptionsPage();
+  }, []);
+
   return (
     <Stack
       sx={{ padding: 2 }}
@@ -19,7 +24,7 @@ export const PopupHeader = () => {
         Group Tabs
       </Typography>
 
-      <IconButton>
+      <IconButton onClick={handleSettingsClick}>
         <SettingsIcon />
       </IconButton>
     </Stack>

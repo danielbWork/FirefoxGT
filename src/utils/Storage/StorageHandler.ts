@@ -5,6 +5,7 @@ import {
   onRemoveTabNotifier,
 } from "./StorageEventListeners";
 import browser, { storage } from "webextension-polyfill";
+import { defaultSettings, Settings } from "./Settings";
 
 /**
  * Handles connecting with the storage to store all info regarding the extension.
@@ -33,6 +34,11 @@ export class StorageHandler {
    * The local value for group tabs
    */
   private groupTabs: Record<number, GroupTab> = {};
+
+  /**
+   * Current settings of the extension
+   */
+  settings: Settings = { ...defaultSettings };
 
   //#region Singleton
 
@@ -63,11 +69,22 @@ export class StorageHandler {
   }
 
   /**
+   * Utils to make easier to update extension settings
+   */
+  private updateSettings() {
+    return storage.local.set({ settings: this.settings });
+  }
+
+  /**
    *  Sets up storage default values
    */
   async setupDefaultStorage() {
     this.groupTabs = {};
-    await this.updateAllGroupTabs();
+    this.settings = { ...defaultSettings };
+    await storage.local.set({
+      groupTabs: this.groupTabs,
+      settings: this.settings,
+    });
     await this.loadStorage();
   }
 
@@ -77,6 +94,23 @@ export class StorageHandler {
   async loadStorage() {
     const data = await storage.local.get();
     this.groupTabs = data.groupTabs;
+    this.settings = data.settings;
+  }
+
+  /**
+   * Resets the settings back to state in storage
+   */
+  async resetSettingsToStorage() {
+    const data = await storage.local.get();
+    this.settings = data.settings;
+  }
+
+  /**
+   * Restore settings to default
+   */
+  async restoreDefaults() {
+    this.settings = { ...defaultSettings };
+    await this.updateSettings();
   }
 
   /**

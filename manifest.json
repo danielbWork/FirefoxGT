@@ -30,7 +30,8 @@
 		"default_title": "FirefoxGT"
 	},
 	"options_ui": {
-		"page": "options/index.html"
+		"page": "src/webPages/options/options.html",
+		"open_in_tab": true
 	},
     "permissions": [
         "tabs",
