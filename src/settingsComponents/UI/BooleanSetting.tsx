@@ -1,7 +1,8 @@
 import { InfoOutlined } from "@mui/icons-material";
 import { Checkbox, FormControlLabel, Popover, Typography } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import { Setting } from "../SettingTypes";
+import { SettingProps } from "../SettingsProps";
+import { InfoPopover } from "../../utils/ui/InfoPopover";
 
 /**
  * The ui for a boolean setting
@@ -12,25 +13,14 @@ export const BooleanSetting = ({
   updateSettingCallback,
   details,
   disabled = false,
-}: Setting) => {
-  const [anchor, setAnchor] = useState<HTMLElement>();
-
-  const handlePopoverOpen = (event?: any) => {
-    setAnchor(event?.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchor(undefined);
-  };
-
+}: SettingProps) => {
   const handleOnSettingChange = useCallback(() => {
     updateSettingCallback(!value);
   }, [value, updateSettingCallback]);
 
-  // TODO Fix text color when disabled
   return (
     <FormControlLabel
-      sx={{ alignItems: "center" }}
+      sx={{ alignItems: "center", width: "100%" }}
       disabled={disabled}
       control={
         <Checkbox
@@ -41,46 +31,12 @@ export const BooleanSetting = ({
         />
       }
       label={
-        <Typography sx={{ verticalAlign: "middle", display: "inline-flex" }}>
+        <Typography
+          color={disabled ? "GrayText" : "MenuText"}
+          sx={{ verticalAlign: "middle", display: "inline-box" }}
+        >
           {title}
-          {details && (
-            <>
-              <InfoOutlined
-                fontSize="small"
-                id="info-icon"
-                aria-owns={
-                  anchor !== undefined ? "mouse-over-popover" : undefined
-                }
-                aria-haspopup="true"
-                onMouseEnter={handlePopoverOpen}
-                onMouseLeave={handlePopoverClose}
-                sx={{ marginLeft: 1 }}
-              />
-
-              <Popover
-                id="mouse-over-popover"
-                sx={{
-                  pointerEvents: "none",
-                }}
-                open={anchor !== undefined}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "left",
-                }}
-                anchorEl={anchor}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "left",
-                }}
-                onClose={handlePopoverClose}
-                disableRestoreFocus
-              >
-                <Typography sx={{ padding: 1, maxWidth: 500 }}>
-                  {details}
-                </Typography>
-              </Popover>
-            </>
-          )}
+          {details && <InfoPopover info={details} disabled={disabled} />}
         </Typography>
       }
     />

@@ -11,6 +11,17 @@ export type Settings = {
    */
   showCreateGroupTabNameDialog: { popup: boolean; menu: boolean }; // unused
 
+  /**
+   * Starting name of the group tab
+   */
+  defaultGroupTabName: string; // unused
+
+  /**
+   * The url for the default group tab icon
+   * TODO decide whether to use in future or not
+   */
+  // defaultGroupTabIconURL: string; // unused
+
   //#endregion
 
   //#region Move
@@ -44,19 +55,14 @@ export type Settings = {
   }; // unused
 
   /**
-   * Show the dialog asking user are they sure they want to remove the group tab
-   */
-  showRemoveGroupTabDialog: {
-    // ui close: boolean;
-    menu: boolean;
-    popup: boolean;
-  }; // unused
-
-  /**
    * Decides what to do with inner tabs after removing group tab
    */
   removeInnerTabOfDeletedGroupTab: "always" | "dialog" | "never"; // unused
 
+  /**
+   * Show the dialog asking user are they sure they want to remove the group tab
+   */
+  showRemoveGroupTabFromPopupDialog: boolean;
   /**
    * Decides if deleted group tabs (not by window close) can be restored
    */
@@ -65,16 +71,6 @@ export type Settings = {
   //#endregion
 
   //#region UI
-
-  /**
-   * Starting name of the group tab
-   */
-  defaultGroupTabName: string; // unused
-
-  /**
-   * The url for the default group tab icon
-   */
-  defaultGroupTabIconURL: string; // unused
 
   /**
    * The inner tabs count in the group tab title
@@ -108,19 +104,16 @@ export type Settings = {
  */
 export const defaultSettings: Settings = {
   showCreateGroupTabNameDialog: { popup: true, menu: true },
+  defaultGroupTabName: "Group Tab",
+  // defaultGroupTabIconURL: GROUP_TAB_URL,
   showMoveToGroupTabDialog: { drag: true, menu: false },
   addTabsByDrag: true,
   showMoveFromGroupToNewDialog: { drag: true, menu: false },
   showRemoveFromGroupTabDialog: { drag: true, menu: false, popup: true },
 
-  showRemoveGroupTabDialog: {
-    menu: false,
-    popup: true,
-  },
+  showRemoveGroupTabFromPopupDialog: true,
   removeInnerTabOfDeletedGroupTab: "dialog",
   removeGroupTabFromMemory: false,
-  defaultGroupTabName: "Group Tab",
-  defaultGroupTabIconURL: GROUP_TAB_URL,
   innerTabCountInName: "prefix",
   isOpenInName: true,
   useEndTab: false,

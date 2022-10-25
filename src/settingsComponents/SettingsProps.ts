@@ -11,7 +11,7 @@ export enum SettingType {
 /**
  * The actual settings and it's info
  */
-export type Setting = {
+export type SettingProps = {
   /**
    * The type of the section
    */
@@ -25,12 +25,12 @@ export type Setting = {
   /**
    * The value of the setting
    */
-  value: boolean;
+  value: any;
 
   /**
    * Callback to notify about user updating the setting
    */
-  updateSettingCallback: (newValue: boolean) => void;
+  updateSettingCallback: (newValue: any, isInvalid?: boolean) => void;
 
   /**
    * Much longer explanation for the setting that goes into "details" (pun intended)
@@ -38,20 +38,25 @@ export type Setting = {
   details?: string;
 
   /**
-   * Wether or not the checkbox should be disabled
+   * Whether or not the checkbox should be disabled
    */
   disabled?: boolean;
 
   /**
    * Inner settings of this settings that are affected by this setting
    */
-  childSettings?: Setting[];
+  childSettings?: { fieldName: string; title: string }[];
+
+  /**
+   * Selection of possible value for teh setting
+   */
+  choices?: { value: string; title: string }[];
 };
 
 /**
  * The a collection of settings
  */
-export type Section = {
+export type SectionProps = {
   /**
    * The name of the section
    */
@@ -60,5 +65,5 @@ export type Section = {
   /**
    * The settings displayed in the section
    */
-  settings: Setting[];
+  settings: SettingProps[];
 };

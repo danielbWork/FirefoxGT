@@ -8,14 +8,17 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback, useState } from "react";
-import { Section, SettingType } from "../SettingTypes";
+import { SectionProps, SettingType } from "../SettingsProps";
 import { Settings } from "../../utils/Storage/Settings";
 import { BooleanSetting } from "./BooleanSetting";
+import { MultiBooleanSetting } from "./MultiBooleanSetting";
+import { StringSetting } from "./StringSetting";
+import { MultipleChoiceStringsSetting } from "./MultipleChoiceStringsSetting";
 
 /**
  * A section to display settings in
  */
-export const SettingSection = ({ title, settings }: Section) => {
+export const SettingSection = ({ title, settings }: SectionProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleExpandToggle = useCallback(() => {
@@ -28,7 +31,7 @@ export const SettingSection = ({ title, settings }: Section) => {
       alignItems="flex-start"
       justifyContent="flex-start"
       direction="column"
-      sx={{ padding: 2, width: "100%" }}
+      sx={{ padding: 1, width: "100%" }}
     >
       <Typography variant="h5" color="InfoText">
         {title}{" "}
@@ -38,25 +41,39 @@ export const SettingSection = ({ title, settings }: Section) => {
       </Typography>
 
       <Collapse in={isExpanded}>
-        <Stack
+        <Box
           alignItems="flex-start"
           justifyContent="flex-start"
-          direction="column"
-          sx={{ paddingLeft: 2, width: "100%" }}
+          sx={{ paddingLeft: 2, width: "100%", marginTop: 0, marginBottom: 0 }}
         >
           {settings.map((setting) => {
-            // TODO Add code for each setting type
-
             if (setting.type === SettingType.BOOLEAN) {
               return <BooleanSetting key={setting.title} {...setting} />;
             }
 
+            if (setting.type === SettingType.MULTI_BOOLEAN) {
+              return <MultiBooleanSetting key={setting.title} {...setting} />;
+            }
+
+            if (setting.type === SettingType.STRING) {
+              return <StringSetting key={setting.title} {...setting} />;
+            }
+
+            if (setting.type === SettingType.MULTIPLE_CHOICE) {
+              return (
+                <MultipleChoiceStringsSetting
+                  key={setting.title}
+                  {...setting}
+                />
+              );
+            }
+
             return <></>;
           })}
-        </Stack>
+        </Box>
       </Collapse>
       <Divider
-        sx={{ backgroundColor: "InactiveBorder", height: 1, width: 700 }}
+        sx={{ backgroundColor: "InactiveBorder", height: 1, width: 800 }}
       />
     </Stack>
   );
