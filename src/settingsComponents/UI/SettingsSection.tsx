@@ -1,4 +1,9 @@
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import {
+  ExpandLess,
+  ExpandMore,
+  KeyboardArrowRight,
+  KeyboardArrowUp,
+} from "@mui/icons-material";
 import {
   Box,
   Collapse,
@@ -34,10 +39,10 @@ export const SettingSection = ({ title, settings }: SectionProps) => {
       sx={{ padding: 1, width: "100%" }}
     >
       <Typography variant="h5" color="InfoText">
-        {title}{" "}
         <IconButton onClick={handleExpandToggle}>
-          {isExpanded ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
+          {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowRight />}
+        </IconButton>{" "}
+        {title}
       </Typography>
 
       <Collapse in={isExpanded}>

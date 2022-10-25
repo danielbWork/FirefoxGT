@@ -1,9 +1,14 @@
 import {
+  Alert,
+  AppBar,
   Avatar,
   Box,
   Button,
   FormControl,
+  IconButton,
+  Snackbar,
   Stack,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import React, { useCallback, useMemo, useState } from "react";
@@ -15,6 +20,7 @@ import { SectionProps, SettingType } from "./SettingsProps";
 import { SettingSection } from "./UI/SettingsSection";
 import { Set } from "typescript";
 import { useAlertDialog } from "../utils/ui/useAlertDialog";
+import Close from "@mui/icons-material/Close";
 
 /**
  * The settings ui
@@ -52,7 +58,13 @@ export const SettingsUI = () => {
     };
   }, []);
 
-  // TODO Add snackbar (aka toast) for settings updates
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [isShowingSnackbar, setIsShowingSnackbar] = useState(false);
+
+  const handleCloseSnackBar = useCallback(() => {
+    setIsShowingSnackbar(false);
+    setSnackbarMessage("");
+  }, []);
 
   const {
     dialog: restoreDefaultsDialog,
@@ -65,6 +77,9 @@ export const SettingsUI = () => {
       setSettings({
         ...StorageHandler.instance.settings,
       });
+
+      setSnackbarMessage("Settings restored to default");
+      setIsShowingSnackbar(true);
     }
   );
 
@@ -74,6 +89,9 @@ export const SettingsUI = () => {
       "Updates the setting in the extension. Are you sure you want to continue?",
       async () => {
         await StorageHandler.instance.applyNewSettings({ ...settings });
+
+        setSnackbarMessage("Changes applied to settings");
+        setIsShowingSnackbar(true);
       }
     );
 
@@ -336,60 +354,87 @@ export const SettingsUI = () => {
     otherSection,
   ];
 
-  // TODO Make the submit buttons always visible
-
   return (
     <FormControl sx={{ overflow: "scroll" }}>
       {restoreDefaultsDialog}
       {applyChangesDialog}
       {invalidSettingsDialog}
 
+      <Snackbar
+        open={isShowingSnackbar}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          severity="info"
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={handleCloseSnackBar}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
       <Stack
         spacing={1}
         alignItems="flex-start"
         justifyContent="flex-start"
         direction="column"
-        sx={{ paddingLeft: 6, paddingTop: 4, width: "100%", height: "100%" }}
+        sx={{ paddingLeft: 2, paddingTop: 4, width: "100%", height: "100%" }}
       >
-        <Box alignItems="center" justifyContent="center">
-          <Typography
-            variant="h4"
-            color="InfoText"
-            sx={{
-              verticalAlign: "middle",
-              display: "inline-flex",
-              lineHeight: "unset",
-            }}
-          >
-            <Avatar
-              src={ICON_URL}
-              sx={{
-                width: 48,
-                height: 48,
-                marginRight: 2,
-              }}
-            />
-            FirefoxGT Settings
-          </Typography>
+        <Box alignItems="center" justifyContent="center" paddingTop={8}>
+          <AppBar position="fixed">
+            <Toolbar sx={{ alignItems: "center" }}>
+              <Avatar
+                src={ICON_URL}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  marginRight: 2,
+                }}
+              />
+              <Typography
+                variant="h4"
+                color="InfoText"
+                alignSelf="center"
+                textAlign="center"
+                align="center"
+                sx={{
+                  verticalAlign: "middle",
+                  display: "inline-flex",
+                  lineHeight: "unset",
+                }}
+              >
+                FirefoxGT Settings
+              </Typography>
+
+              <Stack
+                direction="row"
+                spacing={2}
+                alignSelf="center"
+                sx={{ right: 0, position: "absolute", paddingRight: 10 }}
+              >
+                <Button variant="outlined" onClick={openRestoreDefaultsDialog}>
+                  Restore to default
+                </Button>
+                <Button variant="contained" onClick={handleOnApplyPress}>
+                  Apply
+                </Button>
+              </Stack>
+            </Toolbar>
+          </AppBar>
         </Box>
 
         {sections.map((section) => (
           <SettingSection key={section.title} {...section} />
         ))}
-
-        <Stack
-          direction="row"
-          spacing={2}
-          alignSelf="end"
-          sx={{ paddingBottom: 10 }}
-        >
-          <Button variant="outlined" onClick={openRestoreDefaultsDialog}>
-            Restore to default
-          </Button>
-          <Button variant="contained" onClick={handleOnApplyPress}>
-            Apply
-          </Button>
-        </Stack>
       </Stack>
     </FormControl>
   );
