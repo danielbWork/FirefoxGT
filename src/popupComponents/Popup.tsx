@@ -22,7 +22,6 @@ export const Popup = () => {
       }}
     >
       <PopupHeader />
-      <Divider sx={{ backgroundColor: "white", height: 2 }} />
       <GroupTabList />
       <Divider sx={{ backgroundColor: "white", height: 2 }} />
       <PopupFooter />

@@ -423,13 +423,8 @@ export const SettingsUI = () => {
               <Typography
                 variant="h4"
                 color="InfoText"
-                alignSelf="center"
-                textAlign="center"
-                align="center"
                 sx={{
-                  verticalAlign: "middle",
-                  display: "inline-flex",
-                  lineHeight: "unset",
+                  paddingTop: 1,
                 }}
               >
                 FirefoxGT Settings
