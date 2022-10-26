@@ -52,28 +52,39 @@ export const SettingSection = ({ title, settings }: SectionProps) => {
           sx={{ paddingLeft: 2, width: "100%", marginTop: 0, marginBottom: 0 }}
         >
           {settings.map((setting) => {
-            if (setting.type === SettingType.BOOLEAN) {
-              return <BooleanSetting key={setting.title} {...setting} />;
+            let settingsItem;
+
+            switch (setting.type) {
+              case SettingType.BOOLEAN:
+                settingsItem = (
+                  <BooleanSetting key={setting.title} {...setting} />
+                );
+                break;
+              case SettingType.MULTI_BOOLEAN:
+                settingsItem = (
+                  <MultiBooleanSetting key={setting.title} {...setting} />
+                );
+                break;
+              case SettingType.STRING:
+                settingsItem = (
+                  <StringSetting key={setting.title} {...setting} />
+                );
+                break;
+              case SettingType.MULTIPLE_CHOICE:
+                settingsItem = (
+                  <MultipleChoiceStringsSetting
+                    key={setting.title}
+                    {...setting}
+                  />
+                );
+                break;
+
+              default:
+                settingsItem = <></>;
+                break;
             }
 
-            if (setting.type === SettingType.MULTI_BOOLEAN) {
-              return <MultiBooleanSetting key={setting.title} {...setting} />;
-            }
-
-            if (setting.type === SettingType.STRING) {
-              return <StringSetting key={setting.title} {...setting} />;
-            }
-
-            if (setting.type === SettingType.MULTIPLE_CHOICE) {
-              return (
-                <MultipleChoiceStringsSetting
-                  key={setting.title}
-                  {...setting}
-                />
-              );
-            }
-
-            return <></>;
+            return settingsItem;
           })}
         </Box>
       </Collapse>

@@ -2,11 +2,11 @@ import { Popup } from "../../popupComponents/Popup";
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { CustomThemeProvider } from "../../utils/ui/CustomThemeProvider";
-import { PopupMessageHandler } from "../../popupComponents/PopupMessageHandler";
+import { UIMessageHandler } from "../../utils/ui/UIMessageHandler";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { useOnMount } from "../../utils/ui/useOnMount";
 
-PopupMessageHandler.instance.setupMessageHandler();
+UIMessageHandler.instance.setupMessageHandler();
 
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);

@@ -35,12 +35,12 @@ export const useTextInputDialog = (
     if (onCancel) {
       onCancel();
     }
-  }, []);
+  }, [onCancel]);
 
   const handleSubmit = useCallback(() => {
     setIsOpen(false);
     onSubmit(value);
-  }, [value]);
+  }, [onSubmit, value]);
 
   const handleOnChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {

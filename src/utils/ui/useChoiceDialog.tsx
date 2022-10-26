@@ -33,12 +33,12 @@ export const useChoiceDialog = (
     if (onCancel) {
       onCancel();
     }
-  }, []);
+  }, [onCancel]);
 
   const handleSubmit = useCallback(() => {
     setIsOpen(false);
     onSubmit();
-  }, []);
+  }, [onSubmit]);
 
   const dialog = useMemo(() => {
     return (

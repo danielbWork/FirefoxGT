@@ -11,7 +11,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useReducer, useState } from "react";
 import { Settings } from "../utils/Storage/Settings";
 import { useChoiceDialog } from "../utils/ui/useChoiceDialog";
 import { ICON_URL } from "../utils/Consts";
@@ -21,15 +21,18 @@ import { SettingSection } from "./UI/SettingsSection";
 import { Set } from "typescript";
 import { useAlertDialog } from "../utils/ui/useAlertDialog";
 import Close from "@mui/icons-material/Close";
+import {
+  SettingUpdateType,
+  useSettingsReducer,
+} from "../utils/ui/useSettingsReducer";
+import { UIMessageHandler } from "../utils/ui/UIMessageHandler";
+import { MessageType } from "../utils/MessageType";
 
 /**
  * The settings ui
  */
 export const SettingsUI = () => {
-  const [settings, setSettings] = useState<Settings>({
-    ...StorageHandler.instance.settings,
-  });
-
+  const [settings, dispatch] = useSettingsReducer();
   const [invalidSettings, setInvalidSettings] = useState<Set<string>>(
     new Set<string>()
   );
@@ -49,12 +52,7 @@ export const SettingsUI = () => {
         return previousState;
       });
 
-      setSettings((previousState) => {
-        // "as any" included to remove warning
-        (previousState as any)[name] = value;
-
-        return { ...previousState };
-      });
+      dispatch({ type: SettingUpdateType.UPDATE_VALUE, name, value });
     };
   }, []);
 
@@ -66,33 +64,49 @@ export const SettingsUI = () => {
     setSnackbarMessage("");
   }, []);
 
+  // Code that restore settings to default
+  const handleRestoreDefaults = useCallback(async () => {
+    await StorageHandler.instance.restoreDefaultSettings();
+
+    await UIMessageHandler.instance.sendMessage(MessageType.UPDATE_SETTINGS, {
+      settings: StorageHandler.instance.settings,
+    });
+
+    dispatch({
+      type: SettingUpdateType.UPDATE_ALL,
+      settings: StorageHandler.instance.settings,
+    });
+
+    setSnackbarMessage("Settings restored to default");
+    setIsShowingSnackbar(true);
+  }, [settings]);
+
   const {
     dialog: restoreDefaultsDialog,
     openDialog: openRestoreDefaultsDialog,
   } = useChoiceDialog(
     "Restore Defaults",
     "Restores settings back to extension's default values and deletes all of your changes. Are you sure you want to continue?",
-    async () => {
-      await StorageHandler.instance.restoreDefaultSettings();
-      setSettings({
-        ...StorageHandler.instance.settings,
+    handleRestoreDefaults
+  );
+
+  // Code that actually apply's the settings
+  const handleApplySetting = useCallback(() => {
+    StorageHandler.instance.applyNewSettings(settings).then(async () => {
+      await UIMessageHandler.instance.sendMessage(MessageType.UPDATE_SETTINGS, {
+        settings,
       });
 
-      setSnackbarMessage("Settings restored to default");
+      setSnackbarMessage("Changes applied to settings");
       setIsShowingSnackbar(true);
-    }
-  );
+    });
+  }, [settings]);
 
   const { dialog: applyChangesDialog, openDialog: openApplyChangesDialog } =
     useChoiceDialog(
       "Apply Changes",
       "Updates the setting in the extension. Are you sure you want to continue?",
-      async () => {
-        await StorageHandler.instance.applyNewSettings({ ...settings });
-
-        setSnackbarMessage("Changes applied to settings");
-        setIsShowingSnackbar(true);
-      }
+      handleApplySetting
     );
 
   const {
@@ -112,6 +126,10 @@ export const SettingsUI = () => {
       openInvalidSettingsDialog();
     }
   }, [invalidSettings]);
+
+  //#endregion
+
+  //#region Sections
 
   // Section regarding creating
   const createSection = useMemo<SectionProps>(() => {
@@ -353,6 +371,8 @@ export const SettingsUI = () => {
     uiSection,
     otherSection,
   ];
+
+  //#endregion
 
   return (
     <FormControl sx={{ overflow: "scroll" }}>

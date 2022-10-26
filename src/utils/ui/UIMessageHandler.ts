@@ -1,27 +1,27 @@
-import { MessageType } from "../utils/MessageType";
-import { GroupTab } from "../utils/GroupTab";
-import { StorageHandler } from "../utils/Storage/StorageHandler";
+import { MessageType } from "../MessageType";
+import { GroupTab } from "../GroupTab";
+import { StorageHandler } from "../Storage/StorageHandler";
 import browser from "webextension-polyfill";
 
 /**
  * Handles messaging the background regarding script events
  */
-export class PopupMessageHandler {
+export class UIMessageHandler {
   //#region Singleton
 
-  private static _instance: PopupMessageHandler;
+  private static _instance: UIMessageHandler;
 
   private constructor() {}
 
   /**
    * @returns The instance of the class
    */
-  public static get instance(): PopupMessageHandler {
-    if (!PopupMessageHandler._instance) {
-      PopupMessageHandler._instance = new PopupMessageHandler();
+  public static get instance(): UIMessageHandler {
+    if (!UIMessageHandler._instance) {
+      UIMessageHandler._instance = new UIMessageHandler();
     }
 
-    return PopupMessageHandler._instance;
+    return UIMessageHandler._instance;
   }
 
   //#endregion
@@ -43,7 +43,7 @@ export class PopupMessageHandler {
    * @param type The type of message sent to the background
    * @param data The data about the message
    */
-  private sendMessage(type: MessageType, data: any) {
+  sendMessage(type: MessageType, data: any) {
     try {
       browser.runtime.sendMessage({ type, data });
     } catch (error) {

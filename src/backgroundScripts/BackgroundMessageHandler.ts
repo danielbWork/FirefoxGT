@@ -2,6 +2,7 @@ import { GroupTab } from "../utils/GroupTab";
 import { MessageType } from "../utils/MessageType";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import browser, { Runtime, tabs } from "webextension-polyfill";
+import { Settings } from "utils/Storage/Settings";
 
 /**
  * Handles receiving messages from popup
@@ -36,14 +37,11 @@ export class BackgroundMessageHandler {
    * @param sender Unused
    */
   private async onMessageReceive(message: any, sender: Runtime.MessageSender) {
-    console.log(message);
-    console.log(sender);
-
     const data = message?.data;
 
     await StorageHandler.instance.loadStorage();
 
-    switch (message.type) {
+    switch (message?.type) {
       case MessageType.ADD_TAB:
         this.onAddGroupTab(data.groupTab, data.index);
         break;
@@ -54,6 +52,9 @@ export class BackgroundMessageHandler {
 
       case MessageType.EDIT_TAB:
         this.onEditGroupTab(data.groupTab);
+        break;
+      case MessageType.UPDATE_SETTINGS:
+        this.onUpdateSettings(data.settings);
         break;
 
       default:
@@ -103,5 +104,16 @@ export class BackgroundMessageHandler {
 
     // Notifies about changed group tab
     StorageHandler.instance.onEditTab.editedGroupTab(groupTab);
+  }
+
+  /**
+   * Handles the user updating the settings
+   * @param newSettings The new settings from the user
+   */
+  private async onUpdateSettings(newSettings: Settings) {
+    // Update settings in storage
+    StorageHandler.instance.applyNewSettings(newSettings);
+
+    // TODO add reaction to code when needed
   }
 }

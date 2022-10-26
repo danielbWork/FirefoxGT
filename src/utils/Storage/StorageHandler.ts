@@ -117,7 +117,6 @@ export class StorageHandler {
    * Restore settings to default
    */
   async applyNewSettings(settings: Settings) {
-    // FIXME Doesn't work properly
     this.settings = { ...settings };
     await this.updateSettings();
   }
