@@ -79,11 +79,20 @@ export class OnTabClickHandler {
    */
   private async onToggleContextMenu(info: Menus.OnClickData, tab?: Tabs.Tab) {
     if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
-      const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!);
+      const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!)!;
 
       const activeTab = await getActiveTab();
 
-      await this.onGroupTabClick(groupTab!, activeTab.id!);
+      await this.findNewActiveTab(groupTab, activeTab.id);
+
+      // Checks whether to hide or show by doing opposite
+      if (groupTab.isOpen) {
+        await tabs.hide(groupTab.innerTabs);
+      } else {
+        await tabs.show(groupTab.innerTabs);
+      }
+
+      StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
   }
 
