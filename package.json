@@ -5,7 +5,7 @@
   "author": "danielbwork <danielbwork12@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "parcel manifest.json src/webPages/*/* icons/* --host localhost --config @parcel/config-webextension",
+    "start": "parcel manifest.json src/webPages/*/* icons/* --host localhost --config @parcel/config-webextension --target webext-dev --dist-dir dist/webext-dev",
     "build": "parcel build manifest.json src/webPages/*/* icons/* --config @parcel/config-webextension --target webext-prod"
   },
   "dependencies": {
@@ -33,10 +33,6 @@
   },
   "targets": {
     "webext-dev": {
-      "sourceMap": {
-        "inline": true,
-        "inlineSources": true
-      }
     },
     "webext-prod": {}
   }
