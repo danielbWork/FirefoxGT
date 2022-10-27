@@ -201,7 +201,7 @@ export const SettingsUI = () => {
           updateSettingCallback:
             handleCreateUpdateSettingCallback("addTabsByDrag"),
           details:
-            "If disabled tabs dragged into group tabs by user are moved outside of group tab automatically",
+            "If disabled tabs (that aren't already in a group tab) are dragged into group tabs by user are moved outside of group tab automatically",
         },
         {
           type: SettingType.MULTI_BOOLEAN,

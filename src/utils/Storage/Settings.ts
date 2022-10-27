@@ -29,17 +29,17 @@ export type Settings = {
   /**
    * Show the dialog asking user are they sure they want to move the tab to the group tab
    */
-  showMoveToGroupTabDialog: { drag: boolean; menu: boolean }; // unused
+  showMoveToGroupTabDialog: { drag: boolean; menu: boolean };
 
   /**
    * Allows user to drag tabs into group tabs and add them to inner tab, if false just pushes them outside of the group tab
    */
-  addTabsByDrag: boolean; // unused
+  addTabsByDrag: boolean;
 
   /**
    * Show the dialog asking user are they sure they want to move the tab from current group to new one
    */
-  showMoveFromGroupToNewDialog: { drag: boolean; menu: boolean }; // unused
+  showMoveFromGroupToNewDialog: { drag: boolean; menu: boolean };
 
   //#endregion
 

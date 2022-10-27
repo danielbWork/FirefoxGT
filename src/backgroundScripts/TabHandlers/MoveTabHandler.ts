@@ -46,7 +46,7 @@ export class MoveTabHandler {
     tabs.onAttached.addListener(this.onTabWindowMoved.bind(this));
 
     browser.contextMenus.onClicked.addListener(
-      this.onMoveInnerTabMenuItemClick.bind(this)
+      this.onMoveTabMenuItemClick.bind(this)
     );
   }
 
@@ -118,18 +118,40 @@ export class MoveTabHandler {
    * @param info The info regarding the tab that was pressed
    * @param tab The tab that the user wants to move
    */
-  private async onMoveInnerTabMenuItemClick(
+  private async onMoveTabMenuItemClick(
     info: Menus.OnClickData,
     tab?: Tabs.Tab
   ) {
     // Must have a tab with id for this action as well as being a string action
     if (!tab?.id || typeof info.menuItemId !== "string") return;
 
+    const settings = StorageHandler.instance.settings;
+
     // Checks for new tab to add to group
     if (info.menuItemId.startsWith(ADD_TO_GROUP_TAB_ID)) {
       const groupID = info.menuItemId.substring(ADD_TO_GROUP_TAB_ID.length);
 
-      await this.addTabToGroupMenuClick(parseInt(groupID), tab.id);
+      const groupTab = StorageHandler.instance.getGroupTabByID(
+        parseInt(groupID)
+      );
+
+      let results;
+
+      // Makes sure to display dialog if needed
+      if (settings.showMoveToGroupTabDialog.menu) {
+        results = await this.handleConfirmMove(
+          `Are you sure you want to move tab ${tab.title?.replaceAll(
+            '"',
+            '\\"'
+          )} to group ${groupTab?.name.replaceAll('"', '\\"')}?`
+        );
+      } else {
+        results = [true];
+      }
+
+      if (results[0]) {
+        await this.addTabToGroupMenuClick(parseInt(groupID), tab.id);
+      }
       return;
     }
 
@@ -142,11 +164,35 @@ export class MoveTabHandler {
     // Checks tab was moved to other group
     if (info.menuItemId.startsWith(MOVE_TO_GROUP_TAB_ID)) {
       const newGroupID = info.menuItemId.substring(MOVE_TO_GROUP_TAB_ID.length);
-      this.moveTabFromGroupToNewGroupMenuClick(
-        groupTab,
-        index,
-        parseInt(newGroupID)
-      );
+
+      let results;
+
+      // Display dialog if needed
+      if (settings.showMoveFromGroupToNewDialog.menu) {
+        const newGroupTab = StorageHandler.instance.getGroupTabByID(
+          parseInt(newGroupID)
+        );
+
+        results = await this.handleConfirmMove(
+          `Are you sure you want to move tab ${tab.title?.replaceAll(
+            '"',
+            '\\"'
+          )} from group ${groupTab.name.replaceAll(
+            '"',
+            '\\"'
+          )} to group ${newGroupTab?.name.replaceAll('"', '\\"')}?`
+        );
+      } else {
+        results = [true];
+      }
+
+      if (results[0]) {
+        this.moveTabFromGroupToNewGroupMenuClick(
+          groupTab,
+          index,
+          parseInt(newGroupID)
+        );
+      }
     }
   }
 
@@ -187,6 +233,7 @@ export class MoveTabHandler {
     toIndex: number,
     windowId: number
   ) {
+    // TODO Block Move this into other group tab
     await moveGroupTab(groupTab, undefined, toIndex, windowId);
 
     await OnTabClickHandler.instance.onStopDragging(groupTab);
@@ -197,26 +244,43 @@ export class MoveTabHandler {
    * @param tabId Id of the tab that was moved
    * @param toIndex The new index for the tab
    * @param windowId The id of the window the tab was put in
+   * @param isConfirmed Marks if the tab move is auto confirmed by the settings or not
    */
   private async onMoveIntoGroupTab(
     tabId: number,
     toIndex: number,
     windowId: number
   ) {
+    const settings = StorageHandler.instance.settings;
+
     const { groupTab, groupTabInfo } = await checkMovedIntoGroupTab(
       toIndex,
       windowId
     );
 
     if (groupTab && groupTabInfo) {
+      // Blocks adding by drag when not needed
+      if (!settings.addTabsByDrag) {
+        // Puts the tab outside of the group tab
+        moveGroupTab(groupTab, [tabId]);
+        return;
+      }
+
       const movedTabInfo = await tabs.get(tabId);
 
-      const results = await this.handleConfirmMove(
-        `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
-          '"',
-          '\\"'
-        )} to group ${groupTab.name.replaceAll('"', '\\"')}?`
-      );
+      let results;
+
+      // Makes sure to display dialog if needed
+      if (settings.showMoveToGroupTabDialog.drag) {
+        results = await this.handleConfirmMove(
+          `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
+            '"',
+            '\\"'
+          )} to group ${groupTab.name.replaceAll('"', '\\"')}?`
+        );
+      } else {
+        results = [true];
+      }
 
       if (results[0]) {
         StorageHandler.instance.addInnerTab(
@@ -252,14 +316,6 @@ export class MoveTabHandler {
     windowId: number
   ) {
     const groupTabInfo = await tabs.get(groupTab.id);
-
-    // TODO check if this is still relevant
-    // Block infinite loop and non important movements
-    // if (moveInfo.toIndex === moveInfo.fromIndex) {
-    //   return;
-    // }
-
-    // TODO add window check here maybe
 
     // Checks if the tab is inside of group range in window (pinned groups have max range so we ignore them)
     if (
@@ -344,17 +400,26 @@ export class MoveTabHandler {
     newGroupTabInfo: Tabs.Tab,
     toIndex: number
   ) {
+    const settings = StorageHandler.instance.settings;
+
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
-    const results = await this.handleConfirmMove(
-      `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
-        '"',
-        '\\"'
-      )} from group ${groupTab.name.replaceAll(
-        '"',
-        '\\"'
-      )} to group ${newGroupTab.name.replaceAll('"', '\\"')}?`
-    );
+    let results;
+
+    // Display dialog if needed
+    if (settings.showMoveFromGroupToNewDialog.drag) {
+      results = await this.handleConfirmMove(
+        `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
+          '"',
+          '\\"'
+        )} from group ${groupTab.name.replaceAll(
+          '"',
+          '\\"'
+        )} to group ${newGroupTab.name.replaceAll('"', '\\"')}?`
+      );
+    } else {
+      results = [true];
+    }
 
     // Checks if user confirmed inner tab swap
     if (results[0]) {
