@@ -9,12 +9,12 @@ export type Settings = {
   /**
    * Show the dialog requesting the group tab's name when creating it otherwise uses default name
    */
-  showCreateGroupTabNameDialog: { popup: boolean; menu: boolean }; // unused
+  showCreateGroupTabNameDialog: { popup: boolean; menu: boolean };
 
   /**
    * Starting name of the group tab
    */
-  defaultGroupTabName: string; // unused
+  defaultGroupTabName: string;
 
   /**
    * The url for the default group tab icon

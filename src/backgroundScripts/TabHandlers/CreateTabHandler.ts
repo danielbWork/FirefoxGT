@@ -130,7 +130,7 @@ export class CreateTabHandler {
    * @param tab The tab that we add to group tab
    */
   private async addTabToGroupTab(tab: Tabs.Tab) {
-    const groupTabTitle = await this.handleEnterGroupTabName(tab.title);
+    const groupTabTitle = await this.handleEnterGroupTabName();
 
     // Incase something went wrong with input
     if (groupTabTitle && tab.id) {
@@ -144,21 +144,18 @@ export class CreateTabHandler {
    * @param info The info of the link/bookmark that was pressed
    */
   private async openLinkInNewGroupTab(info: Menus.OnClickData) {
-    let text;
     let url;
 
-    // Gets the text and url value from were it's needed
+    // Gets the url value from where it's needed
     if (info.linkText) {
-      text = info.linkText;
       url = info.linkUrl;
     } else if (info.bookmarkId) {
       const bookmark = (await bookmarks.get(info.bookmarkId))[0];
 
-      text = bookmark.title;
       url = bookmark.url;
     }
 
-    const groupTabTitle = await this.handleEnterGroupTabName(text);
+    const groupTabTitle = await this.handleEnterGroupTabName();
 
     // Incase something went wrong with input
     if (groupTabTitle) {
@@ -214,12 +211,16 @@ export class CreateTabHandler {
 
   /**
    * Requests the group tab name from the user
-   * @param defaultTitle The default title for the group tab, defaults to "Group Tab"
    * @returns The group tab name or undefined if user chose or couldn't enter name
    */
-  private async handleEnterGroupTabName(
-    defaultTitle = "Group Tab"
-  ): Promise<string | undefined> {
+  private async handleEnterGroupTabName(): Promise<string | undefined> {
+    const defaultTitle = StorageHandler.instance.settings.defaultGroupTabName;
+
+    // Checks to see if the user wants to skip entering a name
+    if (!StorageHandler.instance.settings.showCreateGroupTabNameDialog.menu) {
+      return defaultTitle;
+    }
+
     const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle.replaceAll(
       '"',
       '\\"'

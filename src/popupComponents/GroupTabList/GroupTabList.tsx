@@ -46,10 +46,15 @@ export const GroupTabList = () => {
     handleAddGroupTab
   );
 
-  // Opens the dialog to create a new group
-  const handleCreateDialogOpen = useCallback(() => {
-    openDialog("Group Tab");
-  }, [openDialog]);
+  // Handles creating a group tab based on the settings
+  const handleCreateGroupTab = useCallback(() => {
+    const settings = StorageHandler.instance.settings;
+    if (settings.showCreateGroupTabNameDialog.popup) {
+      openDialog(settings.defaultGroupTabName);
+    } else {
+      handleAddGroupTab(settings.defaultGroupTabName);
+    }
+  }, [openDialog, handleAddGroupTab]);
 
   return (
     <Stack
@@ -84,7 +89,7 @@ export const GroupTabList = () => {
       )}
 
       <Button
-        onClick={handleCreateDialogOpen}
+        onClick={handleCreateGroupTab}
         variant="contained"
         sx={{ width: "50%" }}
       >
