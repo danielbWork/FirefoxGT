@@ -1,10 +1,6 @@
 import { GroupTab } from "../../utils/GroupTab.js";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
-import {
-  ADD_TO_GROUP_TAB_ID,
-  MOVE_TO_GROUP_TAB_ID,
-  REMOVE_FROM_GROUP_TAB_ID,
-} from "../../utils/Consts";
+import { ADD_TO_GROUP_TAB_ID, MOVE_TO_GROUP_TAB_ID } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   checkMovedIntoGroupTab,
@@ -233,8 +229,21 @@ export class MoveTabHandler {
     toIndex: number,
     windowId: number
   ) {
-    // TODO Block Move this into other group tab
-    await moveGroupTab(groupTab, undefined, toIndex, windowId);
+    const { groupTab: enteredGroupTab, groupTabInfo: enteredGroupTabInfo } =
+      await checkMovedIntoGroupTab(toIndex, windowId);
+
+    // Checks if group tab was put inside another group tab and moves it out
+    if (enteredGroupTab) {
+      // Puts the the dragged group tab and it's inner tabs after the group tab they were put in
+      await moveGroupTab(
+        enteredGroupTab,
+        [groupTab.id, ...groupTab.innerTabs],
+        enteredGroupTabInfo.index,
+        windowId
+      );
+    } else {
+      await moveGroupTab(groupTab, undefined, toIndex, windowId);
+    }
 
     await OnTabClickHandler.instance.onStopDragging(groupTab);
   }
