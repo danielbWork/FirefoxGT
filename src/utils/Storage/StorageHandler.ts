@@ -217,6 +217,41 @@ export class StorageHandler {
     );
   }
 
+  /**
+   * Adds an array of inner tabs to the group tab
+   * @param groupTab The group tab we add the id to
+   * @param innerTabIDs The ids of the new inner tabs
+   * @param index the index to put the new tab in if undefined put in the end of array
+   */
+  async addInnerTabs(
+    groupTab: GroupTab,
+    innerTabIDs: number[],
+    index?: number
+  ) {
+    // Avoid repeat enters
+
+    const tabsToAdd = innerTabIDs.filter((id) => {
+      return !groupTab.innerTabs.includes(id);
+    });
+
+    if (index !== undefined) {
+      groupTab.innerTabs.splice(index, 0, ...tabsToAdd);
+    } else {
+      groupTab.innerTabs.push(...tabsToAdd);
+    }
+
+    await this.updateGroupTab(groupTab);
+
+    // Updates about each added tab
+    tabsToAdd.forEach((id, toAddIndex) => {
+      this.onAddTab.addedInnerTab(
+        groupTab,
+        toAddIndex +
+          (index !== undefined ? index : groupTab.innerTabs.length - 1)
+      );
+    });
+  }
+
   //#endregion
 
   //#region Edit Group Tab

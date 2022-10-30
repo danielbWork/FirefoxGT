@@ -14,6 +14,8 @@ import { OnTabClickHandler } from "./OnTabClickHandler";
  * Handles Tabs being moved by the user
  */
 export class MoveTabHandler {
+  private highlightedTabs: number[] = [];
+
   //#region Singleton
 
   private static _instance: MoveTabHandler;
@@ -40,6 +42,8 @@ export class MoveTabHandler {
     tabs.onMoved.addListener(this.onTabMoved.bind(this));
 
     tabs.onAttached.addListener(this.onTabWindowMoved.bind(this));
+
+    tabs.onHighlighted.addListener(this.onTabsHighlighted.bind(this));
 
     browser.contextMenus.onClicked.addListener(
       this.onMoveTabMenuItemClick.bind(this)
@@ -192,6 +196,29 @@ export class MoveTabHandler {
     }
   }
 
+  /**
+   * Handles user highlighting tabs/ inner tabs
+   * @param highlightInfo The tabs that are highlighted
+   */
+  private async onTabsHighlighted(
+    highlightInfo: Tabs.OnHighlightedHighlightInfoType
+  ) {
+    // Clears the set since the updated values have been updated
+    this.highlightedTabs = [];
+
+    highlightInfo.tabIds.forEach((id) => {
+      const { groupTab, index } =
+        StorageHandler.instance.getGroupTabOrInnerTabByID(id);
+
+      // Disables highlighting group and inner tabs
+      if (groupTab) {
+        tabs.update(id, { highlighted: false });
+      } else {
+        this.highlightedTabs.push(id);
+      }
+    });
+  }
+
   //#endregion
 
   //#region Utils
@@ -267,45 +294,64 @@ export class MoveTabHandler {
       windowId
     );
 
-    if (groupTab && groupTabInfo) {
-      // Blocks adding by drag when not needed
-      if (!settings.addTabsByDrag) {
-        // Puts the tab outside of the group tab
-        moveGroupTab(groupTab, [tabId]);
-        return;
-      }
+    if (!groupTab || !groupTabInfo) {
+      return;
+    }
 
-      const movedTabInfo = await tabs.get(tabId);
+    const isHighlighted =
+      this.highlightedTabs.includes(tabId) && this.highlightedTabs.length > 1;
 
-      let results;
+    // Blocks adding by drag when not needed
+    if (!settings.addTabsByDrag) {
+      // Puts the tab outside of the group tab
+      moveGroupTab(groupTab, isHighlighted ? this.highlightedTabs : [tabId]);
+      return;
+    }
 
-      // Makes sure to display dialog if needed
-      if (settings.showMoveToGroupTabDialog.drag) {
-        results = await this.handleConfirmMove(
-          `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
-            '"',
-            '\\"'
-          )} to group ${groupTab.name.replaceAll('"', '\\"')}?`
+    const movedTabInfo = await tabs.get(tabId);
+
+    let results;
+
+    // Makes sure to display dialog if needed
+    if (settings.showMoveToGroupTabDialog.drag) {
+      results = await this.handleConfirmMove(
+        `Are you sure you want to move ${
+          isHighlighted
+            ? "the highlighted tabs"
+            : `tab ${movedTabInfo.title?.replaceAll('"', '\\"')}`
+        } to group ${groupTab.name.replaceAll('"', '\\"')}?`
+      );
+    } else {
+      results = [true];
+    }
+
+    if (results[0]) {
+      if (isHighlighted) {
+        // Adds all of the highlighted group tabs
+        await StorageHandler.instance.addInnerTabs(
+          groupTab,
+          this.highlightedTabs,
+          toIndex - groupTabInfo.index - 1
         );
       } else {
-        results = [true];
-      }
-
-      if (results[0]) {
-        StorageHandler.instance.addInnerTab(
+        await StorageHandler.instance.addInnerTab(
           groupTab,
           tabId,
           toIndex - groupTabInfo.index - 1
         );
-
-        await createNotification(
-          "Tab Moved",
-          `Tab ${movedTabInfo.title} was moved to group tab ${groupTab.name}`
-        );
-      } else {
-        // Puts the tab outside of the group tab
-        moveGroupTab(groupTab, [tabId]);
       }
+
+      await createNotification(
+        `Tab${isHighlighted ? "s" : ""} Moved`,
+        `${
+          isHighlighted
+            ? "Highlighted tabs were"
+            : `Tab ${movedTabInfo.title} was`
+        } moved to group tab ${groupTab.name}`
+      );
+    } else {
+      // Puts the tab outside of the group tab
+      moveGroupTab(groupTab, isHighlighted ? this.highlightedTabs : [tabId]);
     }
   }
 
