@@ -5,6 +5,8 @@ import { GroupTabItem } from "./GroupTabItem";
 import browser, { tabs } from "webextension-polyfill";
 import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
 import { GROUP_TAB_URL } from "../../utils/Consts";
+import { useChoiceDialog } from "../../utils/ui/useChoiceDialog";
+import { GroupTab } from "utils/GroupTab";
 
 /**
  * The list of group tabs displayed in the ui
@@ -14,6 +16,8 @@ export const GroupTabList = () => {
     StorageHandler.instance.getAllGroupTabIDs()
   );
 
+  const [groupTabToRemove, setGroupTabToRemove] = useState<GroupTab>();
+
   // Updates group tabs in the component
   const handleUpdateGroupTabs = useCallback(() => {
     const groupTabsIDs = StorageHandler.instance.getAllGroupTabIDs();
@@ -21,11 +25,41 @@ export const GroupTabList = () => {
     setGroupTabIDs(groupTabsIDs);
   }, []);
 
-  // Removes group tab from ui and storage and updates the ui
-  const handleRemoveGroupTab = useCallback(async (groupTabId: number) => {
-    await browser.tabs.remove(groupTabId);
-    await StorageHandler.instance.removeTabFromStorage(groupTabId);
-    handleUpdateGroupTabs();
+  // Handles removing the actual group tab
+  const handleRemoveGroupTab = useCallback(
+    async (groupTab?: GroupTab) => {
+      // At least one of this must be defined
+      if (!groupTabToRemove && !groupTab) return;
+
+      // If a value wasn't passed means dialog was used and we need the state value
+      groupTab = groupTab || groupTabToRemove!;
+
+      await browser.tabs.remove(groupTab.id);
+      await StorageHandler.instance.removeTabFromStorage(groupTab.id);
+      handleUpdateGroupTabs();
+
+      setGroupTabToRemove(undefined);
+    },
+    [groupTabToRemove]
+  );
+
+  const { dialog: removeGroupTabDialog, openDialog: openRemoveGroupTabDialog } =
+    useChoiceDialog(
+      "Remove group tab",
+      "Are you sure you want to remove this group tab?",
+      handleRemoveGroupTab
+    );
+
+  // Handles user clicking the he remove group tab button accordingly with the settings
+  const handleRemoveGroupTabClick = useCallback(async (groupTab: GroupTab) => {
+    if (StorageHandler.instance.settings.showRemoveGroupTabFromPopupDialog) {
+      setGroupTabToRemove(groupTab);
+      openRemoveGroupTabDialog(
+        `Are you sure you want to remove ${groupTab.name}?`
+      );
+    } else {
+      handleRemoveGroupTab(groupTab);
+    }
   }, []);
 
   // Adds group tab to ui and storage
@@ -40,21 +74,22 @@ export const GroupTabList = () => {
     handleUpdateGroupTabs();
   }, []);
 
-  const { dialog, openDialog } = useTextInputDialog(
-    "Add Group Tab",
-    "Please enter the Group tab's name",
-    handleAddGroupTab
-  );
+  const { dialog: addGroupTabDialog, openDialog: openAddGroupTabDialog } =
+    useTextInputDialog(
+      "Add Group Tab",
+      "Please enter the Group tab's name",
+      handleAddGroupTab
+    );
 
   // Handles creating a group tab based on the settings
   const handleCreateGroupTab = useCallback(() => {
     const settings = StorageHandler.instance.settings;
     if (settings.showCreateGroupTabNameDialog.popup) {
-      openDialog(settings.defaultGroupTabName);
+      openAddGroupTabDialog(settings.defaultGroupTabName);
     } else {
       handleAddGroupTab(settings.defaultGroupTabName);
     }
-  }, [openDialog, handleAddGroupTab]);
+  }, [openAddGroupTabDialog, handleAddGroupTab]);
 
   return (
     <Stack
@@ -68,7 +103,8 @@ export const GroupTabList = () => {
       }}
       justifyContent={groupTabIDs.length > 0 ? "space-between" : "center"}
     >
-      {dialog}
+      {addGroupTabDialog}
+      {removeGroupTabDialog}
 
       {groupTabIDs.length > 0 ? (
         <List dense sx={{ width: "100%", overflow: "scroll" }}>
@@ -77,7 +113,7 @@ export const GroupTabList = () => {
               <GroupTabItem
                 key={value}
                 groupTabID={parseInt(value)}
-                onRemoveGroupTab={handleRemoveGroupTab}
+                onRemoveGroupTab={handleRemoveGroupTabClick}
               />
             );
           })}

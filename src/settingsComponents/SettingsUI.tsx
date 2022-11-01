@@ -436,7 +436,12 @@ export const SettingsUI = () => {
                 alignSelf="center"
                 sx={{ right: 0, position: "absolute", paddingRight: 10 }}
               >
-                <Button variant="outlined" onClick={openRestoreDefaultsDialog}>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    openRestoreDefaultsDialog();
+                  }}
+                >
                   Restore to default
                 </Button>
                 <Button variant="contained" onClick={handleOnApplyPress}>

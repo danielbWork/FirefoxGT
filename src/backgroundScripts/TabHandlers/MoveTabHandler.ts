@@ -232,9 +232,7 @@ export class MoveTabHandler {
   private async handleConfirmMove(message: string) {
     const confirmCode = `confirm("${message}");`;
 
-    const activeTab = await getActiveTab();
-
-    const results = await tabs.executeScript(activeTab.id, {
+    const results = await tabs.executeScript({
       code: confirmCode,
     });
 
@@ -510,12 +508,20 @@ export class MoveTabHandler {
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
-    const results = await this.handleConfirmMove(
-      `Are you sure you want remove tab ${movedTabInfo.title?.replaceAll(
-        '"',
-        '\\"'
-      )} from group ${groupTab.name.replaceAll('"', '\\"')}?`
-    );
+    const settings = StorageHandler.instance.settings;
+
+    let results;
+
+    if (settings.showRemoveFromGroupTabDialog.drag) {
+      results = await this.handleConfirmMove(
+        `Are you sure you want remove tab ${movedTabInfo.title?.replaceAll(
+          '"',
+          '\\"'
+        )} from group ${groupTab.name.replaceAll('"', '\\"')}?`
+      );
+    } else {
+      results = [true];
+    }
 
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);

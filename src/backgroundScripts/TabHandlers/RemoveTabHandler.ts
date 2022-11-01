@@ -60,7 +60,25 @@ export class RemoveTabHandler {
         tab.id
       );
 
-      await this.removeTabFromGroupMenuClick(groupTab!, tab.id!);
+      let results;
+
+      // Checks if request from dialog is needed
+      if (StorageHandler.instance.settings.showRemoveFromGroupTabDialog.menu) {
+        const confirmText = `Are you sure you want remove tab ${tab.title?.replaceAll(
+          '"',
+          '\\"'
+        )} from group ${groupTab?.name.replaceAll('"', '\\"')}?`;
+
+        results = await tabs.executeScript({
+          code: `confirm("${confirmText}");`,
+        });
+      } else {
+        results = [true];
+      }
+
+      if (results[0]) {
+        await this.removeTabFromGroupMenuClick(groupTab!, tab.id!);
+      }
     }
   }
 
@@ -123,39 +141,81 @@ export class RemoveTabHandler {
    * @param groupTab The group tab that was removed
    */
   private async onRemoveGroupTab(groupTab: GroupTab) {
+    const settings = StorageHandler.instance.settings;
+
+    // TODO use this to actually save groups
     // Checks if the window of the group tab was removed
-    if (this.closedWithWindow[groupTab.id]) {
-      createNotification(
-        `Removed ${groupTab.name}`,
-        `${groupTab.name} was removed with it's window`
-      );
-      delete this.closedWithWindow[groupTab.id];
-    }
+    // if (this.closedWithWindow[groupTab.id]) {
+    //   createNotification(
+    //     `Removed ${groupTab.name}`,
+    //     `${groupTab.name} was removed with it's window`
+    //   );
+    //   delete this.closedWithWindow[groupTab.id];
+    // }
     // Checks for empty group tab
-    else if (!groupTab.innerTabs.length) {
+    if (!groupTab.innerTabs.length) {
       createNotification(`Removed ${groupTab.name}`, "Group tab was removed");
-    } else if (groupTab.isOpen) {
-      createNotification(
-        `Removed ${groupTab.name}`,
-        "All inner tabs are currently available"
-      );
     } else {
-      tabs.show(groupTab.innerTabs);
+      let deleteInnerTabs = false;
 
-      createNotification(
-        `Removed ${groupTab.name}`,
-        "Displaying all of its hidden tabs"
-      );
+      // Based on settings decides what to do with the tab
+      switch (settings.removeInnerTabOfDeletedGroupTab) {
+        case "always":
+          deleteInnerTabs = true;
+          break;
+        case "dialog":
+          const confirmText = `Do you also want to remove the inner tabs of ${groupTab.name.replaceAll(
+            '"',
+            '\\"'
+          )}?`;
+
+          const results = await tabs.executeScript({
+            code: `confirm("${confirmText}");`,
+          });
+
+          deleteInnerTabs = results[0] === true;
+          break;
+
+        case "never":
+          deleteInnerTabs = false;
+          break;
+
+        default:
+          break;
+      }
+
+      if (deleteInnerTabs) {
+        tabs.remove(groupTab.innerTabs);
+        createNotification(
+          `Removed ${groupTab.name}`,
+          "All of it's inner tabs were removed as well"
+        );
+      } else {
+        if (groupTab.isOpen) {
+          createNotification(
+            `Removed ${groupTab.name}`,
+            "All inner tabs are currently available"
+          );
+        } else {
+          tabs.show(groupTab.innerTabs);
+
+          createNotification(
+            `Removed ${groupTab.name}`,
+            "Displaying all of its hidden tabs"
+          );
+        }
+      }
     }
 
-    browser.history.deleteUrl({ url: GROUP_TAB_URL });
+    // TODO Fix this as well
+    // browser.history.deleteUrl({ url: GROUP_TAB_URL });
 
-    // Uses timeout as the tab doesn't immediately show in session list
-    setTimeout(() => {
-      this.removeGroupTabFromSessionHistory(groupTab).catch((error) => {
-        console.log(error);
-      });
-    }, 500);
+    // // Uses timeout as the tab doesn't immediately show in session list
+    // setTimeout(() => {
+    //   this.removeGroupTabFromSessionHistory(groupTab).catch((error) => {
+    //     console.log(error);
+    //   });
+    // }, 500);
   }
 
   /**

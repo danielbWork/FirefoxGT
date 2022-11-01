@@ -52,12 +52,12 @@ export type Settings = {
     drag: boolean;
     menu: boolean;
     popup: boolean;
-  }; // unused
+  };
 
   /**
    * Decides what to do with inner tabs after removing group tab
    */
-  removeInnerTabOfDeletedGroupTab: "always" | "dialog" | "never"; // unused
+  removeInnerTabOfDeletedGroupTab: "always" | "dialog" | "never";
 
   /**
    * Show the dialog asking user are they sure they want to remove the group tab
