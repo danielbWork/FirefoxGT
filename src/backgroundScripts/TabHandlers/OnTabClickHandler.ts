@@ -162,10 +162,7 @@ export class OnTabClickHandler {
    * @param groupTab The group tab that we want to move from
    * @param previousTabId The id of tab this was moved from
    */
-  private async findNewActiveTab(
-    groupTab: GroupTab,
-    previousTabId: number | undefined
-  ) {
+  private async findNewActiveTab(groupTab: GroupTab, previousTabId?: number) {
     // Called when user closes tab which leads to moving to group tab
     if (previousTabId === undefined) {
       tabs.create({ active: true });

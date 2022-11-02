@@ -1,16 +1,25 @@
 import {
   CREATE_NEW_GROUP_TAB_ID,
+  GROUP_TAB_SESSION_KEY,
   GROUP_TAB_URL,
+  INNER_TAB_SESSION_KEY,
   OPEN_LINK_IN_GROUP_TAB_ID,
   OPEN_LINK_IN_NEW_GROUP_TAB_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
-import browser, { Tabs, Menus, tabs, bookmarks } from "webextension-polyfill";
+import browser, {
+  Tabs,
+  Menus,
+  tabs,
+  bookmarks,
+  sessions,
+} from "webextension-polyfill";
 import {
   checkMovedIntoGroupTab,
   createNotification,
   moveGroupTab,
 } from "../../utils/Utils";
+import { GroupTab } from "utils/GroupTab";
 
 /**
  * Handles group tab creation and other tab creation
@@ -79,6 +88,17 @@ export class CreateTabHandler {
    * @param tab The tab that was added to ui
    */
   private async onCreateTab(tab: Tabs.Tab) {
+    const sessionGroupTabInfo = await sessions.getTabValue(
+      tab.id!,
+      GROUP_TAB_SESSION_KEY
+    );
+
+    // Checks if group tab restored by user
+    if (sessionGroupTabInfo) {
+      this.handleRestoredGroupTab(tab, sessionGroupTabInfo);
+      return;
+    }
+
     const { groupTab } = StorageHandler.instance.getGroupTabOrInnerTabByID(
       tab.id
     );
@@ -279,6 +299,75 @@ export class CreateTabHandler {
 
     // Moves the inner tabs to make sure they are after group tab
     await moveGroupTab(groupTab.id!);
+  }
+
+  //#endregion
+
+  //#region Reopen Group Tab
+
+  /**
+   * Handles fixing group tab info after the user restored the group tab was restored by user
+   * @param groupTabInfo The group tab info
+   * @param sessionGroupTab The session info for the reopened group tab
+   */
+  private async handleRestoredGroupTab(
+    groupTabInfo: Tabs.Tab,
+    sessionGroupTab: GroupTab
+  ) {
+    // TODO Test on actual closing firefox
+    const innerTabs: number[] = [];
+
+    // Sorted by index
+    const windowTabs = await tabs.query({ windowId: groupTabInfo.windowId });
+
+    // Adds to innerTabs all the updated ids of the inner tabs
+    for (
+      let index = 0;
+      index < windowTabs.length &&
+      innerTabs.length !== sessionGroupTab.innerTabs.length;
+      index++
+    ) {
+      const tab = windowTabs[index];
+
+      // Checks for the session info we need
+      const innerTabSessionInfo = await sessions.getTabValue(
+        tab.id!,
+        INNER_TAB_SESSION_KEY
+      );
+
+      if (innerTabSessionInfo === sessionGroupTab.id) {
+        innerTabs.push(tab.id!);
+      }
+    }
+
+    const restoredGroupTab = await StorageHandler.instance.addGroupTab(
+      groupTabInfo.id!,
+      sessionGroupTab.name,
+      innerTabs,
+      sessionGroupTab.icon
+    );
+
+    // Resets the session data
+    await sessions.setTabValue(
+      restoredGroupTab.id,
+      GROUP_TAB_SESSION_KEY,
+      restoredGroupTab
+    );
+
+    innerTabs.forEach((innerTabId) => {
+      sessions.setTabValue(
+        innerTabId,
+        INNER_TAB_SESSION_KEY,
+        restoredGroupTab.id
+      );
+    });
+
+    if (groupTabInfo.active) {
+      // FIXME Currently creates new tab even when other options are viable should fix general move back to tab info
+      await tabs.create({ active: true });
+    }
+
+    await tabs.reload(restoredGroupTab.id, {});
   }
 
   //#endregion

@@ -66,3 +66,10 @@ export const GROUP_TAB_URL = "src/webPages/GroupTab/group_tab.html";
 export const ICON_URL = "icons/group_tab_icon.png";
 
 //#endregion
+
+//#region Session Keys
+
+export const GROUP_TAB_SESSION_KEY = "group-tab";
+export const INNER_TAB_SESSION_KEY = "inner-tab";
+
+//#endregion

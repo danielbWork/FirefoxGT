@@ -130,3 +130,12 @@ export async function getActiveTab() {
 
   return activeTab[0];
 }
+
+/**
+ * Delays the current process
+ * @param time The time in milliseconds to delay
+ * @returns The promise that needs to be waited to actually delay
+ */
+export async function delay(time = 100) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}

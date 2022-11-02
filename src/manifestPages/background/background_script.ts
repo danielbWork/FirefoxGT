@@ -7,11 +7,14 @@ import { RemoveTabHandler } from "../../backgroundScripts/TabHandlers/RemoveTabH
 import browser from "webextension-polyfill";
 import { OnTabClickHandler } from "../../backgroundScripts/TabHandlers/OnTabClickHandler";
 import { BackgroundMessageHandler } from "../../backgroundScripts/BackgroundMessageHandler";
+import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
 
 browser.runtime.onInstalled.addListener(async () => {
   await StorageHandler.instance.setupDefaultStorage();
   ContextMenuHandler.instance.setupContextMenuItems();
 });
+
+SessionsHandler.instance.setupSessionsHandler();
 
 StorageHandler.instance.loadStorage();
 

@@ -66,7 +66,7 @@ export type Settings = {
   /**
    * Decides if deleted group tabs (not by window close) can be restored
    */
-  removeGroupTabFromMemory: boolean; // unused
+  removeGroupTabFromMemory: boolean;
 
   //#endregion
 

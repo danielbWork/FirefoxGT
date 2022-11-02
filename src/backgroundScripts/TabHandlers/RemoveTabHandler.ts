@@ -1,18 +1,17 @@
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
 import browser, { Menus, sessions, Tabs, tabs } from "webextension-polyfill";
-import { createNotification, moveGroupTab } from "../../utils/Utils";
-import { GROUP_TAB_URL, REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
+import { createNotification, delay, moveGroupTab } from "../../utils/Utils";
+import {
+  GROUP_TAB_SESSION_KEY,
+  GROUP_TAB_URL,
+  REMOVE_FROM_GROUP_TAB_ID,
+} from "../../utils/Consts";
 
 /**
  * Handles tabs and group tabs being removed
  */
 export class RemoveTabHandler {
-  /**
-   * Used to mark group tab that had the entire window be removed
-   */
-  private closedWithWindow: Record<number, boolean> = {};
-
   //#region Singleton
 
   private static _instance: RemoveTabHandler;
@@ -109,9 +108,21 @@ export class RemoveTabHandler {
     tabId: number,
     removeInfo: Tabs.OnRemovedRemoveInfoType
   ) {
-    // Checks if window is being removed to update later notification
-    if (removeInfo.isWindowClosing) {
-      this.closedWithWindow[tabId] = true;
+    // Removes the group tab from history only when necessary
+    if (
+      !removeInfo.isWindowClosing &&
+      StorageHandler.instance.settings.removeGroupTabFromMemory
+    ) {
+      const groupTab = await StorageHandler.instance.getGroupTabByID(tabId);
+
+      // Removes the group tab completely from history
+      if (groupTab) {
+        browser.history.deleteUrl({ url: GROUP_TAB_URL });
+
+        this.removeLatestGroupTabFromSessionHistory().catch((error) => {
+          console.log(error);
+        });
+      }
     }
 
     await StorageHandler.instance.removeTabFromStorage(tabId);
@@ -128,7 +139,6 @@ export class RemoveTabHandler {
     if (!groupTab.innerTabs.length && !groupTab.isOpen) {
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
-
     // Makes sure to show the inner tab if needed
     tabs.show(innerTabID);
   }
@@ -143,15 +153,6 @@ export class RemoveTabHandler {
   private async onRemoveGroupTab(groupTab: GroupTab) {
     const settings = StorageHandler.instance.settings;
 
-    // TODO use this to actually save groups
-    // Checks if the window of the group tab was removed
-    // if (this.closedWithWindow[groupTab.id]) {
-    //   createNotification(
-    //     `Removed ${groupTab.name}`,
-    //     `${groupTab.name} was removed with it's window`
-    //   );
-    //   delete this.closedWithWindow[groupTab.id];
-    // }
     // Checks for empty group tab
     if (!groupTab.innerTabs.length) {
       createNotification(`Removed ${groupTab.name}`, "Group tab was removed");
@@ -206,49 +207,27 @@ export class RemoveTabHandler {
         }
       }
     }
-
-    // TODO Fix this as well
-    // browser.history.deleteUrl({ url: GROUP_TAB_URL });
-
-    // // Uses timeout as the tab doesn't immediately show in session list
-    // setTimeout(() => {
-    //   this.removeGroupTabFromSessionHistory(groupTab).catch((error) => {
-    //     console.log(error);
-    //   });
-    // }, 500);
   }
 
   /**
-   * Removes the group tab's actual tab from the session history so it won't be restored something like ctrl+shift+t
-   * @param groupTab The group tab that was removed
+   * Removes the group tab's actual tab from the session history
+   * so it won't be restored something like ctrl+shift+t
    */
-  private async removeGroupTabFromSessionHistory(groupTab: GroupTab) {
+  private async removeLatestGroupTabFromSessionHistory() {
+    // Uses delay as the tab doesn't immediately show in session list
+    await delay(500);
+
     const deletedSessions = await sessions.getRecentlyClosed();
 
     // Finds the session the group tab was deleted in
     const deletedGroupTabSession = deletedSessions.find((session) => {
-      // TODO CHange this to have value saved in group tab session
-      if (session.tab?.title?.startsWith(groupTab.name)) {
-        return true;
-      }
+      const tab = session.tab;
 
-      const deletedGroupTab = session.window?.tabs?.find((tab) => {
-        // TODO CHange this to have value saved in group tab session
-        return tab.title?.startsWith(groupTab.name);
-      });
-
-      return deletedGroupTab !== undefined;
+      // Checks if the sessions tab has the group tab url as sadly
+      return tab && tab.url?.includes(GROUP_TAB_URL);
     });
 
     let sessionTab = deletedGroupTabSession?.tab;
-
-    // if we don't have a tab must be a window
-    if (!sessionTab) {
-      // finds session tab
-      sessionTab = deletedGroupTabSession?.window!.tabs?.find((tab) => {
-        return tab.id === groupTab.id;
-      });
-    }
 
     // Just to make sure and remove warning
     if (sessionTab) {

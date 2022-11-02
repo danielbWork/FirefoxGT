@@ -174,21 +174,30 @@ export class StorageHandler {
    * @param id The id of the group tab
    * @param name The name of the group tab
    * @param innerTabs The new group tab
+   * @param icon The icon of the group tab
    *
+   * @returns The group tab that was created
    * @throws Error when user adds a group tab that was already in the list
    */
-  async addGroupTab(id: number, name: string, innerTabs: number[] = []) {
+  async addGroupTab(
+    id: number,
+    name: string,
+    innerTabs: number[] = [],
+    icon?: string
+  ) {
     if (this.groupTabs[id]) {
       throw "Invalid group tab ID, already exists";
     }
 
-    const newGroupTab = new GroupTab(id, name, innerTabs);
+    const newGroupTab = new GroupTab(id, name, innerTabs, icon);
 
     this.groupTabs[id] = newGroupTab;
 
     await this.updateAllGroupTabs();
 
     this.onAddTab.addedGroupTab(newGroupTab);
+
+    return newGroupTab;
   }
 
   /**
