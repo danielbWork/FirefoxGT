@@ -2,7 +2,7 @@ import { GroupTab } from "../../utils/GroupTab";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { TOGGLE_GROUP_TAB_ID } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
-import { getActiveTab } from "../../utils/Utils";
+import { findNewActiveTab, getActiveTab } from "../../utils/Utils";
 
 /**
  * Handles user click events on group tabs
@@ -65,9 +65,9 @@ export class OnTabClickHandler {
           this.isDraggingFlag = true;
         }
 
-        this.findNewActiveTab(groupTab, activeInfo.previousTabId);
+        findNewActiveTab(activeInfo.previousTabId);
       } else {
-        this.onGroupTabClick(groupTab, activeInfo.previousTabId!);
+        this.onGroupTabClick(groupTab, activeInfo.previousTabId);
       }
     }
   }
@@ -81,9 +81,10 @@ export class OnTabClickHandler {
     if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
       const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!)!;
 
-      const activeTab = await getActiveTab();
-
-      await this.findNewActiveTab(groupTab, activeTab.id);
+      // Checks to see if we need to move before the hide
+      if (groupTab.isOpen) {
+        await findNewActiveTab();
+      }
 
       // Checks whether to hide or show by doing opposite
       if (groupTab.isOpen) {
@@ -134,7 +135,7 @@ export class OnTabClickHandler {
    * @param groupTab The group tab that was clicked
    * @param previousTabId The id of tab this was moved from
    */
-  private async onGroupTabClick(groupTab: GroupTab, previousTabId: number) {
+  private async onGroupTabClick(groupTab: GroupTab, previousTabId?: number) {
     // Makes sure that nothing happens while group tab is empty
     if (groupTab.innerTabs.length) {
       // Checks whether to hide or show by doing opposite
@@ -147,74 +148,13 @@ export class OnTabClickHandler {
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
 
-    this.findNewActiveTab(groupTab, previousTabId);
+    findNewActiveTab(previousTabId);
 
     // Handles dragging timeout to recognize user dragging the tab
     clearTimeout(this.draggingTimeoutID);
     this.draggingTimeoutID = setTimeout(async () => {
       this.draggingTimeoutID = undefined;
     }, 100);
-  }
-
-  /**
-   * Finds a valid tab to move to once the group is hidden, otherwise creates a new tab
-   *
-   * @param groupTab The group tab that we want to move from
-   * @param previousTabId The id of tab this was moved from
-   */
-  private async findNewActiveTab(groupTab: GroupTab, previousTabId?: number) {
-    // Called when user closes tab which leads to moving to group tab
-    if (previousTabId === undefined) {
-      tabs.create({ active: true });
-      return;
-    }
-
-    // Handles when user closed current tab and goes to group tab but previousTabId was defined
-    const handleUpdateError = (error: any) => {
-      // Caused by closing into group tab
-      console.log(error);
-
-      // Creates a new tab instead
-      tabs.create({ active: true });
-    };
-
-    // Checks if we can just go back to previous tab
-    if (!groupTab.innerTabs.includes(previousTabId)) {
-      await tabs
-        .update(previousTabId, { active: true })
-        .catch(handleUpdateError);
-
-      return;
-    }
-
-    let otherTabs = await tabs.query({
-      hidden: false,
-      currentWindow: true,
-    });
-
-    // Checks if window only has single closed group tab
-    if (otherTabs.length === 1) {
-      tabs.create({ active: true });
-      return;
-    }
-
-    const groupTabIDs = StorageHandler.instance.getAllGroupTabIDs();
-
-    // Filters for tabs that are neither a group tab or one of the inner tab about to be hidden
-    const validTabs = otherTabs.filter((value) => {
-      const id = value.id;
-
-      return (
-        id && !groupTabIDs.includes(`${id}`) && !groupTab.innerTabs.includes(id)
-      );
-    });
-
-    if (validTabs.length > 0) {
-      // Currently goes for the first option might change in future
-      tabs.update(validTabs[0].id, { active: true }).catch(handleUpdateError);
-    } else {
-      tabs.create({ active: true });
-    }
   }
 
   //#endregion

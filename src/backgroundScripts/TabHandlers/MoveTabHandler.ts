@@ -5,6 +5,7 @@ import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   checkMovedIntoGroupTab,
   createNotification,
+  findNewActiveTab,
   getActiveTab,
   moveGroupTab,
 } from "../../utils/Utils";
@@ -553,6 +554,18 @@ export class MoveTabHandler {
     await StorageHandler.instance.addInnerTab(groupTab, tabId);
 
     await moveGroupTab(groupTab);
+
+    // Incase of closed group tab move from the tab and hides if necessary
+    if (!groupTab.isOpen) {
+      const tab = await tabs.get(tabId);
+
+      // Moves away if active tab
+      if (tab.active) {
+        await findNewActiveTab();
+      }
+
+      tabs.hide(tabId);
+    }
   }
 
   /**

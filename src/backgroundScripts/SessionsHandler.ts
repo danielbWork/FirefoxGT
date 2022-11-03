@@ -2,6 +2,7 @@ import { GroupTab } from "../utils/GroupTab";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import browser, { tabs, sessions, Tabs } from "webextension-polyfill";
 import { GROUP_TAB_SESSION_KEY, INNER_TAB_SESSION_KEY } from "../utils/Consts";
+import { findNewActiveTab } from "../utils/Utils";
 
 /**
  * Class in charge of various tasks regarding session data
@@ -225,8 +226,7 @@ export class SessionsHandler {
     });
 
     if (groupTabInfo.active) {
-      // FIXME Currently creates new tab even when other options are viable should fix general move back to tab info
-      await tabs.create({ active: true });
+      await findNewActiveTab();
     }
 
     await tabs.reload(restoredGroupTab.id, {});

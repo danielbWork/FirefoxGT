@@ -139,3 +139,95 @@ export async function getActiveTab() {
 export async function delay(time = 100) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
+
+/**
+ * Finds a valid tab to move to from the active tab, does nothing if active tab is not a or in group tab
+ *
+ * @param previousTabId The id of the tab this was moved from if it exists
+ */
+export async function findNewActiveTab(previousTabId?: number) {
+  const activeTab = await getActiveTab();
+
+  const { groupTab, index } = StorageHandler.instance.getGroupTabOrInnerTabByID(
+    activeTab.id!
+  );
+
+  if (!groupTab) return;
+
+  let visibleTabs = await tabs.query({
+    active: false,
+    hidden: false,
+    windowId: activeTab.windowId,
+  });
+
+  // Removes the group tab and inner children from this
+  visibleTabs = visibleTabs.filter((tab) => {
+    const id = tab.id!;
+    return id !== groupTab?.id && !groupTab?.innerTabs.includes(id);
+  });
+
+  // If no tab left just creates new one
+  if (!visibleTabs.length) {
+    tabs.create({ active: true });
+    return;
+  }
+
+  // Finds if the previous tab is a viable option
+  if (previousTabId) {
+    const previousTab = visibleTabs.find((tab) => {
+      return tab.id === previousTabId;
+    });
+
+    // Opener must not be in the group tab
+    if (previousTab) {
+      const previousGroupTab =
+        StorageHandler.instance.getGroupTabByID(previousTabId);
+
+      // Can't go to a group tab
+      if (!previousGroupTab) {
+        await tabs.update(previousTab.id, { active: true });
+        return;
+      }
+    }
+  }
+
+  let newTab;
+
+  const groupTabIndex = (await tabs.get(groupTab.id)).index;
+  const endIndex = groupTab.innerTabs.length + groupTabIndex;
+
+  // Finds the distance between the tab and the active tab's group
+  const calculateDistance = (index: number) => {
+    // Distance is the shortest length either to the group tab or the last tab in the group
+    return Math.min(
+      Math.abs(groupTabIndex - index),
+      Math.abs(endIndex - index)
+    );
+  };
+
+  // Goes over the tabs and try to see if any are valid to move to
+  for (const tab of visibleTabs) {
+    const visibleGroupTab = StorageHandler.instance.getGroupTabByID(
+      tab.id || 0
+    );
+
+    // Not interested in group tabs
+    if (!visibleGroupTab) {
+      // If already found possible new tab checks which is closer
+      if (newTab) {
+        newTab =
+          calculateDistance(tab.index) < calculateDistance(newTab.index)
+            ? tab
+            : newTab;
+      } else {
+        newTab = tab;
+      }
+    }
+  }
+
+  if (newTab) {
+    tabs.update(newTab.id, { active: true });
+  } else {
+    tabs.create({ active: true });
+  }
+}
