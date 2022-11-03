@@ -1,10 +1,10 @@
 import { GroupTab } from "../utils/GroupTab";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
-import browser, { sessions } from "webextension-polyfill";
+import browser, { tabs, sessions, Tabs } from "webextension-polyfill";
 import { GROUP_TAB_SESSION_KEY, INNER_TAB_SESSION_KEY } from "../utils/Consts";
 
 /**
- * Class in charge of adding session info to group tabs and inner tabs
+ * Class in charge of various tasks regarding session data
  */
 export class SessionsHandler {
   //#region Singleton
@@ -35,6 +35,8 @@ export class SessionsHandler {
 
     storageHandler.onEditTab.addListener(this.onEditTab.bind(this));
   }
+
+  //#region Listeners
 
   /**
    * Handles adding session data to group tab and inner tabs
@@ -87,5 +89,146 @@ export class SessionsHandler {
    */
   private async onEditTab(groupTab: GroupTab) {
     sessions.setTabValue(groupTab.id, GROUP_TAB_SESSION_KEY, groupTab);
+  }
+
+  //#endregion
+
+  /**
+   * Loads the sessions data for when user starts up the browser
+   */
+  async loadUpStartupData() {
+    const restoredTabs = await tabs.query({});
+
+    const groupsSessionInfo: Record<
+      number,
+      { groupTab: GroupTab; groupTabInfo: Tabs.Tab; innerTabs: number[] }
+    > = {};
+
+    // Goes over the tabs and checks which are related to extension
+    for (const tab of restoredTabs) {
+      const groupTabData = await sessions.getTabValue(
+        tab.id!,
+        GROUP_TAB_SESSION_KEY
+      );
+      const innerTabData = await sessions.getTabValue(
+        tab.id!,
+        INNER_TAB_SESSION_KEY
+      );
+
+      if (groupTabData) {
+        groupsSessionInfo[groupTabData.id] = {
+          groupTab: groupTabData,
+          groupTabInfo: tab,
+          innerTabs: [],
+        };
+      }
+
+      // Inner tabs will always be a after group tab in order so we can assume the the info was added
+      if (innerTabData) {
+        groupsSessionInfo[innerTabData].innerTabs.push(tab.id!);
+      }
+    }
+
+    // Updates the session values
+    Object.values(groupsSessionInfo).forEach(
+      async ({ groupTab, groupTabInfo, innerTabs }) => {
+        const restoredGroupTab =
+          await StorageHandler.instance.updateGroupTabFromSession(
+            groupTab.id,
+            groupTabInfo.id!,
+            groupTab.name,
+            innerTabs,
+            groupTab.icon,
+            groupTab.isOpen
+          );
+
+        await sessions.setTabValue(
+          restoredGroupTab.id,
+          GROUP_TAB_SESSION_KEY,
+          restoredGroupTab
+        );
+
+        restoredGroupTab.innerTabs.forEach((innerTabId) => {
+          sessions.setTabValue(
+            innerTabId,
+            INNER_TAB_SESSION_KEY,
+            restoredGroupTab.id
+          );
+        });
+
+        // Keeps the inner tabs in the correct visibility
+        restoredGroupTab.isOpen
+          ? tabs.show(restoredGroupTab.innerTabs)
+          : tabs.hide(restoredGroupTab.innerTabs);
+      }
+    );
+  }
+
+  /**
+   * Handles fixing group tab info after the user restored the group tab was restored by user
+   * @param groupTabInfo The group tab info
+   * @param sessionGroupTab The session info for the reopened group tab
+   */
+  async handleRestoredGroupTab(
+    groupTabInfo: Tabs.Tab,
+    sessionGroupTab: GroupTab
+  ) {
+    const innerTabs: number[] = [];
+
+    // Sorted by index
+    const windowTabs = await tabs.query({ windowId: groupTabInfo.windowId });
+
+    // Adds to innerTabs all the updated ids of the inner tabs
+    for (
+      let index = 0;
+      index < windowTabs.length &&
+      innerTabs.length !== sessionGroupTab.innerTabs.length;
+      index++
+    ) {
+      const tab = windowTabs[index];
+
+      // Checks for the session info we need
+      const innerTabSessionInfo = await sessions.getTabValue(
+        tab.id!,
+        INNER_TAB_SESSION_KEY
+      );
+
+      if (innerTabSessionInfo === sessionGroupTab.id) {
+        innerTabs.push(tab.id!);
+      }
+    }
+
+    const restoredGroupTab =
+      await StorageHandler.instance.updateGroupTabFromSession(
+        sessionGroupTab.id,
+        groupTabInfo.id!,
+        sessionGroupTab.name,
+        innerTabs,
+        sessionGroupTab.icon,
+        // Since it's empty should always be true
+        true
+      );
+
+    // Resets the session data
+    await sessions.setTabValue(
+      restoredGroupTab.id,
+      GROUP_TAB_SESSION_KEY,
+      restoredGroupTab
+    );
+
+    innerTabs.forEach((innerTabId) => {
+      sessions.setTabValue(
+        innerTabId,
+        INNER_TAB_SESSION_KEY,
+        restoredGroupTab.id
+      );
+    });
+
+    if (groupTabInfo.active) {
+      // FIXME Currently creates new tab even when other options are viable should fix general move back to tab info
+      await tabs.create({ active: true });
+    }
+
+    await tabs.reload(restoredGroupTab.id, {});
   }
 }

@@ -9,18 +9,29 @@ import { OnTabClickHandler } from "../../backgroundScripts/TabHandlers/OnTabClic
 import { BackgroundMessageHandler } from "../../backgroundScripts/BackgroundMessageHandler";
 import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
 
+const loadHandlers = () => {
+  console.log("Load");
+
+  ContextMenuHandler.instance.setupContextMenuItems();
+  SessionsHandler.instance.setupSessionsHandler();
+
+  CreateTabHandler.instance.setupCreateHandler();
+  OnTabClickHandler.instance.setupOnClickHandler();
+  RemoveTabHandler.instance.setupRemoveHandler();
+  MoveTabHandler.instance.setupMoveHandler();
+  EditTabHandler.instance.setupEditHandler();
+  BackgroundMessageHandler.instance.setupMessageHandler();
+};
+
 browser.runtime.onInstalled.addListener(async () => {
   await StorageHandler.instance.setupDefaultStorage();
-  ContextMenuHandler.instance.setupContextMenuItems();
+  await StorageHandler.instance.loadStorage();
+
+  loadHandlers();
 });
 
-SessionsHandler.instance.setupSessionsHandler();
-
-StorageHandler.instance.loadStorage();
-
-CreateTabHandler.instance.setupCreateHandler();
-OnTabClickHandler.instance.setupOnClickHandler();
-RemoveTabHandler.instance.setupRemoveHandler();
-MoveTabHandler.instance.setupMoveHandler();
-EditTabHandler.instance.setupEditHandler();
-BackgroundMessageHandler.instance.setupMessageHandler();
+browser.runtime.onStartup.addListener(async () => {
+  await StorageHandler.instance.loadStorage();
+  await SessionsHandler.instance.loadUpStartupData();
+  loadHandlers();
+});

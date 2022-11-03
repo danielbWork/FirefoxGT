@@ -183,13 +183,14 @@ export class StorageHandler {
     id: number,
     name: string,
     innerTabs: number[] = [],
-    icon?: string
+    icon?: string,
+    isOpen?: boolean
   ) {
     if (this.groupTabs[id]) {
       throw "Invalid group tab ID, already exists";
     }
 
-    const newGroupTab = new GroupTab(id, name, innerTabs, icon);
+    const newGroupTab = new GroupTab(id, name, innerTabs, icon, isOpen);
 
     this.groupTabs[id] = newGroupTab;
 
@@ -318,6 +319,36 @@ export class StorageHandler {
     await this.updateGroupTab(groupTab);
 
     this.onEditTab.editedGroupTab(groupTab);
+  }
+
+  /**
+   * Replaces a group tab with it's new version
+   * @param oldId The original id of the group tab
+   * @param id The new id of the group tab
+   * @param name The name of the group tab
+   * @param innerTabs The inner tabs of the group tab
+   * @param icon The icon of the group tab
+   * @returns The new version of the group tab
+   */
+  async updateGroupTabFromSession(
+    oldId: number,
+    id: number,
+    name: string,
+    innerTabs: number[],
+    icon?: string,
+    isOpen?: boolean
+  ) {
+    await this.removeTabFromStorage(oldId);
+
+    const newGroupTab = await this.addGroupTab(
+      id,
+      name,
+      innerTabs,
+      icon,
+      isOpen
+    );
+
+    return newGroupTab;
   }
 
   //#endregion
