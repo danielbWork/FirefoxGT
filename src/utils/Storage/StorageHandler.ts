@@ -89,6 +89,14 @@ export class StorageHandler {
   }
 
   /**
+   * Loads specifically the group tabs from the storage
+   */
+  async loadGroupTabs() {
+    const data = await storage.local.get();
+    this.groupTabs = data.groupTabs;
+  }
+
+  /**
    * Loads storage to local copy, required to be called to get current storage info
    */
   async loadStorage() {

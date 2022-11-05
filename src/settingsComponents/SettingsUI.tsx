@@ -324,18 +324,18 @@ export const SettingsUI = () => {
             { value: "non", title: "Don't show" },
           ],
         },
-        {
-          type: SettingType.BOOLEAN,
-          title: "Display is group tab open in title",
-          value: settings.isOpenInName,
-          updateSettingCallback:
-            handleCreateUpdateSettingCallback("isOpenInName"),
-          details:
-            "When enabled shows small icon at the start of the group tab title marking if the group tab is open or not. The icon will be before the inner tab count if it's in prefix mode",
-        },
+        // {
+        //   type: SettingType.BOOLEAN,
+        //   title: "Display is group tab open in title",
+        //   value: settings.isOpenInName,
+        //   updateSettingCallback:
+        //     handleCreateUpdateSettingCallback("isOpenInName"),
+        //   details:
+        //     "When enabled shows small icon at the start of the group tab title marking if the group tab is open or not. The icon will be before the inner tab count if it's in prefix mode",
+        // },
       ],
     };
-  }, [settings.innerTabCountInName, settings.isOpenInName]);
+  }, [settings.innerTabCountInName /*settings.isOpenInName*/]);
 
   // Section for other settings that don't fit other categories
   const otherSection = useMemo<SectionProps>(() => {

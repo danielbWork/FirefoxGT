@@ -75,12 +75,13 @@ export type Settings = {
   /**
    * The inner tabs count in the group tab title
    */
-  innerTabCountInName: "prefix" | "postfix" | "non"; // unused
+  innerTabCountInName: "prefix" | "postfix" | "non";
 
   /**
    * Decides if we show change in title for open/ close groups
+   * Commented out as no unicode symbol really fits sadly
    */
-  isOpenInName: boolean;
+  // isOpenInName: boolean; // unused
 
   //#endregion
 
@@ -115,7 +116,7 @@ export const defaultSettings: Settings = {
   removeInnerTabOfDeletedGroupTab: "dialog",
   removeGroupTabFromMemory: false,
   innerTabCountInName: "prefix",
-  isOpenInName: true,
+  // isOpenInName: true,
   useEndTab: false,
   useCloseGroupMode: false,
 };

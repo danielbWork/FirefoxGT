@@ -39,7 +39,7 @@ export class BackgroundMessageHandler {
   private async onMessageReceive(message: any, sender: Runtime.MessageSender) {
     const data = message?.data;
 
-    await StorageHandler.instance.loadStorage();
+    await StorageHandler.instance.loadGroupTabs();
 
     switch (message?.type) {
       case MessageType.ADD_TAB:
@@ -111,9 +111,20 @@ export class BackgroundMessageHandler {
    * @param newSettings The new settings from the user
    */
   private async onUpdateSettings(newSettings: Settings) {
-    // Update settings in storage
-    StorageHandler.instance.applyNewSettings(newSettings);
+    const storageHandler = StorageHandler.instance;
 
-    // TODO add reaction to code when needed
+    // TODO Update this if needed for other settings
+    // Refreshes the group tabs since there names need to be updated
+    if (
+      newSettings.innerTabCountInName !==
+      storageHandler.settings.innerTabCountInName
+    ) {
+      for (const stringId of await storageHandler.getAllGroupTabIDs()) {
+        tabs.reload(parseInt(stringId));
+      }
+    }
+
+    // Update settings in storage
+    storageHandler.applyNewSettings(newSettings);
   }
 }
