@@ -338,30 +338,30 @@ export const SettingsUI = () => {
   }, [settings.innerTabCountInName /*settings.isOpenInName*/]);
 
   // Section for other settings that don't fit other categories
-  const otherSection = useMemo<SectionProps>(() => {
-    return {
-      title: "Other",
-      settings: [
-        {
-          type: SettingType.BOOLEAN,
-          title: "Display end tab",
-          value: settings.useEndTab,
-          updateSettingCallback: handleCreateUpdateSettingCallback("useEndTab"),
-          details:
-            "Adds an end tab to mark the end for the group tab while it's open",
-        },
-        {
-          type: SettingType.BOOLEAN,
-          title: "Activate closed group mode",
-          value: settings.useCloseGroupMode,
-          updateSettingCallback:
-            handleCreateUpdateSettingCallback("useCloseGroupMode"),
-          details:
-            "Closed group mode is a spacial mode where group tabs are closed at all times until pressed, once pressed they will be open and their inner tabs will be displayed. Once the user enters another tab in the window which isn't in the group tab the group tab will automatically close. In this mode group tabs are enterable and have a unique ui",
-        },
-      ],
-    };
-  }, [settings.useEndTab, settings.useCloseGroupMode]);
+  // const otherSection = useMemo<SectionProps>(() => {
+  //   return {
+  //     title: "Other",
+  //     settings: [
+  //       // {
+  //       //   type: SettingType.BOOLEAN,
+  //       //   title: "Display end tab",
+  //       //   value: settings.useEndTab,
+  //       //   updateSettingCallback: handleCreateUpdateSettingCallback("useEndTab"),
+  //       //   details:
+  //       //     "Adds an end tab to mark the end for the group tab while it's open",
+  //       // },
+  //       // {
+  //       //   type: SettingType.BOOLEAN,
+  //       //   title: "Activate closed group mode",
+  //       //   value: settings.useCloseGroupMode,
+  //       //   updateSettingCallback:
+  //       //     handleCreateUpdateSettingCallback("useCloseGroupMode"),
+  //       //   details:
+  //       //     "Closed group mode is a spacial mode where group tabs can be closed at all times until pressed, once pressed they will be open and their inner tabs will be displayed. Once the user enters another tab in the window which isn't in the group tab the group tab will automatically close. In this mode group tabs are enterable and have a unique ui",
+  //       // },
+  //     ],
+  //   };
+  // }, [, /*settings.useEndTab */ settings.useCloseGroupMode]);
 
   // Separately creates each section so only it will need to update that section in the ui
   const sections = [
@@ -369,7 +369,7 @@ export const SettingsUI = () => {
     moveSection,
     removeSection,
     uiSection,
-    otherSection,
+    // otherSection,
   ];
 
   //#endregion

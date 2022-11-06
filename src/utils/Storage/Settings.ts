@@ -89,13 +89,16 @@ export type Settings = {
 
   /**
    * Adds end tab in group tab to mark end of group
+   * Commented out as deemed unnecessary might be re-added in the future
    */
-  useEndTab: boolean; // unused
+  // useEndTab: boolean; // unused
 
   /**
    * Activates the closed group mode
+   * Commented out as this will become an optional feature for each group tab individually
+   * might add setting which decides if this mode is default instead maybe with third dialog option
    */
-  useCloseGroupMode: boolean; // unused
+  // useCloseGroupMode: boolean; // unused
 
   //#endregion
 };
@@ -117,6 +120,6 @@ export const defaultSettings: Settings = {
   removeGroupTabFromMemory: false,
   innerTabCountInName: "prefix",
   // isOpenInName: true,
-  useEndTab: false,
-  useCloseGroupMode: false,
+  // useEndTab: false,
+  // useCloseGroupMode: false,
 };
