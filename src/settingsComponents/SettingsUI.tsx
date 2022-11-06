@@ -182,7 +182,7 @@ export const SettingsUI = () => {
             "showMoveToGroupTabDialog"
           ),
           details:
-            "When enabled shows dialog asking user are they sure they want to move the tab to group tab",
+            "When enabled shows dialog asking user are they sure they want to move the tab to the group tab",
           childSettings: [
             {
               title: "Show on tab drag",
@@ -201,7 +201,7 @@ export const SettingsUI = () => {
           updateSettingCallback:
             handleCreateUpdateSettingCallback("addTabsByDrag"),
           details:
-            "If disabled tabs (that aren't already in a group tab) are dragged into group tabs by user are moved outside of group tab automatically",
+            "While enabled, tabs (that aren't already in a group tab) which get dragged into a group tab by the user are added to the group tab. However if this is disabled the dragged tab will be moved outside of the group tab automatically",
         },
         {
           type: SettingType.MULTI_BOOLEAN,
@@ -270,14 +270,14 @@ export const SettingsUI = () => {
           details:
             "Allows to select what will happen to inner tabs after the removal of a group tab",
           choices: [
-            { value: "always", title: "Always delete inner tabs" },
+            { value: "always", title: "Delete inner tabs" },
             { value: "dialog", title: "Display dialog to confirm deletion" },
-            { value: "never", title: "Always keep inner tabs" },
+            { value: "never", title: "Never delete inner tabs" },
           ],
         },
         {
           type: SettingType.BOOLEAN,
-          title: "Display confirm remove group tab dialog",
+          title: "Display confirm remove group tab by popup dialog",
           value: settings.showRemoveGroupTabFromPopupDialog,
           updateSettingCallback: handleCreateUpdateSettingCallback(
             "showRemoveGroupTabFromPopupDialog"
@@ -293,7 +293,7 @@ export const SettingsUI = () => {
             "removeGroupTabFromMemory"
           ),
           details:
-            "When user closes group tab this setting decides wether or not to remove it from browser history",
+            "When user closes group tab this setting decides whether or not to remove it from browser history, this doesn't effect tabs closed by window",
         },
       ],
     };
