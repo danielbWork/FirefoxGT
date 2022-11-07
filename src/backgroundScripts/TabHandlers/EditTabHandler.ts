@@ -3,6 +3,7 @@ import {
   GROUP_TAB_URL,
   RESTORE_DEFAULT_ICON_ID,
   SELECT_INNER_TAB_ICON_ID,
+  TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
@@ -12,7 +13,12 @@ import browser, {
   tabs,
   notifications,
 } from "webextension-polyfill";
-import { createNotification, moveGroupTab } from "../../utils/Utils";
+import {
+  createNotification,
+  findNewActiveTab,
+  getActiveTab,
+  moveGroupTab,
+} from "../../utils/Utils";
 
 /**
  * Handles editing group tabs, as well as editing events such as inner tab changes
@@ -203,6 +209,36 @@ export class EditTabHandler {
   }
 
   /**
+   * Updates the group tab's "mode"
+   * @param tab The tab we toggle the state of
+   */
+  private async toggleClosedGroupMode(tab: Tabs.Tab) {
+    const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!)!;
+
+    const activeTab = await getActiveTab();
+    const { groupTab: activeGroup, index } =
+      StorageHandler.instance.getGroupTabOrInnerTabByID(activeTab.id!);
+
+    //TODO add dialog (and probably setting) after updating dialog code
+
+    console.log(groupTab);
+
+    // Handles toggle changes
+    if (groupTab.isClosedGroupMode) {
+      // TODO Add group tab ui and context item to enter
+      groupTab.isOpen = activeGroup?.id === groupTab.id;
+    }
+    // Only need to update the group if it's also not active
+    else if (activeGroup?.id !== groupTab.id) {
+      await tabs.hide(groupTab.innerTabs);
+
+      groupTab.isOpen = false;
+    }
+
+    StorageHandler.instance.toggleGroupTabClosedMode(groupTab);
+  }
+
+  /**
    * Handles changes to group tab from the context menus
    * @param info The info regarding the tab that was pressed
    * @param tab The group tab that the user wants to rename
@@ -215,6 +251,9 @@ export class EditTabHandler {
     }
     if (info.menuItemId === RESTORE_DEFAULT_ICON_ID) {
       this.updateGroupTabIcon(tab.id!, RESTORE_DEFAULT_ICON_ID);
+    }
+    if (info.menuItemId === TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID) {
+      this.toggleClosedGroupMode(tab);
     }
 
     if (info.menuItemId.startsWith(SELECT_INNER_TAB_ICON_ID)) {

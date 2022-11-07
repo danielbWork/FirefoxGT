@@ -183,7 +183,8 @@ export class StorageHandler {
    * @param name The name of the group tab
    * @param innerTabs The new group tab
    * @param icon The icon of the group tab
-   *
+   * @param isOpen Whether or not the group is open
+   * @param isClosedGroupMode Whether or not the group is in closed group mode
    * @returns The group tab that was created
    * @throws Error when user adds a group tab that was already in the list
    */
@@ -192,13 +193,21 @@ export class StorageHandler {
     name: string,
     innerTabs: number[] = [],
     icon?: string,
-    isOpen?: boolean
+    isOpen?: boolean,
+    isClosedGroupMode?: boolean
   ) {
     if (this.groupTabs[id]) {
       throw "Invalid group tab ID, already exists";
     }
 
-    const newGroupTab = new GroupTab(id, name, innerTabs, icon, isOpen);
+    const newGroupTab = new GroupTab(
+      id,
+      name,
+      innerTabs,
+      icon,
+      isOpen,
+      isClosedGroupMode
+    );
 
     this.groupTabs[id] = newGroupTab;
 
@@ -293,13 +302,27 @@ export class StorageHandler {
   }
 
   /**
-   * Toggles the group tab's isHidingTabs value
+   * Toggles the group tab's isOpen value
    * @param groupTab The group tab we update
    *
    * @throws Error when user attempts to update a group tab that doesn't exists
    */
   async toggleGroupTabVisibility(groupTab: GroupTab) {
     groupTab.isOpen = !groupTab.isOpen;
+
+    await this.updateGroupTab(groupTab);
+
+    this.onEditTab.editedGroupTab(groupTab);
+  }
+
+  /**
+   * Toggles the group tab's isClosedGroupMode value
+   * @param groupTab The group tab we update
+   *
+   * @throws Error when user attempts to update a group tab that doesn't exists
+   */
+  async toggleGroupTabClosedMode(groupTab: GroupTab) {
+    groupTab.isClosedGroupMode = !groupTab.isClosedGroupMode;
     await this.updateGroupTab(groupTab);
 
     this.onEditTab.editedGroupTab(groupTab);
@@ -336,6 +359,8 @@ export class StorageHandler {
    * @param name The name of the group tab
    * @param innerTabs The inner tabs of the group tab
    * @param icon The icon of the group tab
+   * @param isOpen Whether or not the group is open
+   * @param isClosedGroupMode Whether or not the group is in closed group mode
    * @returns The new version of the group tab
    */
   async updateGroupTabFromSession(
@@ -344,7 +369,8 @@ export class StorageHandler {
     name: string,
     innerTabs: number[],
     icon?: string,
-    isOpen?: boolean
+    isOpen?: boolean,
+    isClosedGroupMode?: boolean
   ) {
     await this.removeTabFromStorage(oldId);
 
@@ -353,7 +379,8 @@ export class StorageHandler {
       name,
       innerTabs,
       icon,
-      isOpen
+      isOpen,
+      isClosedGroupMode
     );
 
     return newGroupTab;

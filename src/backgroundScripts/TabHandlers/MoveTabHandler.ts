@@ -490,6 +490,10 @@ export class MoveTabHandler {
         "Tab Moved",
         `Tab ${movedTabInfo.title} was moved to group tab ${newGroupTab.name}`
       );
+
+      if (groupTab.isClosedGroupMode) {
+        await tabs.hide(groupTab.innerTabs);
+      }
     } else {
       // Resets the inner tab inside the group tab
       moveGroupTab(groupTab);
@@ -531,6 +535,10 @@ export class MoveTabHandler {
         "Tab Removed",
         `Tab ${movedTabInfo.title} was removed from group tab ${groupTab.name}`
       );
+
+      if (groupTab.isClosedGroupMode) {
+        await tabs.hide(groupTab.innerTabs);
+      }
     } else {
       // Resets the inner tab inside the group tab
       moveGroupTab(groupTab);
@@ -555,16 +563,19 @@ export class MoveTabHandler {
 
     await moveGroupTab(groupTab);
 
-    // Incase of closed group tab move from the tab and hides if necessary
-    if (!groupTab.isOpen) {
-      const tab = await tabs.get(tabId);
+    const tab = await tabs.get(tabId);
 
-      // Moves away if active tab
+    // Incase of closed group tab handles hider hiding or showing the new tab
+    if (!groupTab.isOpen || groupTab.isClosedGroupMode) {
       if (tab.active) {
-        await findNewActiveTab();
-      }
+        groupTab.isOpen = true;
 
-      tabs.hide(tabId);
+        await tabs.show(groupTab.innerTabs);
+
+        StorageHandler.instance.updateGroupTab(groupTab);
+      } else {
+        tabs.hide(tabId);
+      }
     }
   }
 
@@ -584,6 +595,10 @@ export class MoveTabHandler {
     const movedTabID = groupTab.innerTabs[index];
 
     await StorageHandler.instance.removeInnerTab(groupTab, movedTabID);
+
+    if (groupTab.isClosedGroupMode) {
+      await tabs.hide(groupTab.innerTabs);
+    }
 
     // Moves the inner tab to the group
     await this.addTabToGroupMenuClick(newGroupId, movedTabID);

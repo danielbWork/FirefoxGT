@@ -54,20 +54,44 @@ export class OnTabClickHandler {
    *  Reacts to user activating a tab, if tab is group tab toggles it on or off
    * @param activeInfo The activation info
    */
-  private onGroupTabActivated(activeInfo: Tabs.OnActivatedActiveInfoType) {
-    let groupTab = StorageHandler.instance.getGroupTabByID(activeInfo.tabId);
+  private async onGroupTabActivated(
+    activeInfo: Tabs.OnActivatedActiveInfoType
+  ) {
+    const oldGroup = StorageHandler.instance.getGroupTabOrInnerTabByID(
+      activeInfo.previousTabId
+    );
 
-    if (groupTab) {
+    const newGroup = StorageHandler.instance.getGroupTabOrInnerTabByID(
+      activeInfo.tabId
+    );
+
+    // Handles if old group was a closed group
+    if (oldGroup.groupTab?.isClosedGroupMode) {
+      // Moves inside the group so nothing needs to be changed
+      if (newGroup.groupTab && oldGroup.groupTab.id === newGroup.groupTab.id) {
+        return;
+      }
+
+      await tabs.hide(oldGroup.groupTab.innerTabs);
+    }
+
+    // Handles if the new group tab is in closed group mode
+    if (newGroup.groupTab?.isClosedGroupMode) {
+      await tabs.show(newGroup.groupTab.innerTabs);
+      return;
+    }
+
+    if (newGroup.groupTab && newGroup.index === undefined) {
       // Checks if currently dragging the tab
       if (this.draggingTimeoutID || this.isDraggingFlag) {
         if (this.draggingTimeoutID) {
-          tabs.hide(groupTab.innerTabs);
+          tabs.hide(newGroup.groupTab.innerTabs);
           this.isDraggingFlag = true;
         }
 
         findNewActiveTab(activeInfo.previousTabId);
       } else {
-        this.onGroupTabClick(groupTab, activeInfo.previousTabId);
+        this.onGroupTabClick(newGroup.groupTab, activeInfo.previousTabId);
       }
     }
   }

@@ -167,6 +167,12 @@ export class ContextMenuHandler {
       Consts.EDIT_GROUP_TAB_ICON_PARENT_ID
     );
 
+    this.createMenuItem(
+      Consts.TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID,
+      "Toggle Group tab mode",
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID
+    );
+
     this.loadAllGroupTabsItems();
   }
 
@@ -466,8 +472,19 @@ export class ContextMenuHandler {
       updateEvents.push(
         this.updateContextMenuItem(Consts.TOGGLE_GROUP_TAB_ID, {
           title: groupTab.isOpen ? "Close Group Tab" : "Open Group Tab",
-          visible: groupTab.innerTabs.length > 0,
+          visible: !groupTab.isClosedGroupMode && groupTab.innerTabs.length > 0,
         })
+      );
+
+      updateEvents.push(
+        this.updateContextMenuItem(
+          Consts.TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID,
+          {
+            title: groupTab.isClosedGroupMode
+              ? "Return to normal group"
+              : "Change to closed group",
+          }
+        )
       );
 
       updateEvents.push(this.handleAddGroupIconItems(groupTab));

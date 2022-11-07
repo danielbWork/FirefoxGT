@@ -206,8 +206,8 @@ export class SessionsHandler {
         sessionGroupTab.name,
         innerTabs,
         sessionGroupTab.icon,
-        // Since it's empty should always be true
-        true
+        sessionGroupTab.isOpen,
+        sessionGroupTab.isClosedGroupMode
       );
 
     // Resets the session data
@@ -225,7 +225,7 @@ export class SessionsHandler {
       );
     });
 
-    if (groupTabInfo.active) {
+    if (groupTabInfo.active && !restoredGroupTab.isClosedGroupMode) {
       await findNewActiveTab();
     }
 

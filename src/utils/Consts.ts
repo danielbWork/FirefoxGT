@@ -56,6 +56,9 @@ export const RESTORE_DEFAULT_ICON_SEPARATOR_ID =
 
 export const SELECT_INNER_TAB_ICON_ID = "select-from-inner-tabs-icon-";
 
+export const TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID =
+  "toggle-group-tab-closed-group-mode";
+
 //#endregion
 
 //#endregion
