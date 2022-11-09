@@ -173,6 +173,12 @@ export class ContextMenuHandler {
       Consts.GROUP_TAB_ACTIONS_PARENT_ID
     );
 
+    this.createMenuItem(
+      Consts.ENTER_GROUP_TAB_ID,
+      "Enter group tab",
+      Consts.GROUP_TAB_ACTIONS_PARENT_ID
+    );
+
     this.loadAllGroupTabsItems();
   }
 
@@ -484,6 +490,13 @@ export class ContextMenuHandler {
               ? "Return to normal group"
               : "Change to closed group",
           }
+        )
+      );
+
+      updateEvents.push(
+        this.updateContextMenuItemVisibility(
+          Consts.ENTER_GROUP_TAB_ID,
+          !groupTab.isClosedGroupMode && !tab.active
         )
       );
 

@@ -1,6 +1,6 @@
 import { GroupTab } from "../../utils/GroupTab";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
-import { TOGGLE_GROUP_TAB_ID } from "../../utils/Consts";
+import { ENTER_GROUP_TAB_ID, TOGGLE_GROUP_TAB_ID } from "../../utils/Consts";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import { findNewActiveTab, getActiveTab } from "../../utils/Utils";
 
@@ -18,6 +18,11 @@ export class OnTabClickHandler {
    * The flag marking that the user is currently dragging the group tab
    */
   private isDraggingFlag = false;
+
+  /**
+   * Id of a group tab the user wants to enter
+   */
+  private groupTabToEnter?: number;
 
   //#region Singleton
 
@@ -44,7 +49,7 @@ export class OnTabClickHandler {
   setupOnClickHandler() {
     tabs.onActivated.addListener(this.onGroupTabActivated.bind(this));
     browser.contextMenus.onClicked.addListener(
-      this.onToggleContextMenu.bind(this)
+      this.onContextMenuClick.bind(this)
     );
   }
 
@@ -81,6 +86,12 @@ export class OnTabClickHandler {
       return;
     }
 
+    // Checks to see if user entered with context menu
+    if (this.groupTabToEnter) {
+      this.groupTabToEnter = undefined;
+      return;
+    }
+
     if (newGroup.groupTab && newGroup.index === undefined) {
       // Checks if currently dragging the tab
       if (this.draggingTimeoutID || this.isDraggingFlag) {
@@ -97,11 +108,12 @@ export class OnTabClickHandler {
   }
 
   /**
-   * Toggles the group tab on visibility state
+   * Handles context menu clicks regarding changing active state of group tab
    * @param info The info regarding the tab that was pressed
    * @param tab The tab that the user added to the group
    */
-  private async onToggleContextMenu(info: Menus.OnClickData, tab?: Tabs.Tab) {
+  private async onContextMenuClick(info: Menus.OnClickData, tab?: Tabs.Tab) {
+    // Toggles the group tab on visibility state
     if (info.menuItemId === TOGGLE_GROUP_TAB_ID) {
       const groupTab = StorageHandler.instance.getGroupTabByID(tab!.id!)!;
 
@@ -118,6 +130,10 @@ export class OnTabClickHandler {
       }
 
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
+    } else if (info.menuItemId === ENTER_GROUP_TAB_ID) {
+      this.groupTabToEnter = tab!.id!;
+
+      tabs.update(this.groupTabToEnter, { active: true });
     }
   }
 

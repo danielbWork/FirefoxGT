@@ -161,6 +161,7 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   }, [groupTabInfo]);
 
   // TODO Make sublist look better
+  // TODO Fix title based on setting
   return (
     <>
       {editNameDialog}

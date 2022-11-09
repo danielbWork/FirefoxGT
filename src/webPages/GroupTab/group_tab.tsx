@@ -3,10 +3,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import browser from "webextension-polyfill";
 import { Container } from "@mui/material";
-import { GroupTab } from "utils/GroupTab";
+import { GroupTab } from "../../utils/GroupTab";
 import { InvalidGroupTab } from "./InvalidGroupTab";
 import { useOnMount } from "../../utils/ui/useOnMount";
 import { ICON_URL } from "../../utils/Consts";
+import { GroupTabGrid } from "./GroupTabGrid";
+import { CustomThemeProvider } from "../../utils/ui/CustomThemeProvider";
+import { UIMessageHandler } from "../../utils/ui/UIMessageHandler";
 
 const App = () => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
@@ -14,6 +17,8 @@ const App = () => {
   useOnMount(() => {
     browser.tabs.getCurrent().then(async (tab) => {
       await StorageHandler.instance.loadStorage();
+      UIMessageHandler.instance.setupMessageHandler();
+
       const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!);
       setGroupTab(groupTab);
     });
@@ -57,7 +62,11 @@ const App = () => {
   }, [groupTab]);
 
   return (
-    <Container maxWidth="sm">{!groupTab && <InvalidGroupTab />}</Container>
+    <CustomThemeProvider>
+      <Container sx={{ width: "100%", height: "100%" }}>
+        {groupTab ? <GroupTabGrid groupTab={groupTab} /> : <InvalidGroupTab />}
+      </Container>
+    </CustomThemeProvider>
   );
 };
 

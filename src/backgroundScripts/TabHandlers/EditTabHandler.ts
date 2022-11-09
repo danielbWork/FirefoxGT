@@ -225,7 +225,6 @@ export class EditTabHandler {
 
     // Handles toggle changes
     if (groupTab.isClosedGroupMode) {
-      // TODO Add group tab ui and context item to enter
       groupTab.isOpen = activeGroup?.id === groupTab.id;
     }
     // Only need to update the group if it's also not active
