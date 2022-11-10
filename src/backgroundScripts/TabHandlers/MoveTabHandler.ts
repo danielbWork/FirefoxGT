@@ -126,33 +126,11 @@ export class MoveTabHandler {
     // Must have a tab with id for this action as well as being a string action
     if (!tab?.id || typeof info.menuItemId !== "string") return;
 
-    const settings = StorageHandler.instance.settings;
-
     // Checks for new tab to add to group
     if (info.menuItemId.startsWith(ADD_TO_GROUP_TAB_ID)) {
       const groupID = info.menuItemId.substring(ADD_TO_GROUP_TAB_ID.length);
 
-      const groupTab = StorageHandler.instance.getGroupTabByID(
-        parseInt(groupID)
-      );
-
-      let results;
-
-      // Makes sure to display dialog if needed
-      if (settings.showMoveToGroupTabDialog.menu) {
-        results = await this.handleConfirmMove(
-          `Are you sure you want to move tab ${tab.title?.replaceAll(
-            '"',
-            '\\"'
-          )} to group ${groupTab?.name.replaceAll('"', '\\"')}?`
-        );
-      } else {
-        results = [true];
-      }
-
-      if (results[0]) {
-        await this.addTabToGroupMenuClick(parseInt(groupID), tab.id);
-      }
+      await this.addTabToGroupMenuClick(parseInt(groupID), tab);
       return;
     }
 
@@ -166,34 +144,11 @@ export class MoveTabHandler {
     if (info.menuItemId.startsWith(MOVE_TO_GROUP_TAB_ID)) {
       const newGroupID = info.menuItemId.substring(MOVE_TO_GROUP_TAB_ID.length);
 
-      let results;
-
-      // Display dialog if needed
-      if (settings.showMoveFromGroupToNewDialog.menu) {
-        const newGroupTab = StorageHandler.instance.getGroupTabByID(
-          parseInt(newGroupID)
-        );
-
-        results = await this.handleConfirmMove(
-          `Are you sure you want to move tab ${tab.title?.replaceAll(
-            '"',
-            '\\"'
-          )} from group ${groupTab.name.replaceAll(
-            '"',
-            '\\"'
-          )} to group ${newGroupTab?.name.replaceAll('"', '\\"')}?`
-        );
-      } else {
-        results = [true];
-      }
-
-      if (results[0]) {
-        this.moveTabFromGroupToNewGroupMenuClick(
-          groupTab,
-          index,
-          parseInt(newGroupID)
-        );
-      }
+      this.moveTabFromGroupToNewGroupMenuClick(
+        groupTab,
+        index,
+        parseInt(newGroupID)
+      );
     }
   }
 
@@ -396,7 +351,7 @@ export class MoveTabHandler {
         groupTabInfo,
         index,
         newGroupTab,
-        newGroupTabInfo,
+        StorageHandler.instance.settings.showMoveFromGroupToNewDialog.drag,
         toIndex
       );
 
@@ -443,25 +398,23 @@ export class MoveTabHandler {
    * @param groupTabInfo The tab info regarding the group tab
    * @param innerTabIndex The index of the inner tab in the original group tab
    * @param newGroupTab The group tab who is going to hold the inner tab
-   * @param newGroupTabInfo The tab info regarding the new group tab
-   * @param toIndex The new index of inner tab
+   * @param toIndex The new index of inner tab in the ui
+   * @param displayDialog Marks if the dialog should be displayed
    */
   private async onMoveFromOneGroupToOther(
     groupTab: GroupTab,
     groupTabInfo: Tabs.Tab,
     innerTabIndex: number,
     newGroupTab: GroupTab,
-    newGroupTabInfo: Tabs.Tab,
-    toIndex: number
+    displayDialog: boolean,
+    toIndex?: number
   ) {
-    const settings = StorageHandler.instance.settings;
-
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
 
     let results;
 
     // Display dialog if needed
-    if (settings.showMoveFromGroupToNewDialog.drag) {
+    if (displayDialog) {
       results = await this.handleConfirmMove(
         `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
           '"',
@@ -478,7 +431,8 @@ export class MoveTabHandler {
     // Checks if user confirmed inner tab swap
     if (results[0]) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
-      const newIndex = toIndex - groupTabInfo.index - 1;
+      const newIndex =
+        toIndex !== undefined ? toIndex - groupTabInfo.index - 1 : undefined;
 
       await StorageHandler.instance.addInnerTab(
         newGroupTab,
@@ -554,16 +508,30 @@ export class MoveTabHandler {
   /**
    * Moves the inner tab from the group and puts it  in the new group
    * @param groupId The id of the group we want to move the tab to
-   * @param tabId The id of the tab we want to move
+   * @param tab The tab we want to move
    */
-  private async addTabToGroupMenuClick(groupId: number, tabId: number) {
+  private async addTabToGroupMenuClick(groupId: number, tab: Tabs.Tab) {
     const groupTab = StorageHandler.instance.getGroupTabByID(groupId)!;
 
-    await StorageHandler.instance.addInnerTab(groupTab, tabId);
+    let results;
+
+    // Makes sure to display dialog if needed
+    if (StorageHandler.instance.settings.showMoveToGroupTabDialog.menu) {
+      results = await this.handleConfirmMove(
+        `Are you sure you want to move tab ${tab.title?.replaceAll(
+          '"',
+          '\\"'
+        )} to group ${groupTab?.name.replaceAll('"', '\\"')}?`
+      );
+    } else {
+      results = [true];
+    }
+
+    if (!results[0]) return;
+
+    await StorageHandler.instance.addInnerTab(groupTab, tab.id!);
 
     await moveGroupTab(groupTab);
-
-    const tab = await tabs.get(tabId);
 
     // Incase of closed group tab handles hider hiding or showing the new tab
     if (!groupTab.isOpen || groupTab.isClosedGroupMode) {
@@ -574,7 +542,7 @@ export class MoveTabHandler {
 
         StorageHandler.instance.updateGroupTab(groupTab);
       } else {
-        tabs.hide(tabId);
+        tabs.hide(tab.id!);
       }
     }
   }
@@ -592,16 +560,17 @@ export class MoveTabHandler {
     index: number,
     newGroupId: number
   ) {
-    const movedTabID = groupTab.innerTabs[index];
+    const groupTabInfo = await tabs.get(groupTab.id);
 
-    await StorageHandler.instance.removeInnerTab(groupTab, movedTabID);
+    const newGroupTab = StorageHandler.instance.getGroupTabByID(newGroupId);
 
-    if (groupTab.isClosedGroupMode) {
-      await tabs.hide(groupTab.innerTabs);
-    }
-
-    // Moves the inner tab to the group
-    await this.addTabToGroupMenuClick(newGroupId, movedTabID);
+    this.onMoveFromOneGroupToOther(
+      groupTab,
+      groupTabInfo,
+      index,
+      newGroupTab!,
+      StorageHandler.instance.settings.showMoveFromGroupToNewDialog.menu
+    );
   }
 
   //#endregion
