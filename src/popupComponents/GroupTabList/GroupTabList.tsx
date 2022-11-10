@@ -119,7 +119,7 @@ export const GroupTabList = () => {
           })}
         </List>
       ) : (
-        <Typography variant="h6" color="InfoText" align="center">
+        <Typography variant="h6" align="center">
           No Group tabs currently press the button to create a new one
         </Typography>
       )}

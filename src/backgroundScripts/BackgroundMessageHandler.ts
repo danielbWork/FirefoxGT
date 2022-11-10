@@ -113,7 +113,6 @@ export class BackgroundMessageHandler {
   private async onUpdateSettings(newSettings: Settings) {
     const storageHandler = StorageHandler.instance;
 
-    // TODO Update this if needed for other settings
     // Refreshes the group tabs since there names need to be updated
     if (
       newSettings.innerTabCountInName !==

@@ -53,6 +53,8 @@ export const InnerTabItem = ({
     onTabClick(tabID);
   }, [onTabClick, tabID]);
 
+  console.log(tab?.favIconUrl);
+
   return (
     <ListItem dense divider>
       <ListItemIcon onClick={handleRemoveFromGroup}>
@@ -61,13 +63,16 @@ export const InnerTabItem = ({
         </IconButton>
       </ListItemIcon>
 
-      <ListItemButton onClick={handleOnTabCLick}>
+      <ListItem
+        onClick={handleOnTabCLick}
+        sx={{ "&:hover": { color: "Highlight" } }}
+      >
         <ListItemAvatar>
           <Avatar src={`${tab?.favIconUrl}`} sx={{ width: 24, height: 24 }} />
         </ListItemAvatar>
 
-        <ListItemText secondary={tab?.title} />
-      </ListItemButton>
+        <ListItemText primary={tab?.title} />
+      </ListItem>
     </ListItem>
   );
 };

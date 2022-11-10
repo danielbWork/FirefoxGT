@@ -231,3 +231,27 @@ export async function findNewActiveTab(previousTabId?: number) {
     tabs.create({ active: true });
   }
 }
+
+/**
+ * Creates the title for the group tab based on the settings
+ * @param groupTab The group tab we get the title of
+ * @returns The title in the correct format
+ */
+export function createGroupTabTitle(groupTab: GroupTab): string {
+  let title;
+
+  const settings = StorageHandler.instance.settings;
+
+  const innerTabsCountString = `(${groupTab.innerTabs.length})`;
+
+  let prefix = `${
+    settings.innerTabCountInName === "prefix" ? innerTabsCountString : ""
+  }`;
+  let postfix = `${
+    settings.innerTabCountInName === "postfix" ? innerTabsCountString : ""
+  }`;
+
+  title = `${prefix} ${groupTab.name} ${postfix}`.trim();
+
+  return title;
+}

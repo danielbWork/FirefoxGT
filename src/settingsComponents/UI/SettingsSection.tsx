@@ -24,7 +24,7 @@ import { MultipleChoiceStringsSetting } from "./MultipleChoiceStringsSetting";
  * A section to display settings in
  */
 export const SettingSection = ({ title, settings }: SectionProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleExpandToggle = useCallback(() => {
     setIsExpanded(!isExpanded);
@@ -32,14 +32,14 @@ export const SettingSection = ({ title, settings }: SectionProps) => {
 
   return (
     <Stack
-      spacing={2}
+      spacing={1}
       alignItems="flex-start"
       justifyContent="flex-start"
       direction="column"
-      sx={{ padding: 1, width: "100%" }}
+      sx={{ width: "100%" }}
     >
-      <Typography variant="h5" color="InfoText">
-        <IconButton onClick={handleExpandToggle}>
+      <Typography variant="h5" onClick={handleExpandToggle}>
+        <IconButton>
           {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowRight />}
         </IconButton>{" "}
         {title}
@@ -89,7 +89,11 @@ export const SettingSection = ({ title, settings }: SectionProps) => {
         </Box>
       </Collapse>
       <Divider
-        sx={{ backgroundColor: "InactiveBorder", height: 1, width: 800 }}
+        sx={{
+          marginTop: "1",
+          height: 1,
+          width: 800,
+        }}
       />
     </Stack>
   );

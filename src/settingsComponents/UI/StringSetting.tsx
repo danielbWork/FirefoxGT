@@ -36,7 +36,7 @@ export const StringSetting = ({
       alignItems="center"
     >
       <Typography
-        color={disabled ? "GrayText" : "MenuText"}
+        color={disabled ? "GrayText" : undefined}
         sx={{ verticalAlign: "middle", display: "inline-flex" }}
       >
         {title}

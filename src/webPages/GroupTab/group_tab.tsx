@@ -10,6 +10,7 @@ import { ICON_URL } from "../../utils/Consts";
 import { GroupTabGrid } from "./GroupTabGrid";
 import { CustomThemeProvider } from "../../utils/ui/CustomThemeProvider";
 import { UIMessageHandler } from "../../utils/ui/UIMessageHandler";
+import { createGroupTabTitle } from "../../utils/Utils";
 
 const App = () => {
   const [groupTab, setGroupTab] = useState<GroupTab>();
@@ -28,19 +29,7 @@ const App = () => {
   useEffect(() => {
     if (!groupTab) return;
 
-    const settings = StorageHandler.instance.settings;
-
-    const innerTabsCountString = `(${groupTab.innerTabs.length})`;
-    // const isOpenString = `${groupTab.isOpen ? "\u{3009}" : "\u{2304}"}`;
-
-    let prefix = `${
-      settings.innerTabCountInName === "prefix" ? innerTabsCountString : ""
-    }`;
-    let postfix = `${
-      settings.innerTabCountInName === "postfix" ? innerTabsCountString : ""
-    }`;
-
-    document.title = `${prefix} ${groupTab.name} ${postfix}`.trim();
+    document.title = createGroupTabTitle(groupTab);
 
     // Handles custom icons, otherwise get's official icon
     // Uses manifest as url doesn't work

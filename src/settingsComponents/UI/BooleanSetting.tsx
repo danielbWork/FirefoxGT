@@ -32,7 +32,7 @@ export const BooleanSetting = ({
       }
       label={
         <Typography
-          color={disabled ? "GrayText" : "MenuText"}
+          color={disabled ? "GrayText" : undefined}
           sx={{ verticalAlign: "middle", display: "inline-box" }}
         >
           {title}

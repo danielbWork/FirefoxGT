@@ -127,8 +127,6 @@ export const SettingsUI = () => {
     }
   }, [invalidSettings]);
 
-  //#endregion
-
   //#region Sections
 
   // Section regarding creating
@@ -409,7 +407,7 @@ export const SettingsUI = () => {
         direction="column"
         sx={{ paddingLeft: 2, paddingTop: 4, width: "100%", height: "100%" }}
       >
-        <Box alignItems="center" justifyContent="center" paddingTop={8}>
+        <Box alignItems="center" justifyContent="center" paddingTop={4}>
           <AppBar position="fixed">
             <Toolbar sx={{ alignItems: "center" }}>
               <Avatar
@@ -422,7 +420,6 @@ export const SettingsUI = () => {
               />
               <Typography
                 variant="h4"
-                color="InfoText"
                 sx={{
                   paddingTop: 1,
                 }}

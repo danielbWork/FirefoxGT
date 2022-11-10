@@ -8,7 +8,6 @@ import { PopupHeader } from "./PopupHeader";
  * The base Popup element for the code
  */
 export const Popup = () => {
-  //TODO Fix this ui colors
   return (
     <Box
       display="flex"
@@ -17,13 +16,15 @@ export const Popup = () => {
         maxWidth: 500,
         minHeight: 600,
         maxHeight: 600,
-
+        borderStyle: "solid",
+        borderWidth: 2,
+        borderRadius: "8px",
         flexDirection: "column",
       }}
     >
       <PopupHeader />
       <GroupTabList />
-      <Divider sx={{ backgroundColor: "white", height: 2 }} />
+      <Divider sx={{ backgroundColor: undefined, height: 2 }} />
       <PopupFooter />
     </Box>
   );

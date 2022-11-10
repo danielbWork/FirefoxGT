@@ -1,6 +1,5 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import { GroupTab } from "../../utils/GroupTab";
-import { useOnMount } from "../../utils/ui/useOnMount";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import {
   Avatar,
@@ -20,7 +19,7 @@ import EditIcon from "@mui/icons-material/Edit";
 
 import browser, { Tabs, tabs } from "webextension-polyfill";
 import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
-import { moveGroupTab } from "../../utils/Utils";
+import { createGroupTabTitle, moveGroupTab } from "../../utils/Utils";
 import { ICON_URL } from "../../utils/Consts";
 import { useChoiceDialog } from "../../utils/ui/useChoiceDialog";
 
@@ -53,7 +52,10 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   const loadGroupTab = useCallback(async () => {
     const info = await tabs.get(groupTabID);
 
-    setGroupTab(StorageHandler.instance.getGroupTabByID(groupTabID)!);
+    const groupTabValue = StorageHandler.instance.getGroupTabByID(groupTabID)!;
+
+    // Makes sure it's a new object to update the ui
+    setGroupTab({ ...groupTabValue });
     setGroupTabInfo(info);
   }, [groupTabID]);
 
@@ -160,8 +162,10 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
     return ICON_URL;
   }, [groupTabInfo]);
 
-  // TODO Make sublist look better
-  // TODO Fix title based on setting
+  const title = useMemo(() => {
+    return groupTab ? createGroupTabTitle(groupTab) : "";
+  }, [groupTab]);
+
   return (
     <>
       {editNameDialog}
@@ -188,19 +192,23 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
         <ListItemAvatar>
           <Avatar src={icon} sx={{ width: 24, height: 24 }} />
         </ListItemAvatar>
-        <ListItemButton
-          disabled={groupTab.innerTabs.length === 0}
+        <ListItem
+          disabled={!groupTab.innerTabs.length}
           onClick={() => {
             handleToggleGroup();
           }}
+          sx={{
+            marginTop: "1",
+            "&:hover": groupTab.innerTabs.length
+              ? { color: "Highlight" }
+              : undefined,
+          }}
         >
-          <ListItemText
-            primary={`${groupTab.name} (${groupTab.innerTabs.length})`}
-          />
+          <ListItemText primary={title} />
 
           {groupTab.innerTabs.length > 0 &&
             (isSubListOpen ? <ExpandLess /> : <ExpandMore />)}
-        </ListItemButton>
+        </ListItem>
       </ListItem>
 
       <Collapse in={isSubListOpen} sx={{ paddingLeft: 4 }}>

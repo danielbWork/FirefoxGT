@@ -6,7 +6,7 @@ import React from "react";
  */
 export const InvalidGroupTab = () => {
   return (
-    <Typography variant="h1" color="WindowText" align="center">
+    <Typography variant="h1" align="center">
       Invalid Group Tab
     </Typography>
   );

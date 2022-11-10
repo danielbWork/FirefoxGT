@@ -102,7 +102,9 @@ export class StorageHandler {
   async loadStorage() {
     const data = await storage.local.get();
     this.groupTabs = data.groupTabs;
-    this.settings = data.settings;
+
+    // Does this for future proofing new settings as there should always be a default value
+    this.settings = { ...defaultSettings, ...data.settings };
   }
 
   /**
