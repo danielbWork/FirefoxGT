@@ -1,21 +1,21 @@
-import {
-  createTheme,
-  CssBaseline,
-  ThemeProvider,
-  useMediaQuery,
-} from "@mui/material";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import React, { useMemo } from "react";
-import ReactDOM from "react-dom";
+import { useMedia } from "./useMedia";
 
 type Props = {
   children?: JSX.Element;
+
+  /**
+   * Used for content pages to not effect rest of screen
+   */
+  includeCSS?: boolean;
 };
 
 /**
  * Custom Theme provider to handle all boilerplate for theme code
  */
-export const CustomThemeProvider = ({ children }: Props) => {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+export const CustomThemeProvider = ({ children, includeCSS = true }: Props) => {
+  const prefersDarkMode = useMedia("(prefers-color-scheme: dark)");
 
   const theme = useMemo(
     () =>
@@ -29,7 +29,7 @@ export const CustomThemeProvider = ({ children }: Props) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
+      {includeCSS ? <CssBaseline /> : <></>}
       {children}
     </ThemeProvider>
   );

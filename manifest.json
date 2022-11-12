@@ -16,7 +16,7 @@
 				"<all_urls>"
 			],
 			"js": [
-				"content_script.js"
+				"src/manifestPages/content/content.ts"
 			]
 		}
 	],

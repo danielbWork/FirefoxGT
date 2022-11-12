@@ -13,13 +13,13 @@ import {
 } from "@mui/material";
 import React, { useCallback, useMemo, useReducer, useState } from "react";
 import { Settings } from "../utils/Storage/Settings";
-import { useChoiceDialog } from "../utils/ui/useChoiceDialog";
+import { useChoiceDialog } from "../utils/ui/dialogs/useChoiceDialog";
 import { ICON_URL } from "../utils/Consts";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import { SectionProps, SettingType } from "./SettingsProps";
 import { SettingSection } from "./UI/SettingsSection";
 import { Set } from "typescript";
-import { useAlertDialog } from "../utils/ui/useAlertDialog";
+import { useAlertDialog } from "../utils/ui/dialogs/useAlertDialog";
 import Close from "@mui/icons-material/Close";
 import {
   SettingUpdateType,

@@ -3,9 +3,9 @@ import React, { useCallback, useState } from "react";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTabItem } from "./GroupTabItem";
 import browser, { tabs } from "webextension-polyfill";
-import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
+import { useTextInputDialog } from "../../utils/ui/dialogs/useTextInputDialog";
 import { GROUP_TAB_URL } from "../../utils/Consts";
-import { useChoiceDialog } from "../../utils/ui/useChoiceDialog";
+import { useChoiceDialog } from "../../utils/ui/dialogs/useChoiceDialog";
 import { GroupTab } from "utils/GroupTab";
 
 /**

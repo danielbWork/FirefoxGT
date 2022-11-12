@@ -19,6 +19,7 @@ import {
   moveGroupTab,
 } from "../../utils/Utils";
 import { SessionsHandler } from "../SessionsHandler";
+import { DialogHandler } from "../DialogHandler";
 
 /**
  * Handles group tab creation and other tab creation
@@ -152,12 +153,16 @@ export class CreateTabHandler {
    * @param tab The tab that we add to group tab
    */
   private async addTabToGroupTab(tab: Tabs.Tab) {
-    const groupTabTitle = await this.handleEnterGroupTabName();
+    const groupTabTitle = await DialogHandler.instance
+      .displayTextInputDialog("", "", "")
+      .catch((error) => {
+        console.log(error);
+      }); //await this.handleEnterGroupTabName();
 
     // Incase something went wrong with input
-    if (groupTabTitle && tab.id) {
-      this.handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
-    }
+    // if (groupTabTitle && tab.id) {
+    //   this.handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
+    // }
   }
 
   /**

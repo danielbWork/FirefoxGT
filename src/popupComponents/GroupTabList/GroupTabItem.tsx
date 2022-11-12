@@ -18,10 +18,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 
 import browser, { Tabs, tabs } from "webextension-polyfill";
-import { useTextInputDialog } from "../../utils/ui/useTextInputDialog";
+import { useTextInputDialog } from "../../utils/ui/dialogs/useTextInputDialog";
 import { createGroupTabTitle, moveGroupTab } from "../../utils/Utils";
 import { ICON_URL } from "../../utils/Consts";
-import { useChoiceDialog } from "../../utils/ui/useChoiceDialog";
+import { useChoiceDialog } from "../../utils/ui/dialogs/useChoiceDialog";
 
 type Props = {
   /**
