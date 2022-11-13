@@ -77,6 +77,7 @@ export const InnerTabGridItem = ({ id, onTabClickListener }: Props) => {
           <Typography
             variant="body2"
             textAlign="center"
+            component="div"
             sx={{
               verticalAlign: "middle",
               display: "inline-flex",

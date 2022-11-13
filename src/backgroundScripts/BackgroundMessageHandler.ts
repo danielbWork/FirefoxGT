@@ -1,5 +1,5 @@
 import { GroupTab } from "../utils/GroupTab";
-import { MessageType } from "../utils/MessageType";
+import { BackgroundMessageType } from "../utils/messages/BackgroundMessageType";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import browser, { Runtime, tabs } from "webextension-polyfill";
 import { Settings } from "utils/Storage/Settings";
@@ -42,18 +42,18 @@ export class BackgroundMessageHandler {
     await StorageHandler.instance.loadGroupTabs();
 
     switch (message?.type) {
-      case MessageType.ADD_TAB:
+      case BackgroundMessageType.ADD_TAB:
         this.onAddGroupTab(data.groupTab, data.index);
         break;
 
-      case MessageType.REMOVE_TAB:
+      case BackgroundMessageType.REMOVE_TAB:
         this.onRemoveGroupTab(data.groupTab, data.id);
         break;
 
-      case MessageType.EDIT_TAB:
+      case BackgroundMessageType.EDIT_TAB:
         this.onEditGroupTab(data.groupTab);
         break;
-      case MessageType.UPDATE_SETTINGS:
+      case BackgroundMessageType.UPDATE_SETTINGS:
         this.onUpdateSettings(data.settings);
         break;
 

@@ -19,7 +19,7 @@ import {
   moveGroupTab,
 } from "../../utils/Utils";
 import { SessionsHandler } from "../SessionsHandler";
-import { DialogHandler } from "../DialogHandler";
+import { BackgroundDialogHandler } from "../BackgroundDialogHandler";
 
 /**
  * Handles group tab creation and other tab creation
@@ -153,16 +153,12 @@ export class CreateTabHandler {
    * @param tab The tab that we add to group tab
    */
   private async addTabToGroupTab(tab: Tabs.Tab) {
-    const groupTabTitle = await DialogHandler.instance
-      .displayTextInputDialog("", "", "")
-      .catch((error) => {
-        console.log(error);
-      }); //await this.handleEnterGroupTabName();
+    const groupTabTitle = await this.handleEnterGroupTabName();
 
     // Incase something went wrong with input
-    // if (groupTabTitle && tab.id) {
-    //   this.handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
-    // }
+    if (groupTabTitle && tab.id) {
+      this.handleGroupTabCreation(groupTabTitle, [tab.id], tab.index);
+    }
   }
 
   /**
@@ -248,40 +244,14 @@ export class CreateTabHandler {
       return defaultTitle;
     }
 
-    const createPrompt = `prompt("Please enter the Group tab's name", "${defaultTitle.replaceAll(
-      '"',
-      '\\"'
-    )}");`;
-
-    const results = await tabs.executeScript({ code: createPrompt });
-
-    // TODO Use pop up instead
-    // Checks if user is in special tab
-    if (!results || results[0] === undefined) {
-      createNotification(
-        "Create Failed",
-        "Can't create in this tab as it is blocked by firefox, please move to another tab and try again"
+    const { results } =
+      await BackgroundDialogHandler.instance.displayTextInputDialog(
+        "Create Group Tab",
+        "Please enter the Group tab's name",
+        defaultTitle
       );
 
-      return;
-    }
-
-    // Checks if user chose to exit dialog
-    if (results[0] === null) {
-      return;
-    }
-
-    // Makes sure to block empty names
-    if (results[0].trim() === "") {
-      createNotification(
-        "Create Failed",
-        "Can't create group tab with empty name"
-      );
-
-      return;
-    }
-
-    return results[0];
+    return results;
   }
 
   /**

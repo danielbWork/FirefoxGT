@@ -1,3 +1,3 @@
-import browser from "webextension-polyfill";
+import { ContentMessageHandler } from "../../contentScripts/ContentMessageHandler";
 
-browser.runtime.onMessage.addListener(async (message) => {});
+ContentMessageHandler.instance.setup();

@@ -26,7 +26,7 @@ import {
   useSettingsReducer,
 } from "../utils/ui/useSettingsReducer";
 import { UIMessageHandler } from "../utils/ui/UIMessageHandler";
-import { MessageType } from "../utils/MessageType";
+import { BackgroundMessageType } from "../utils/messages/BackgroundMessageType";
 
 /**
  * The settings ui
@@ -68,9 +68,12 @@ export const SettingsUI = () => {
   const handleRestoreDefaults = useCallback(async () => {
     await StorageHandler.instance.restoreDefaultSettings();
 
-    await UIMessageHandler.instance.sendMessage(MessageType.UPDATE_SETTINGS, {
-      settings: StorageHandler.instance.settings,
-    });
+    await UIMessageHandler.instance.sendMessage(
+      BackgroundMessageType.UPDATE_SETTINGS,
+      {
+        settings: StorageHandler.instance.settings,
+      }
+    );
 
     dispatch({
       type: SettingUpdateType.UPDATE_ALL,
@@ -93,9 +96,12 @@ export const SettingsUI = () => {
   // Code that actually apply's the settings
   const handleApplySetting = useCallback(() => {
     StorageHandler.instance.applyNewSettings(settings).then(async () => {
-      await UIMessageHandler.instance.sendMessage(MessageType.UPDATE_SETTINGS, {
-        settings,
-      });
+      await UIMessageHandler.instance.sendMessage(
+        BackgroundMessageType.UPDATE_SETTINGS,
+        {
+          settings,
+        }
+      );
 
       setSnackbarMessage("Changes applied to settings");
       setIsShowingSnackbar(true);

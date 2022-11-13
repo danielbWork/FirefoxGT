@@ -62,7 +62,8 @@ export const useTextInputDialog = (
             margin="dense"
             id="name"
             type="text"
-            label="Input Text"
+            hiddenLabel
+            label={title}
             fullWidth
             inputRef={inputRef}
             variant="outlined"

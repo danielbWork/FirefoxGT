@@ -43,7 +43,12 @@ export const GroupTabGrid = ({ groupTab }: Props) => {
 
   return (
     <Stack spacing={2} sx={{ padding: 4, width: "100%", height: "100%" }}>
-      <Typography variant="h3" justifyContent="center" display="flex">
+      <Typography
+        component="div"
+        variant="h3"
+        justifyContent="center"
+        display="flex"
+      >
         <Avatar
           src={groupTab.icon || browser.runtime.getURL(ICON_URL)}
           sx={{ width: 48, height: 48, marginRight: 2 }}

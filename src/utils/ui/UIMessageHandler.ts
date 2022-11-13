@@ -1,4 +1,4 @@
-import { MessageType } from "../MessageType";
+import { BackgroundMessageType } from "../messages/BackgroundMessageType";
 import { GroupTab } from "../GroupTab";
 import { StorageHandler } from "../Storage/StorageHandler";
 import browser from "webextension-polyfill";
@@ -43,7 +43,7 @@ export class UIMessageHandler {
    * @param type The type of message sent to the background
    * @param data The data about the message
    */
-  sendMessage(type: MessageType, data: any) {
+  sendMessage(type: BackgroundMessageType, data: any) {
     try {
       browser.runtime.sendMessage({ type, data });
     } catch (error) {
@@ -61,7 +61,7 @@ export class UIMessageHandler {
     groupTab: GroupTab,
     index?: number | undefined
   ): void {
-    this.sendMessage(MessageType.ADD_TAB, { groupTab, index });
+    this.sendMessage(BackgroundMessageType.ADD_TAB, { groupTab, index });
   }
 
   /**
@@ -73,7 +73,7 @@ export class UIMessageHandler {
     groupTab: GroupTab,
     id?: number | undefined
   ): void {
-    this.sendMessage(MessageType.REMOVE_TAB, { groupTab, id });
+    this.sendMessage(BackgroundMessageType.REMOVE_TAB, { groupTab, id });
   }
 
   /**
@@ -81,6 +81,6 @@ export class UIMessageHandler {
    * @param groupTab The group tab that was edited
    */
   private onEditTabMessage(groupTab: GroupTab): void {
-    this.sendMessage(MessageType.EDIT_TAB, { groupTab });
+    this.sendMessage(BackgroundMessageType.EDIT_TAB, { groupTab });
   }
 }
