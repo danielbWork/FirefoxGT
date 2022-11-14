@@ -1,9 +1,10 @@
 import React, { useCallback, useState, useMemo, useEffect } from "react";
 import { useTextInputDialog } from "../utils/ui/dialogs/useTextInputDialog";
-import { CustomThemeProvider } from "../utils/ui/CustomThemeProvider";
-import { ContentDialogHandler } from "./ContentDialogHandler";
 import { useDialogInfo } from "./useDialogInfo";
 import { ContentMessageType } from "../utils/messages/ContentMessageType";
+import { useChoiceDialog } from "../utils/ui/dialogs/useChoiceDialog";
+import { useAlertDialog } from "../utils/ui/dialogs/useAlertDialog";
+import { Box } from "@mui/material";
 
 type Props = {
   /**
@@ -18,14 +19,15 @@ type Props = {
 export const DialogUI = ({ onClose }: Props) => {
   const { type, data } = useDialogInfo();
 
-  const handleOnSubmit = useCallback((results: any) => {
-    onClose(results);
+  const handleOnSubmit = useCallback((results?: any) => {
+    onClose(results || true);
   }, []);
   const handleOnCancel = useCallback(() => {
     onClose(undefined);
   }, []);
 
-  // TODO do this with the other dialogs and add close dialog to them for leaving the tab
+  // TODO Handle leaving tab maybe add close dialog
+
   const { dialog: textInputDialog, openDialog: openTextInputDialog } =
     useTextInputDialog(
       data?.title || "",
@@ -33,6 +35,20 @@ export const DialogUI = ({ onClose }: Props) => {
       handleOnSubmit,
       handleOnCancel
     );
+
+  const { dialog: choiceDialog, openDialog: openChoiceDialog } =
+    useChoiceDialog(
+      data?.title || "",
+      data?.message || "",
+      handleOnSubmit,
+      handleOnCancel
+    );
+
+  const { dialog: alertDialog, openDialog: openAlertDialog } = useAlertDialog(
+    data?.title || "",
+    data?.message || "",
+    handleOnSubmit
+  );
 
   // Notifies ui to open when needed
   useEffect(() => {
@@ -42,16 +58,26 @@ export const DialogUI = ({ onClose }: Props) => {
           openTextInputDialog(data.defaultValue);
         }, 100);
         break;
-
+      case ContentMessageType.DISPLAY_CHOICE:
+        setTimeout(() => {
+          openChoiceDialog();
+        }, 100);
+        break;
+      case ContentMessageType.DISPLAY_ALERT:
+        setTimeout(() => {
+          openAlertDialog();
+        }, 100);
+        break;
       default:
         break;
     }
   }, [type, data]);
 
-  // TODO Fix ui in stackoverflow
   return (
-    <CustomThemeProvider includeCSS={false}>
+    <Box>
       {textInputDialog}
-    </CustomThemeProvider>
+      {choiceDialog}
+      {alertDialog}
+    </Box>
   );
 };

@@ -15,13 +15,22 @@ import React, { useCallback, useMemo, useState } from "react";
  *
  * @param title Title of dialog
  * @param message Text to alert user of
+ * @param onClose Optional callback that is notified when user closes the alert
  * @returns The dialog to be displayed and openDialog which opens the dialog once called
  */
-export const useAlertDialog = (title: string, message: string) => {
+export const useAlertDialog = (
+  title: string,
+  message: string,
+  onClose?: () => void
+) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
+
+    if (onClose) {
+      onClose();
+    }
   }, []);
 
   const dialog = useMemo(() => {

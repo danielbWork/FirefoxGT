@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
-import { BaseEventNotifier } from "utils/BaseEventNotifier";
+import { CustomThemeProvider } from "../utils/ui/CustomThemeProvider";
 import { ContentMessageType } from "../utils/messages/ContentMessageType";
 import { ContentMessageHandler } from "./ContentMessageHandler";
 import { DialogUI } from "./DialogUI";
@@ -73,7 +73,9 @@ export class ContentDialogHandler {
 
     root.render(
       <React.StrictMode>
-        <DialogUI onClose={this.onDialogClose.bind(this)} />
+        <CustomThemeProvider scopeCSS>
+          <DialogUI onClose={this.onDialogClose.bind(this)} />
+        </CustomThemeProvider>
       </React.StrictMode>
     );
 

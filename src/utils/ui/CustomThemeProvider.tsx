@@ -1,4 +1,9 @@
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import {
+  createTheme,
+  CssBaseline,
+  ScopedCssBaseline,
+  ThemeProvider,
+} from "@mui/material";
 import React, { useMemo } from "react";
 import { useMedia } from "./useMedia";
 
@@ -6,15 +11,15 @@ type Props = {
   children?: JSX.Element;
 
   /**
-   * Used for content pages to not effect rest of screen
+   * Used for content pages to have css not effect the other web pages
    */
-  includeCSS?: boolean;
+  scopeCSS?: boolean;
 };
 
 /**
  * Custom Theme provider to handle all boilerplate for theme code
  */
-export const CustomThemeProvider = ({ children, includeCSS = true }: Props) => {
+export const CustomThemeProvider = ({ children, scopeCSS = false }: Props) => {
   const prefersDarkMode = useMedia("(prefers-color-scheme: dark)");
 
   const theme = useMemo(
@@ -40,8 +45,14 @@ export const CustomThemeProvider = ({ children, includeCSS = true }: Props) => {
   );
   return (
     <ThemeProvider theme={theme}>
-      {includeCSS ? <CssBaseline /> : <></>}
-      {children}
+      {!scopeCSS ? (
+        <>
+          <CssBaseline />
+          {children}
+        </>
+      ) : (
+        <ScopedCssBaseline>{children}</ScopedCssBaseline>
+      )}
     </ThemeProvider>
   );
 };

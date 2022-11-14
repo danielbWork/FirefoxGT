@@ -66,10 +66,22 @@ export const useTextInputDialog = (
             fullWidth
             inputRef={inputRef}
             variant="outlined"
+            size="small"
             value={value}
             error={value.trim() === ""}
             helperText={value.trim() === "" ? "Invalid input" : undefined}
             onChange={handleOnChange}
+            inputProps={{
+              style: {
+                // Added changes in input props for problem sites like stack overflow which force their own ui
+
+                color: "inherit",
+                border: "inherit",
+                background: "inherit",
+                fontFamily: "inherit",
+                fontSize: "inherit",
+              },
+            }}
           />
         </DialogContent>
         <DialogActions>
