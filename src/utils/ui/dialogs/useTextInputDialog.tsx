@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  GlobalStyles,
   TextField,
 } from "@mui/material";
 import React, { useCallback, useMemo, useState } from "react";
@@ -62,8 +63,6 @@ export const useTextInputDialog = (
             margin="dense"
             id="name"
             type="text"
-            hiddenLabel
-            label={title}
             fullWidth
             inputRef={inputRef}
             variant="outlined"

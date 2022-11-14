@@ -23,10 +23,21 @@ export const CustomThemeProvider = ({ children, includeCSS = true }: Props) => {
         palette: {
           mode: prefersDarkMode ? "dark" : "light",
         },
+        components: {
+          MuiCssBaseline: {
+            styleOverrides: `
+            fieldset {
+              legend {
+                  span {
+                    display:none;
+                  }
+              }
+            }`,
+          },
+        },
       }),
     [prefersDarkMode]
   );
-
   return (
     <ThemeProvider theme={theme}>
       {includeCSS ? <CssBaseline /> : <></>}
