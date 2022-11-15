@@ -10,6 +10,7 @@ import {
   moveGroupTab,
 } from "../../utils/Utils";
 import { OnTabClickHandler } from "./OnTabClickHandler";
+import { BackgroundDialogHandler } from "../BackgroundDialogHandler";
 
 /**
  * Handles Tabs being moved by the user
@@ -182,15 +183,18 @@ export class MoveTabHandler {
   /**
    * Creates a confirm dialog for the user to confirm their action
    *
+   * @param title The title of the dialog
    * @param message The message displayed in the confirm dialog
    * @returns the results of the confirm script
    */
-  private async handleConfirmMove(message: string) {
-    const confirmCode = `confirm("${message}");`;
-
-    const results = await tabs.executeScript({
-      code: confirmCode,
-    });
+  private async handleConfirmMove(
+    title: string,
+    message: string
+  ): Promise<boolean> {
+    const results = await BackgroundDialogHandler.instance.displayChoiceDialog(
+      title,
+      message
+    );
 
     return results;
   }
@@ -269,17 +273,16 @@ export class MoveTabHandler {
     // Makes sure to display dialog if needed
     if (settings.showMoveToGroupTabDialog.drag) {
       results = await this.handleConfirmMove(
+        "Move to Group",
         `Are you sure you want to move ${
-          isHighlighted
-            ? "the highlighted tabs"
-            : `tab ${movedTabInfo.title?.replaceAll('"', '\\"')}`
-        } to group ${groupTab.name.replaceAll('"', '\\"')}?`
+          isHighlighted ? "the highlighted tabs" : `tab ${movedTabInfo.title}`
+        } to group ${groupTab.name}?`
       );
     } else {
-      results = [true];
+      results = true;
     }
 
-    if (results[0]) {
+    if (results) {
       if (isHighlighted) {
         // Adds all of the highlighted group tabs
         await StorageHandler.instance.addInnerTabs(
@@ -416,20 +419,15 @@ export class MoveTabHandler {
     // Display dialog if needed
     if (displayDialog) {
       results = await this.handleConfirmMove(
-        `Are you sure you want to move tab ${movedTabInfo.title?.replaceAll(
-          '"',
-          '\\"'
-        )} from group ${groupTab.name.replaceAll(
-          '"',
-          '\\"'
-        )} to group ${newGroupTab.name.replaceAll('"', '\\"')}?`
+        "Move Between Groups",
+        `Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?`
       );
     } else {
-      results = [true];
+      results = true;
     }
 
     // Checks if user confirmed inner tab swap
-    if (results[0]) {
+    if (results) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
       const newIndex =
         toIndex !== undefined ? toIndex - groupTabInfo.index - 1 : undefined;
@@ -473,16 +471,14 @@ export class MoveTabHandler {
 
     if (settings.showRemoveFromGroupTabDialog.drag) {
       results = await this.handleConfirmMove(
-        `Are you sure you want remove tab ${movedTabInfo.title?.replaceAll(
-          '"',
-          '\\"'
-        )} from group ${groupTab.name.replaceAll('"', '\\"')}?`
+        "Remove from Group",
+        `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`
       );
     } else {
-      results = [true];
+      results = true;
     }
 
-    if (results[0]) {
+    if (results) {
       await StorageHandler.instance.removeInnerTab(groupTab, movedTabInfo.id!);
 
       createNotification(
@@ -518,16 +514,14 @@ export class MoveTabHandler {
     // Makes sure to display dialog if needed
     if (StorageHandler.instance.settings.showMoveToGroupTabDialog.menu) {
       results = await this.handleConfirmMove(
-        `Are you sure you want to move tab ${tab.title?.replaceAll(
-          '"',
-          '\\"'
-        )} to group ${groupTab?.name.replaceAll('"', '\\"')}?`
+        "Add to Group",
+        `Are you sure you want to move tab ${tab.title} to group ${groupTab?.name}?`
       );
     } else {
-      results = [true];
+      results = true;
     }
 
-    if (!results[0]) return;
+    if (!results) return;
 
     await StorageHandler.instance.addInnerTab(groupTab, tab.id!);
 

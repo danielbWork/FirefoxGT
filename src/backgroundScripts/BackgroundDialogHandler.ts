@@ -1,6 +1,5 @@
-import { getActiveTab } from "../utils/Utils";
-import browser from "webextension-polyfill";
 import { ContentMessageType } from "../utils/messages/ContentMessageType";
+import { BackgroundMessageHandler } from "./BackgroundMessageHandler";
 
 /**
  *  Handles displaying dialogs in the ui
@@ -36,17 +35,33 @@ export class BackgroundDialogHandler {
     title: string,
     message: string,
     defaultValue: string
-  ): Promise<{ results: any }> {
-    const activeTab = await getActiveTab();
+  ) {
+    const result =
+      await BackgroundMessageHandler.instance.sendContentScriptMessage(
+        ContentMessageType.DISPLAY_TEXT_INPUT,
+        { title, message, defaultValue }
+      );
 
     // TODO handle problem pages with popup
 
-    // TODO maybe move to BackgroundHandler (defenitly have one method for all dialogs)
-    const result = await browser.tabs.sendMessage(activeTab.id!, {
-      type: ContentMessageType.DISPLAY_TEXT_INPUT,
-      data: { title, message, defaultValue },
-    });
+    return result.results;
+  }
 
-    return result;
+  /**
+   * Displays a choice dialog in the ui asking the user to confirm if they want to do something
+   * @param title The title for the dialog
+   * @param message The message passed by the dialog
+   * @returns The choice or undefined if user closed the dialog
+   */
+  async displayChoiceDialog(title: string, message: string) {
+    const result =
+      await BackgroundMessageHandler.instance.sendContentScriptMessage(
+        ContentMessageType.DISPLAY_CHOICE,
+        { title, message }
+      );
+
+    // TODO handle problem pages with popup
+
+    return result.results;
   }
 }

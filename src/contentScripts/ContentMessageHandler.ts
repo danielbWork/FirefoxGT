@@ -1,4 +1,3 @@
-import { StorageHandler } from "utils/Storage/StorageHandler";
 import browser, { Runtime } from "webextension-polyfill";
 import { ContentDialogHandler } from "./ContentDialogHandler";
 

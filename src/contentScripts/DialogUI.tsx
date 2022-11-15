@@ -10,7 +10,7 @@ type Props = {
   /**
    * Callback for when a dialog closes either by submit or dismiss
    */
-  onClose: (results: any) => {};
+  onClose: (results: any) => void;
 };
 
 /**
@@ -60,7 +60,7 @@ export const DialogUI = ({ onClose }: Props) => {
         break;
       case ContentMessageType.DISPLAY_CHOICE:
         setTimeout(() => {
-          openChoiceDialog();
+          openChoiceDialog(data.message);
         }, 100);
         break;
       case ContentMessageType.DISPLAY_ALERT:

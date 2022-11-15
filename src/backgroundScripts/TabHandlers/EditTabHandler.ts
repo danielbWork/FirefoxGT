@@ -1,24 +1,18 @@
 import {
   EDIT_GROUP_TAB_NAME_ID,
-  GROUP_TAB_URL,
   RESTORE_DEFAULT_ICON_ID,
   SELECT_INNER_TAB_ICON_ID,
   TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
-import browser, {
-  Tabs,
-  Menus,
-  tabs,
-  notifications,
-} from "webextension-polyfill";
+import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   createNotification,
-  findNewActiveTab,
   getActiveTab,
   moveGroupTab,
 } from "../../utils/Utils";
+import { BackgroundDialogHandler } from "../BackgroundDialogHandler";
 
 /**
  * Handles editing group tabs, as well as editing events such as inner tab changes
@@ -150,40 +144,17 @@ export class EditTabHandler {
   private async onEditNameMenuClick(info: Menus.OnClickData, tab: Tabs.Tab) {
     const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!)!;
 
-    const editPrompt = `prompt("Please enter the Group tab's new name", "${groupTab.name.replaceAll(
-      '"',
-      '\\"'
-    )}");`;
-
-    const results = await tabs.executeScript({ code: editPrompt });
-
-    // TODO Use pop up instead
-    // Checks if user is in special tab
-    if (!results || results[0] === undefined) {
-      createNotification(
-        "Create Failed",
-        "Can't edit in this tab as it is blocked by firefox, please move to another tab and try again"
+    const results =
+      await BackgroundDialogHandler.instance.displayTextInputDialog(
+        "Edit Group Tab",
+        "Please enter the Group tab's new name",
+        groupTab.name
       );
 
-      return;
+    // Checks if user entered a value
+    if (results) {
+      await StorageHandler.instance.updateGroupTabName(groupTab!, results);
     }
-
-    // Checks if user chose to exit dialog
-    if (results[0] === null) {
-      return;
-    }
-
-    // Makes sure to block empty names
-    if (results[0].trim() === "") {
-      createNotification(
-        "Create Failed",
-        "Can't create group tab with empty name"
-      );
-
-      return;
-    }
-
-    await StorageHandler.instance.updateGroupTabName(groupTab!, results[0]);
   }
 
   /**

@@ -38,21 +38,21 @@ export class ContentDialogHandler {
    * @param type The type of dialog we want to display
    * @param data The data for the dialog
    */
-  async displayDialog(type: ContentMessageType, data: any) {
+  displayDialog(type: ContentMessageType, data: any) {
     // Must load react into page to actually work
-    if (!this.isLoaded) await this.loadReact();
+    if (!this.isLoaded) this.loadReact();
 
     setTimeout(() => {
       this.onDisplayDialogNotifier.requestDialog(type, data);
-    }, 500);
+    }, 200);
   }
 
   /**
    * Closes the dialog and sends the result to the background page
    * @param results The results of the dialog if the dialog was closed expects undefined
    */
-  async onDialogClose(results: any) {
-    await ContentMessageHandler.instance.sendResults(results);
+  private onDialogClose(results: any) {
+    ContentMessageHandler.instance.sendResults(results);
 
     this.onDisplayDialogNotifier.requestDialog();
   }
@@ -60,7 +60,7 @@ export class ContentDialogHandler {
   /**
    * Loads the the react info into the web page
    */
-  private async loadReact() {
+  private loadReact() {
     const body = document.body;
 
     const app = document.createElement("div");

@@ -3,6 +3,8 @@ import { BackgroundMessageType } from "../utils/messages/BackgroundMessageType";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import browser, { Runtime, tabs } from "webextension-polyfill";
 import { Settings } from "utils/Storage/Settings";
+import { ContentMessageType } from "utils/messages/ContentMessageType";
+import { getActiveTab } from "../utils/Utils";
 
 /**
  * Handles receiving messages from popup
@@ -30,6 +32,8 @@ export class BackgroundMessageHandler {
   setupMessageHandler() {
     browser.runtime.onMessage.addListener(this.onMessageReceive.bind(this));
   }
+
+  //#region Receive
 
   /**
    * Reacts to the message sent from the pop up
@@ -126,4 +130,26 @@ export class BackgroundMessageHandler {
     // Update settings in storage
     storageHandler.applyNewSettings(newSettings);
   }
+  //#endregion
+
+  //#region Send
+
+  /**
+   * Sends the message to the active content script
+   * @param type The type of message to be sent
+   * @param data The data to be sent
+   * @returns The send promise for the result if needed
+   */
+  async sendContentScriptMessage(type: ContentMessageType, data: any) {
+    const activeTab = await getActiveTab();
+
+    const result = browser.tabs.sendMessage(activeTab.id!, {
+      type,
+      data,
+    });
+
+    return result;
+  }
+
+  //#endregion
 }

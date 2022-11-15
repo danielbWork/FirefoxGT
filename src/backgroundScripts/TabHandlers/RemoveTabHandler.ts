@@ -2,11 +2,8 @@ import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
 import browser, { Menus, sessions, Tabs, tabs } from "webextension-polyfill";
 import { createNotification, delay, moveGroupTab } from "../../utils/Utils";
-import {
-  GROUP_TAB_SESSION_KEY,
-  GROUP_TAB_URL,
-  REMOVE_FROM_GROUP_TAB_ID,
-} from "../../utils/Consts";
+import { GROUP_TAB_URL, REMOVE_FROM_GROUP_TAB_ID } from "../../utils/Consts";
+import { BackgroundDialogHandler } from "../BackgroundDialogHandler";
 
 /**
  * Handles tabs and group tabs being removed
@@ -63,19 +60,15 @@ export class RemoveTabHandler {
 
       // Checks if request from dialog is needed
       if (StorageHandler.instance.settings.showRemoveFromGroupTabDialog.menu) {
-        const confirmText = `Are you sure you want remove tab ${tab.title?.replaceAll(
-          '"',
-          '\\"'
-        )} from group ${groupTab?.name.replaceAll('"', '\\"')}?`;
-
-        results = await tabs.executeScript({
-          code: `confirm("${confirmText}");`,
-        });
+        results = await BackgroundDialogHandler.instance.displayChoiceDialog(
+          "Remove Tab",
+          `Are you sure you want remove tab ${tab.title} from group ${groupTab?.name}?`
+        );
       } else {
-        results = [true];
+        results = true;
       }
 
-      if (results[0]) {
+      if (results) {
         await this.removeTabFromGroupMenuClick(groupTab!, tab.id!);
       }
     }
@@ -165,16 +158,13 @@ export class RemoveTabHandler {
           deleteInnerTabs = true;
           break;
         case "dialog":
-          const confirmText = `Do you also want to remove the inner tabs of ${groupTab.name.replaceAll(
-            '"',
-            '\\"'
-          )}?`;
+          const results =
+            await BackgroundDialogHandler.instance.displayChoiceDialog(
+              "Inner Tabs",
+              `Do you also want to remove the inner tabs of ${groupTab.name}?`
+            );
 
-          const results = await tabs.executeScript({
-            code: `confirm("${confirmText}");`,
-          });
-
-          deleteInnerTabs = results[0] === true;
+          deleteInnerTabs = results;
           break;
 
         case "never":

@@ -244,7 +244,7 @@ export class CreateTabHandler {
       return defaultTitle;
     }
 
-    const { results } =
+    const results =
       await BackgroundDialogHandler.instance.displayTextInputDialog(
         "Create Group Tab",
         "Please enter the Group tab's name",
