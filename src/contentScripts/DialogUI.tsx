@@ -26,8 +26,6 @@ export const DialogUI = ({ onClose }: Props) => {
     onClose(undefined);
   }, []);
 
-  // TODO Handle leaving tab maybe add close dialog
-
   const {
     dialog: textInputDialog,
     openDialog: openTextInputDialog,

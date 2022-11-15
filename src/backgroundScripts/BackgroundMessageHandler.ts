@@ -143,12 +143,20 @@ export class BackgroundMessageHandler {
   async sendContentScriptMessage(type: ContentMessageType, data: any) {
     const activeTab = await getActiveTab();
 
-    const result = browser.tabs.sendMessage(activeTab.id!, {
-      type,
-      data,
-    });
+    try {
+      const result = await browser.tabs.sendMessage(activeTab.id!, {
+        type,
+        data,
+      });
 
-    return result;
+      return result;
+    } catch (error) {
+      // Most likely problem tab that we can't use content script in
+      // and sadly opening popup to display dialog is also blocked in this state
+      // so for now this is impossible
+      console.log(error);
+      return undefined;
+    }
   }
 
   //#endregion

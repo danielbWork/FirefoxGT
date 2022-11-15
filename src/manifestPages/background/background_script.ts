@@ -8,6 +8,7 @@ import browser from "webextension-polyfill";
 import { OnTabClickHandler } from "../../backgroundScripts/TabHandlers/OnTabClickHandler";
 import { BackgroundMessageHandler } from "../../backgroundScripts/BackgroundMessageHandler";
 import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
+import { BackgroundDialogHandler } from "../../backgroundScripts/BackgroundDialogHandler";
 
 const loadHandlers = () => {
   console.log("Load");
@@ -21,6 +22,7 @@ const loadHandlers = () => {
   MoveTabHandler.instance.setupMoveHandler();
   EditTabHandler.instance.setupEditHandler();
   BackgroundMessageHandler.instance.setupMessageHandler();
+  BackgroundDialogHandler.instance.setupDialogHandler();
 };
 
 browser.runtime.onInstalled.addListener(async () => {
@@ -28,6 +30,10 @@ browser.runtime.onInstalled.addListener(async () => {
   await StorageHandler.instance.loadStorage();
 
   loadHandlers();
+
+  // TODO uncomment once not in dev
+  // Called to make sure user can see dialogs from the start
+  // browser.runtime.openOptionsPage();
 });
 
 browser.runtime.onStartup.addListener(async () => {
