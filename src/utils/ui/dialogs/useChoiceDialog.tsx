@@ -14,10 +14,10 @@ import React, { useCallback, useMemo, useState } from "react";
  * this handles everything besides opening the dialog itself
  *
  * @param title Title of dialog
- * @param defaultMessage Default value for the dailogs message message
+ * @param defaultMessage Default value for the dialog's message
  * @param onSubmit Notifies when user chose to to do what the dialog requested
  * @param onCancel Notifies when user has decided to exit out of dialog without continuing
- * @returns The dialog to be displayed and openDialog which opens the dialog once called, open dialog can receive a new custom message if needed
+ * @returns The dialog to be displayed, openDialog which opens the dialog once called (openDialog can receive a new custom message if needed) and close dialog which closes the dialog when need
  */
 export const useChoiceDialog = (
   title: string,
@@ -44,9 +44,9 @@ export const useChoiceDialog = (
   const dialog = useMemo(() => {
     return (
       <Dialog open={isOpen} onClose={handleCancel}>
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle component={"div"}>{title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{message}</DialogContentText>
+          <DialogContentText component={"div"}>{message}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancel}>Cancel</Button>
@@ -64,6 +64,9 @@ export const useChoiceDialog = (
       }
 
       setIsOpen(true);
+    },
+    closeDialog: () => {
+      setIsOpen(false);
     },
   };
 };

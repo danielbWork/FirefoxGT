@@ -7,6 +7,7 @@ import {
   DialogTitle,
   GlobalStyles,
   TextField,
+  useTheme,
 } from "@mui/material";
 import React, { useCallback, useMemo, useState } from "react";
 
@@ -18,7 +19,7 @@ import React, { useCallback, useMemo, useState } from "react";
  * @param message Text about the dialog input
  * @param onSubmit Notifies when user submitted input
  * @param onCancel Notifies when user has decided to exit out of dialog
- * @returns The dialog to be displayed and openDialog which opens the dialog and allows to put a default input value for TextField
+ * @returns The dialog to be displayed, openDialog which opens the dialog and allows to put a default input value for TextField and closeDialog to close the dialog when needed
  */
 export const useTextInputDialog = (
   title: string,
@@ -55,9 +56,9 @@ export const useTextInputDialog = (
   const dialog = useMemo(() => {
     return (
       <Dialog open={isOpen}>
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle component={"div"}>{title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{message}</DialogContentText>
+          <DialogContentText component={"div"}>{message}</DialogContentText>
           <TextField
             autoFocus
             margin="dense"
@@ -112,6 +113,9 @@ export const useTextInputDialog = (
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
+    },
+    closeDialog: () => {
+      setIsOpen(false);
     },
   };
 };

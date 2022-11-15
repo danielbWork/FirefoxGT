@@ -16,7 +16,7 @@ import React, { useCallback, useMemo, useState } from "react";
  * @param title Title of dialog
  * @param message Text to alert user of
  * @param onClose Optional callback that is notified when user closes the alert
- * @returns The dialog to be displayed and openDialog which opens the dialog once called
+ * @returns The dialog to be displayed, openDialog which opens the dialog once called and closeDialog which closes the dialog once called
  */
 export const useAlertDialog = (
   title: string,
@@ -36,9 +36,9 @@ export const useAlertDialog = (
   const dialog = useMemo(() => {
     return (
       <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>{title}</DialogTitle>
+        <DialogTitle component={"div"}>{title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>{message}</DialogContentText>
+          <DialogContentText component={"div"}>{message}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
@@ -53,6 +53,9 @@ export const useAlertDialog = (
     dialog,
     openDialog: () => {
       setIsOpen(true);
+    },
+    closeDialog: () => {
+      setIsOpen(false);
     },
   };
 };

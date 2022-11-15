@@ -10,8 +10,6 @@ import { OnDisplayDialogNotifier } from "./OnDisplayDialogNotifier";
  * Used to handle actually displaying the dialogs
  */
 export class ContentDialogHandler {
-  private isLoaded = false;
-
   readonly onDisplayDialogNotifier = new OnDisplayDialogNotifier();
 
   //#region Singleton
@@ -33,6 +31,18 @@ export class ContentDialogHandler {
 
   //#endregion
 
+  setupDialogHandler() {
+    this.loadReact();
+    window.onblur = this.onDialogLeave.bind(this);
+  }
+
+  /**
+   * Handles user leaving the tab
+   */
+  private onDialogLeave() {
+    this.onDialogClose(undefined);
+  }
+
   /**
    * Displays the dialog on the screen with the given info
    * @param type The type of dialog we want to display
@@ -40,11 +50,7 @@ export class ContentDialogHandler {
    */
   displayDialog(type: ContentMessageType, data: any) {
     // Must load react into page to actually work
-    if (!this.isLoaded) this.loadReact();
-
-    setTimeout(() => {
-      this.onDisplayDialogNotifier.requestDialog(type, data);
-    }, 200);
+    this.onDisplayDialogNotifier.requestDialog(type, data);
   }
 
   /**
@@ -78,7 +84,5 @@ export class ContentDialogHandler {
         </CustomThemeProvider>
       </React.StrictMode>
     );
-
-    this.isLoaded = true;
   }
 }

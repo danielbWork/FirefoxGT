@@ -28,27 +28,33 @@ export const DialogUI = ({ onClose }: Props) => {
 
   // TODO Handle leaving tab maybe add close dialog
 
-  const { dialog: textInputDialog, openDialog: openTextInputDialog } =
-    useTextInputDialog(
-      data?.title || "",
-      data?.message || "",
-      handleOnSubmit,
-      handleOnCancel
-    );
-
-  const { dialog: choiceDialog, openDialog: openChoiceDialog } =
-    useChoiceDialog(
-      data?.title || "",
-      data?.message || "",
-      handleOnSubmit,
-      handleOnCancel
-    );
-
-  const { dialog: alertDialog, openDialog: openAlertDialog } = useAlertDialog(
+  const {
+    dialog: textInputDialog,
+    openDialog: openTextInputDialog,
+    closeDialog: closeTextInputDialog,
+  } = useTextInputDialog(
     data?.title || "",
     data?.message || "",
-    handleOnSubmit
+    handleOnSubmit,
+    handleOnCancel
   );
+
+  const {
+    dialog: choiceDialog,
+    openDialog: openChoiceDialog,
+    closeDialog: closeChoiceDialog,
+  } = useChoiceDialog(
+    data?.title || "",
+    data?.message || "",
+    handleOnSubmit,
+    handleOnCancel
+  );
+
+  const {
+    dialog: alertDialog,
+    openDialog: openAlertDialog,
+    closeDialog: closeAlertDialog,
+  } = useAlertDialog(data?.title || "", data?.message || "", handleOnSubmit);
 
   // Notifies ui to open when needed
   useEffect(() => {
@@ -69,6 +75,9 @@ export const DialogUI = ({ onClose }: Props) => {
         }, 100);
         break;
       default:
+        closeTextInputDialog();
+        closeChoiceDialog();
+        closeAlertDialog();
         break;
     }
   }, [type, data]);
