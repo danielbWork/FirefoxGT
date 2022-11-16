@@ -27,6 +27,9 @@ export const CustomThemeProvider = ({ children, scopeCSS = false }: Props) => {
       createTheme({
         palette: {
           mode: prefersDarkMode ? "dark" : "light",
+          secondary: {
+            main: "#ff9922",
+          },
         },
         components: {
           MuiCssBaseline: {

@@ -16,9 +16,6 @@ export const Popup = () => {
         maxWidth: 500,
         minHeight: 600,
         maxHeight: 600,
-        borderStyle: "solid",
-        borderWidth: 2,
-        borderRadius: "8px",
         flexDirection: "column",
       }}
     >

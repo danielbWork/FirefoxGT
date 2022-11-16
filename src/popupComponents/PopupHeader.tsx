@@ -23,12 +23,8 @@ export const PopupHeader = () => {
   }, []);
 
   return (
-    <Box
-      alignItems="center"
-      justifyContent="center"
-      sx={{ borderRadius: "8px" }}
-    >
-      <AppBar position="static" sx={{ padding: 2, borderRadius: "8px" }}>
+    <Box alignItems="center" justifyContent="center">
+      <AppBar position="static" sx={{ padding: 2 }}>
         <Toolbar sx={{ alignItems: "center" }}>
           <Avatar
             src={ICON_URL}
@@ -46,7 +42,7 @@ export const PopupHeader = () => {
           </Typography>
 
           <IconButton onClick={handleSettingsClick}>
-            <SettingsIcon htmlColor="darkgray" />
+            <SettingsIcon htmlColor={"rgba(255, 255, 255, 0.7)"} />
           </IconButton>
         </Toolbar>
       </AppBar>

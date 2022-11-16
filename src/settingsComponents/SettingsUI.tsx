@@ -453,6 +453,7 @@ export const SettingsUI = () => {
               >
                 <Button
                   variant="outlined"
+                  color="secondary"
                   onClick={() => {
                     openRestoreDefaultsDialog();
                   }}

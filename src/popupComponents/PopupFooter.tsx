@@ -1,4 +1,4 @@
-import { Box, Link, Typography } from "@mui/material";
+import { Box, Link, useTheme } from "@mui/material";
 import React, { useCallback } from "react";
 
 /**
@@ -13,15 +13,16 @@ export const PopupFooter = () => {
     }, 100);
   }, []);
 
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
-        backgroundColor: "InfoBackground",
+        backgroundColor: theme.palette.action.disabledBackground,
         width: "100%",
         height: 50,
         padding: 2,
         alignItems: "center",
-        borderRadius: "16px",
       }}
     >
       <Link
