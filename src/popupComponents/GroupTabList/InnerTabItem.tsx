@@ -6,6 +6,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Skeleton,
 } from "@mui/material";
 import React, { useCallback, useState } from "react";
 import { useOnMount } from "../../utils/ui/useOnMount";
@@ -53,7 +54,13 @@ export const InnerTabItem = ({
     onTabClick(tabID);
   }, [onTabClick, tabID]);
 
-  console.log(tab?.favIconUrl);
+  if (!tab) {
+    return (
+      <ListItem role={undefined} dense divider>
+        <Skeleton width={"100%"} height={"100%"} />
+      </ListItem>
+    );
+  }
 
   return (
     <ListItem dense divider>

@@ -2,12 +2,13 @@ import {
   Avatar,
   ImageListItem,
   ImageListItemBar,
+  Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useOnMount } from "utils/ui/useOnMount";
-import { tabs, Tabs } from "webextension-polyfill";
+import { ICON_URL } from "../../utils/Consts";
+import browser, { tabs, Tabs } from "webextension-polyfill";
 
 type Props = {
   /**
@@ -47,7 +48,7 @@ export const InnerTabGridItem = ({ id, onTabClickListener }: Props) => {
   }, [id]);
 
   const title = useMemo(() => {
-    return tab?.title || tab?.url || "Loading";
+    return tab?.title || tab?.url || "Loading...";
   }, [tab]);
 
   // Opens the tab
@@ -64,13 +65,20 @@ export const InnerTabGridItem = ({ id, onTabClickListener }: Props) => {
       }}
       onClick={handleOnTabClick}
     >
-      <img
-        src={tabPicture}
-        loading="lazy"
-        title={title}
-        alt={title}
-        style={{ borderRadius: "18px" }}
-      />
+      {tabPicture ? (
+        <img
+          src={tabPicture}
+          loading="lazy"
+          title={title}
+          alt={title}
+          style={{ borderRadius: "18px" }}
+        />
+      ) : (
+        <Skeleton
+          width={window.innerWidth / 4}
+          height={window.innerHeight / 4}
+        />
+      )}
 
       <ImageListItemBar
         title={
@@ -87,7 +95,7 @@ export const InnerTabGridItem = ({ id, onTabClickListener }: Props) => {
             }}
           >
             <Avatar
-              src={`${tab?.favIconUrl}`}
+              src={tab?.favIconUrl || browser.runtime.getURL(ICON_URL)}
               sx={{ width: 24, height: 24, marginRight: 2 }}
             />
             {title}

@@ -11,6 +11,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Skeleton,
 } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { InnerTabItem } from "./InnerTabItem";
@@ -22,6 +23,7 @@ import { useTextInputDialog } from "../../utils/ui/dialogs/useTextInputDialog";
 import { createGroupTabTitle, moveGroupTab } from "../../utils/Utils";
 import { ICON_URL } from "../../utils/Consts";
 import { useChoiceDialog } from "../../utils/ui/dialogs/useChoiceDialog";
+import { useOnMount } from "../../utils/ui/useOnMount";
 
 type Props = {
   /**
@@ -48,15 +50,23 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
 
   const [innerTabToRemove, setInnerTabToRemove] = useState<number>();
 
+  const loadGroupTabInfo = useCallback(async () => {
+    const info = await tabs.get(groupTabID);
+    setGroupTabInfo(info);
+  }, [groupTabID]);
+
+  // Firs load for the info
+  useOnMount(() => {
+    loadGroupTabInfo();
+  });
+
   // Gets group tab and it's info
   const loadGroupTab = useCallback(async () => {
-    const info = await tabs.get(groupTabID);
-
     const groupTabValue = StorageHandler.instance.getGroupTabByID(groupTabID)!;
 
     // Makes sure it's a new object to update the ui
     setGroupTab({ ...groupTabValue });
-    setGroupTabInfo(info);
+    loadGroupTabInfo();
   }, [groupTabID]);
 
   // Toggles sublist to be displayed or not
@@ -165,6 +175,14 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
   const title = useMemo(() => {
     return groupTab ? createGroupTabTitle(groupTab) : "";
   }, [groupTab]);
+
+  if (!groupTabInfo) {
+    return (
+      <ListItem role={undefined} dense divider>
+        <Skeleton width={"100%"} height={"100%"} />
+      </ListItem>
+    );
+  }
 
   return (
     <>
