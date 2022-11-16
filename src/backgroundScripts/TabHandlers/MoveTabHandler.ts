@@ -5,8 +5,6 @@ import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   checkMovedIntoGroupTab,
   createNotification,
-  findNewActiveTab,
-  getActiveTab,
   moveGroupTab,
 } from "../../utils/Utils";
 import { OnTabClickHandler } from "./OnTabClickHandler";
@@ -17,6 +15,11 @@ import { BackgroundDialogHandler } from "../BackgroundDialogHandler";
  */
 export class MoveTabHandler {
   private highlightedTabs: number[] = [];
+
+  /**
+   * Flag for handling group tabs being put in other group which causes inner tab to think it was moved out of the group
+   */
+  private hasUserPutGroupInGroup = false;
 
   //#region Singleton
 
@@ -65,6 +68,11 @@ export class MoveTabHandler {
 
     if (groupTab) {
       if (index !== undefined) {
+        if (this.hasUserPutGroupInGroup) {
+          this.hasUserPutGroupInGroup = false;
+          return;
+        }
+
         this.onInnerTabMove(
           groupTab,
           index,
@@ -226,6 +234,8 @@ export class MoveTabHandler {
         enteredGroupTabInfo.index,
         windowId
       );
+
+      this.hasUserPutGroupInGroup = true;
     } else {
       await moveGroupTab(groupTab, undefined, toIndex, windowId);
     }
