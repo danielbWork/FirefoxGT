@@ -186,13 +186,21 @@ export class EditTabHandler {
   private async toggleClosedGroupMode(tab: Tabs.Tab) {
     const groupTab = StorageHandler.instance.getGroupTabByID(tab.id!)!;
 
+    if (StorageHandler.instance.settings.showToggleClosedGroupModeDialog) {
+      const results =
+        await BackgroundDialogHandler.instance.displayChoiceDialog(
+          "Closed Group Mode",
+          groupTab.isClosedGroupMode
+            ? "Are you sure you want to restore this to a normal group?"
+            : "Are you sure you want to change this to a closed group?"
+        );
+
+      if (!results) return;
+    }
+
     const activeTab = await getActiveTab();
     const { groupTab: activeGroup, index } =
       StorageHandler.instance.getGroupTabOrInnerTabByID(activeTab.id!);
-
-    //TODO add dialog (and probably setting) after updating dialog code
-
-    console.log(groupTab);
 
     // Handles toggle changes
     if (groupTab.isClosedGroupMode) {

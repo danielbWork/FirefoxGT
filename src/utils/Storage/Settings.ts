@@ -100,6 +100,8 @@ export type Settings = {
    */
   // useCloseGroupMode: boolean; // unused
 
+  showToggleClosedGroupModeDialog: boolean;
+
   //#endregion
 };
 
@@ -122,4 +124,5 @@ export const defaultSettings: Settings = {
   // isOpenInName: true,
   // useEndTab: false,
   // useCloseGroupMode: false,
+  showToggleClosedGroupModeDialog: true,
 };
