@@ -81,6 +81,7 @@ export const useTextInputDialog = (
                 background: "inherit",
                 fontFamily: "inherit",
                 fontSize: "inherit",
+                boxShadow: "inherit",
               },
             }}
           />

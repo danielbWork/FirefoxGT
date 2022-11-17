@@ -25,10 +25,10 @@ Build the extension into `dist/webext-dev` folder for **development**.
 
 Build the extension into `dist/webext-prod` folder for **production**.
 
-### `npm run build-zip (not added yet)`
+### `yarn build-zip`
 
-Build a zip file following this format `<name>-v<version>-(dev|prod).zip`, by reading `name` and `version` from `manifest.json` file.
-Zip file is located in `dist-zip` folder.
+Build a zip file following this format `<name>-<version>.zip` file.
+Zip file is located in `dist/webext-zip` folder.
 
 ## Known Issues:
 

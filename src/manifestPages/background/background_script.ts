@@ -31,9 +31,8 @@ browser.runtime.onInstalled.addListener(async () => {
 
   loadHandlers();
 
-  // TODO uncomment once not in dev
   // Called to make sure user can see dialogs from the start
-  // browser.runtime.openOptionsPage();
+  browser.runtime.openOptionsPage();
 });
 
 browser.runtime.onStartup.addListener(async () => {
