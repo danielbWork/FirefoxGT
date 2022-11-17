@@ -18,7 +18,6 @@ import { ICON_URL } from "../utils/Consts";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
 import { SectionProps, SettingType } from "./SettingsProps";
 import { SettingSection } from "./UI/SettingsSection";
-import { Set } from "typescript";
 import { useAlertDialog } from "../utils/ui/dialogs/useAlertDialog";
 import Close from "@mui/icons-material/Close";
 import {
