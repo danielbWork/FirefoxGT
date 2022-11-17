@@ -52,7 +52,7 @@ Zip file is located in `dist/webext-zip` folder.
 - **tabs**: for handling tab actions (create, move, update...)
 - **tabHide**: for hiding tabs
 - **activeTab**: for specific tab actions that require the current screen
-- **contextMenus**: for multiple actions done via the manus
+- **contextMenus**: for multiple actions done via the menus
 - **storage**: for saving group tab and settings data locally
 - **<all_urls>(Access your data for almost all websites)**: for tab thumbnails, dialogs and tab actions
 - **notifications**: for notification on move tab to group error, etc.
