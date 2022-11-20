@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"name": "BrowserGT",
 	"description": "Have Chrome-like group tabs in firefox",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"icons": {
 		"48": "icons/group_tab_icon.png",
 		"96": "icons/group_tab_icon_96x96.png"
@@ -47,6 +47,7 @@
     ],
 	"browser_specific_settings": {
 		"gecko": {
+			"id": "{0b3e893b-2cf8-47f3-9fa5-0b7a10d643b4}"
 		}
 	  }
 	  

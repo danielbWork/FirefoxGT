@@ -97,7 +97,7 @@ export class SessionsHandler {
   /**
    * Loads the sessions data for when user starts up the browser
    */
-  async loadUpStartupData() {
+  async loadStartupData() {
     const restoredTabs = await tabs.query({});
 
     const groupsSessionInfo: Record<
@@ -133,6 +133,11 @@ export class SessionsHandler {
     // Updates the session values
     Object.values(groupsSessionInfo).forEach(
       async ({ groupTab, groupTabInfo, innerTabs }) => {
+        // Keeps the inner tabs in the correct visibility
+        groupTab.isOpen
+          ? tabs.show(groupTab.innerTabs)
+          : tabs.hide(groupTab.innerTabs);
+
         const restoredGroupTab =
           await StorageHandler.instance.updateGroupTabFromSession(
             groupTab.id,
@@ -157,16 +162,14 @@ export class SessionsHandler {
           );
         });
 
-        // Keeps the inner tabs in the correct visibility
-        restoredGroupTab.isOpen
-          ? tabs.show(restoredGroupTab.innerTabs)
-          : tabs.hide(restoredGroupTab.innerTabs);
+        // Uses timeout as sometimes reload doesn't happen
+        tabs.reload(restoredGroupTab.id);
       }
     );
   }
 
   /**
-   * Handles fixing group tab info after the user restored the group tab was restored by user
+   * Handles fixing group tab info after the user restored the group tab
    * @param groupTabInfo The group tab info
    * @param sessionGroupTab The session info for the reopened group tab
    */

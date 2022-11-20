@@ -26,7 +26,7 @@ export const PopupFooter = () => {
       }}
     >
       <Link
-        href="https://github.com/danielbWork/FirefoxGT"
+        href="https://addons.mozilla.org/en-US/firefox/addon/browsergt/"
         variant="body1"
         align="left"
         onClick={handleOnLinkClick}

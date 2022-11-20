@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel manifest.json src/webPages/*/* icons/* --host localhost --config @parcel/config-webextension --target webext-dev --dist-dir dist/webext-dev",
-    "build": "rm -r ./dist/webext-prod && parcel build manifest.json src/webPages/*/* icons/* --config @parcel/config-webextension --target webext-prod",
+    "build": "rm -fr ./dist/webext-prod && parcel build manifest.json src/webPages/*/* icons/* --config @parcel/config-webextension --target webext-prod",
     "build-zip": "yarn build && web-ext build -s ./dist/webext-prod/ -a ./dist/webext-zip --overwrite-dest"
   },
   "dependencies": {

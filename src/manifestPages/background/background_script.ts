@@ -10,22 +10,30 @@ import { BackgroundMessageHandler } from "../../backgroundScripts/BackgroundMess
 import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
 import { BackgroundDialogHandler } from "../../backgroundScripts/BackgroundDialogHandler";
 
+let isLoaded = false;
+
 const loadHandlers = () => {
   console.log("Load");
 
-  ContextMenuHandler.instance.setupContextMenuItems();
-  SessionsHandler.instance.setupSessionsHandler();
+  if (!isLoaded) {
+    ContextMenuHandler.instance.setupContextMenuItems();
+    SessionsHandler.instance.setupSessionsHandler();
 
-  CreateTabHandler.instance.setupCreateHandler();
-  OnTabClickHandler.instance.setupOnClickHandler();
-  RemoveTabHandler.instance.setupRemoveHandler();
-  MoveTabHandler.instance.setupMoveHandler();
-  EditTabHandler.instance.setupEditHandler();
-  BackgroundMessageHandler.instance.setupMessageHandler();
-  BackgroundDialogHandler.instance.setupDialogHandler();
+    CreateTabHandler.instance.setupCreateHandler();
+    OnTabClickHandler.instance.setupOnClickHandler();
+    RemoveTabHandler.instance.setupRemoveHandler();
+    MoveTabHandler.instance.setupMoveHandler();
+    EditTabHandler.instance.setupEditHandler();
+    BackgroundMessageHandler.instance.setupMessageHandler();
+    BackgroundDialogHandler.instance.setupDialogHandler();
+  }
+
+  isLoaded = true;
 };
 
 browser.runtime.onInstalled.addListener(async () => {
+  console.log("Install");
+
   await StorageHandler.instance.setupDefaultStorage();
   await StorageHandler.instance.loadStorage();
 
@@ -36,7 +44,10 @@ browser.runtime.onInstalled.addListener(async () => {
 });
 
 browser.runtime.onStartup.addListener(async () => {
+  console.log("startup");
   await StorageHandler.instance.loadStorage();
-  await SessionsHandler.instance.loadUpStartupData();
+  await SessionsHandler.instance.loadStartupData();
   loadHandlers();
 });
+
+loadHandlers();
