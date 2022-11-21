@@ -288,10 +288,11 @@ export class StorageHandler {
   /**
    * Updates the group tab value in the storage
    * @param newGroupTab The new value for the group tab
+   *  @param notifyEdit If true notifies about an edit in the group tab
    *
    * @throws Error when user attempts to update a group tab that doesn't exists
    */
-  async updateGroupTab(newGroupTab: GroupTab) {
+  async updateGroupTab(newGroupTab: GroupTab, notifyEdit = false) {
     const id = newGroupTab.id;
 
     if (!this.groupTabs[id]) {
@@ -301,6 +302,10 @@ export class StorageHandler {
     this.groupTabs[id] = newGroupTab;
 
     await this.updateAllGroupTabs();
+
+    if (notifyEdit) {
+      this.onEditTab.editedGroupTab(newGroupTab);
+    }
   }
 
   /**
@@ -312,9 +317,7 @@ export class StorageHandler {
   async toggleGroupTabVisibility(groupTab: GroupTab) {
     groupTab.isOpen = !groupTab.isOpen;
 
-    await this.updateGroupTab(groupTab);
-
-    this.onEditTab.editedGroupTab(groupTab);
+    await this.updateGroupTab(groupTab, true);
   }
 
   /**
@@ -325,9 +328,7 @@ export class StorageHandler {
    */
   async toggleGroupTabClosedMode(groupTab: GroupTab) {
     groupTab.isClosedGroupMode = !groupTab.isClosedGroupMode;
-    await this.updateGroupTab(groupTab);
-
-    this.onEditTab.editedGroupTab(groupTab);
+    await this.updateGroupTab(groupTab, true);
   }
 
   /**
@@ -337,9 +338,7 @@ export class StorageHandler {
    */
   async updateGroupTabName(groupTab: GroupTab, name: string) {
     groupTab.name = name;
-    await this.updateGroupTab(groupTab);
-
-    this.onEditTab.editedGroupTab(groupTab);
+    await this.updateGroupTab(groupTab, true);
   }
 
   /**
@@ -349,9 +348,7 @@ export class StorageHandler {
    */
   async updateGroupTabIcon(groupTab: GroupTab, icon?: string) {
     groupTab.icon = icon;
-    await this.updateGroupTab(groupTab);
-
-    this.onEditTab.editedGroupTab(groupTab);
+    await this.updateGroupTab(groupTab, true);
   }
 
   /**

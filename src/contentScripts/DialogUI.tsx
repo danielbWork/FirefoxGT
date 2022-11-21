@@ -56,6 +56,14 @@ export const DialogUI = ({ onClose }: Props) => {
 
   // Notifies ui to open when needed
   useEffect(() => {
+    // Makes sure we have valid values to display the dialogs with
+    if (!data.title || !data.message) {
+      closeTextInputDialog();
+      closeChoiceDialog();
+      closeAlertDialog();
+      return;
+    }
+
     switch (type) {
       case ContentMessageType.DISPLAY_TEXT_INPUT:
         setTimeout(() => {

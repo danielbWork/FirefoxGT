@@ -99,13 +99,6 @@ export class BackgroundMessageHandler {
    * @param groupTab The group tab that was edited
    */
   private async onEditGroupTab(groupTab: GroupTab) {
-    // opening change needed here as no other listener requires this
-    if (groupTab.isOpen) {
-      await tabs.show(groupTab.innerTabs);
-    } else {
-      await tabs.hide(groupTab.innerTabs);
-    }
-
     // Notifies about changed group tab
     StorageHandler.instance.onEditTab.editedGroupTab(groupTab);
   }

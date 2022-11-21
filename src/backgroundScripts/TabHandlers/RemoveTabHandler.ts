@@ -132,8 +132,13 @@ export class RemoveTabHandler {
     if (!groupTab.innerTabs.length && !groupTab.isOpen) {
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
-    // Makes sure to show the inner tab if needed
-    tabs.show(innerTabID);
+    // Makes sure to show the inner tab if not inside another group tab
+    const { groupTab: newGroupTab } =
+      await StorageHandler.instance.getGroupTabOrInnerTabByID(innerTabID);
+
+    if (!newGroupTab) {
+      tabs.show(innerTabID);
+    }
   }
 
   /**

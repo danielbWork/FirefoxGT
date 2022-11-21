@@ -134,7 +134,6 @@ export const GroupTabItem = memo(({ groupTabID, onRemoveGroupTab }: Props) => {
 
       if (!groupTab.isOpen) {
         StorageHandler.instance.toggleGroupTabVisibility(groupTab);
-        tabs.show(groupTab.innerTabs);
       }
     },
     [groupTab]

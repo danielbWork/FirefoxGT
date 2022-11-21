@@ -93,12 +93,9 @@ export class BackgroundDialogHandler {
 
   private async onNotificationClick(notificationId: string) {
     if (this.notificationId === notificationId) {
-      console.log("hi");
-
       browser.tabs.create({
         url: "https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#sect1",
       });
-      console.log("there");
 
       this.notificationId = undefined;
     }

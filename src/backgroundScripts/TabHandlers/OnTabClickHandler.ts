@@ -77,12 +77,18 @@ export class OnTabClickHandler {
         return;
       }
 
-      await tabs.hide(oldGroup.groupTab.innerTabs);
+      StorageHandler.instance.updateGroupTab(
+        { ...oldGroup.groupTab, isOpen: false },
+        true
+      );
     }
 
     // Handles if the new group tab is in closed group mode
     if (newGroup.groupTab?.isClosedGroupMode) {
-      await tabs.show(newGroup.groupTab.innerTabs);
+      StorageHandler.instance.updateGroupTab(
+        { ...newGroup.groupTab, isOpen: true },
+        true
+      );
       return;
     }
 
@@ -121,14 +127,6 @@ export class OnTabClickHandler {
       if (groupTab.isOpen) {
         await findNewActiveTab();
       }
-
-      // Checks whether to hide or show by doing opposite
-      if (groupTab.isOpen) {
-        await tabs.hide(groupTab.innerTabs);
-      } else {
-        await tabs.show(groupTab.innerTabs);
-      }
-
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     } else if (info.menuItemId === ENTER_GROUP_TAB_ID) {
       this.groupTabToEnter = tab!.id!;
@@ -152,14 +150,6 @@ export class OnTabClickHandler {
     // This is mostly for stopping user using the context menu Move Tab option
     if (!this.isDraggingFlag) return;
 
-    // Makes sure the inner tabs match group tab info
-    // Awaits required to make sure the update won't cause issues
-    if (groupTab.isOpen) {
-      await tabs.show(groupTab.innerTabs);
-    } else {
-      await tabs.hide(groupTab.innerTabs);
-    }
-
     this.isDraggingFlag = false;
 
     // Makes sure that we refresh out of the group tab
@@ -178,13 +168,6 @@ export class OnTabClickHandler {
   private async onGroupTabClick(groupTab: GroupTab, previousTabId?: number) {
     // Makes sure that nothing happens while group tab is empty
     if (groupTab.innerTabs.length) {
-      // Checks whether to hide or show by doing opposite
-      if (groupTab.isOpen) {
-        await tabs.hide(groupTab.innerTabs);
-      } else {
-        await tabs.show(groupTab.innerTabs);
-      }
-
       StorageHandler.instance.toggleGroupTabVisibility(groupTab);
     }
 

@@ -9,6 +9,7 @@ import { GroupTab } from "../../utils/GroupTab.js";
 import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
 import {
   createNotification,
+  findNewActiveTab,
   getActiveTab,
   moveGroupTab,
 } from "../../utils/Utils";
@@ -41,11 +42,9 @@ export class EditTabHandler {
     StorageHandler.instance.onEditTab.addListener(
       this.onGroupTabEdit.bind(this)
     );
-    StorageHandler.instance.onAddTab.addListener(
-      this.onInnerTabEdit.bind(this)
-    );
+    StorageHandler.instance.onAddTab.addListener(this.onInnerTabAdd.bind(this));
     StorageHandler.instance.onRemoveTab.addListener(
-      this.onInnerTabEdit.bind(this)
+      this.onInnerTabDelete.bind(this)
     );
 
     browser.contextMenus.onClicked.addListener(
@@ -121,17 +120,49 @@ export class EditTabHandler {
    * @param groupTab The group tab that we want to update
    */
   private async onGroupTabEdit(groupTab: GroupTab) {
-    await tabs.reload(groupTab.id);
+    // Makes sure inner tabs have proper visibility
+    if (groupTab.isOpen) {
+      tabs.show(groupTab.innerTabs);
+    } else {
+      tabs.hide(groupTab.innerTabs);
+    }
+
+    tabs.reload(groupTab.id);
   }
 
   /**
-   * Checks if the inner tab was added/removed from the group tab and updates it accordingly
+   * Checks if the inner tab was added from the group tab and updates it accordingly
    * @param groupTab The group tab that was edited
-   * @param indexOrInnerTabID index or id of the inner tab that was updated
+   * @param index index of the inner tab inside the group tab
    */
-  private async onInnerTabEdit(groupTab: GroupTab, indexOrInnerTabID?: number) {
+  private async onInnerTabAdd(groupTab: GroupTab, index?: number) {
     // Does this check because 0 is false
-    if (indexOrInnerTabID !== undefined) {
+    if (index !== undefined) {
+      console.log(groupTab);
+
+      // Handles adding tab to closed group
+      if (!groupTab.isOpen) {
+        const activeTab = await getActiveTab();
+
+        // If the inner tab is active on add makes sure we leave it to keep it hidden like the rest of the group
+        if (activeTab.id === groupTab.innerTabs[index]) {
+          await findNewActiveTab();
+        }
+      }
+
+      await this.onGroupTabEdit(groupTab);
+    }
+  }
+
+  /**
+   * Checks if the inner tab was removed from the group tab and updates it accordingly
+   * @param groupTab The group tab that had teh inner tab
+   * @param innerTabID id of the inner tab that was deleted
+   */
+  private async onInnerTabDelete(groupTab: GroupTab, innerTabID?: number) {
+    // Does this check because 0 is false
+    if (innerTabID !== undefined) {
+      console.log(groupTab);
       await this.onGroupTabEdit(groupTab);
     }
   }
@@ -202,14 +233,11 @@ export class EditTabHandler {
     const { groupTab: activeGroup, index } =
       StorageHandler.instance.getGroupTabOrInnerTabByID(activeTab.id!);
 
-    // Handles toggle changes
-    if (groupTab.isClosedGroupMode) {
-      groupTab.isOpen = activeGroup?.id === groupTab.id;
-    }
-    // Only need to update the group if it's also not active
-    else if (activeGroup?.id !== groupTab.id) {
+    // Only need to update the new closed group group if it's not active
+    if (!groupTab.isClosedGroupMode && activeGroup?.id !== groupTab.id) {
       await tabs.hide(groupTab.innerTabs);
 
+      // Don't need to update with storage handler because of the next call
       groupTab.isOpen = false;
     }
 
