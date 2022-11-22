@@ -57,7 +57,7 @@ export const DialogUI = ({ onClose }: Props) => {
   // Notifies ui to open when needed
   useEffect(() => {
     // Makes sure we have valid values to display the dialogs with
-    if (!data.title || !data.message) {
+    if (!data?.title || !data?.message) {
       closeTextInputDialog();
       closeChoiceDialog();
       closeAlertDialog();
@@ -89,7 +89,7 @@ export const DialogUI = ({ onClose }: Props) => {
   }, [type, data]);
 
   return (
-    <Box>
+    <Box sx={{ textAlign: "start" }}>
       {textInputDialog}
       {choiceDialog}
       {alertDialog}
