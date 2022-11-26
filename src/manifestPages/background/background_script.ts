@@ -11,6 +11,8 @@ import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
 import { BackgroundDialogHandler } from "../../backgroundScripts/BackgroundDialogHandler";
 
 let isLoaded = false;
+let isStartup = false;
+let isInstall = false;
 
 const loadHandlers = () => {
   console.log("Load");
@@ -33,7 +35,7 @@ const loadHandlers = () => {
 
 browser.runtime.onInstalled.addListener(async () => {
   console.log("Install");
-
+  isInstall = true;
   await StorageHandler.instance.setupDefaultStorage();
   await StorageHandler.instance.loadStorage();
 
@@ -45,9 +47,20 @@ browser.runtime.onInstalled.addListener(async () => {
 
 browser.runtime.onStartup.addListener(async () => {
   console.log("startup");
+  isStartup = true;
   await StorageHandler.instance.loadStorage();
   await SessionsHandler.instance.loadStartupData();
   loadHandlers();
 });
 
 loadHandlers();
+
+setTimeout(async () => {
+  // Checks to see if the extension was updated
+  if (!isStartup && !isInstall) {
+    console.log("Update");
+
+    await StorageHandler.instance.loadStorage();
+    SessionsHandler.instance.handleUpdate();
+  }
+}, 500);

@@ -382,6 +382,8 @@ export class StorageHandler {
       isClosedGroupMode
     );
 
+    this.onEditTab.editedGroupTab(newGroupTab);
+
     return newGroupTab;
   }
 

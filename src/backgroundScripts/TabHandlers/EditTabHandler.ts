@@ -1,12 +1,13 @@
 import {
   EDIT_GROUP_TAB_NAME_ID,
+  GROUP_TAB_URL,
   RESTORE_DEFAULT_ICON_ID,
   SELECT_INNER_TAB_ICON_ID,
   TOGGLE_GROUP_TAB_CLOSED_GROUP_MODE_ID,
 } from "../../utils/Consts";
 import { StorageHandler } from "../../utils/Storage/StorageHandler";
 import { GroupTab } from "../../utils/GroupTab.js";
-import browser, { Tabs, Menus, tabs } from "webextension-polyfill";
+import browser, { Tabs, Menus, tabs, runtime } from "webextension-polyfill";
 import {
   createNotification,
   findNewActiveTab,
@@ -53,6 +54,10 @@ export class EditTabHandler {
 
     tabs.onUpdated.addListener(this.onPinTab.bind(this), {
       properties: ["pinned"],
+    });
+
+    tabs.onUpdated.addListener(this.onChangeGroupTabUrl.bind(this), {
+      properties: ["url"],
     });
   }
 
@@ -112,6 +117,28 @@ export class EditTabHandler {
       await StorageHandler.instance.updateGroupTab(groupTab);
 
       moveGroupTab(groupTab);
+    }
+  }
+
+  /**
+   * Handles user changing url of a group tab by restoring it to the correct value
+   * @param tabId The id of the tab that was changed
+   * @param changeInfo The info regarding the change
+   * @param tabInfo The current state of the tab
+   */
+  private onChangeGroupTabUrl(
+    tabId: number,
+    changeInfo: Tabs.OnUpdatedChangeInfoType,
+    tabInfo: Tabs.Tab
+  ) {
+    const groupTab = StorageHandler.instance.getGroupTabByID(tabId);
+
+    if (groupTab && tabInfo.url !== runtime.getURL(GROUP_TAB_URL)) {
+      tabs.update(tabId, { url: GROUP_TAB_URL });
+      createNotification(
+        "Url Change",
+        "Please do not change the group tab's url"
+      );
     }
   }
 

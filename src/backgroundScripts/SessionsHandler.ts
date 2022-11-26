@@ -1,7 +1,11 @@
 import { GroupTab } from "../utils/GroupTab";
 import { StorageHandler } from "../utils/Storage/StorageHandler";
-import browser, { tabs, sessions, Tabs } from "webextension-polyfill";
-import { GROUP_TAB_SESSION_KEY, INNER_TAB_SESSION_KEY } from "../utils/Consts";
+import browser, { tabs, sessions, Tabs, runtime } from "webextension-polyfill";
+import {
+  GROUP_TAB_SESSION_KEY,
+  GROUP_TAB_URL,
+  INNER_TAB_SESSION_KEY,
+} from "../utils/Consts";
 import { findNewActiveTab } from "../utils/Utils";
 
 /**
@@ -95,77 +99,47 @@ export class SessionsHandler {
   //#endregion
 
   /**
+   * Handles update to extension, restoring all the removed group tabs
+   */
+  async handleUpdate() {
+    const groupTabIds = await StorageHandler.instance.getAllGroupTabIDs();
+
+    // No group tabs no problems
+    if (!groupTabIds.length) return;
+
+    // Adds 10 as buffer incase other tabs were removed at the same time
+    const recentlyClosed = await sessions.getRecentlyClosed({
+      maxResults: groupTabIds.length + 10,
+    });
+
+    recentlyClosed.forEach(async (session) => {
+      // Only cares about tabs
+      if (!session.tab) return;
+
+      // Checks if group tab
+      if (session.tab.url === runtime.getURL(GROUP_TAB_URL)) {
+        sessions.restore(session.tab.sessionId);
+      }
+    });
+  }
+
+  /**
    * Loads the sessions data for when user starts up the browser
    */
   async loadStartupData() {
-    const restoredTabs = await tabs.query({});
-
-    const groupsSessionInfo: Record<
-      number,
-      { groupTab: GroupTab; groupTabInfo: Tabs.Tab; innerTabs: number[] }
-    > = {};
+    const restoredGroupTabs = await tabs.query({
+      url: runtime.getURL(GROUP_TAB_URL),
+    });
 
     // Goes over the tabs and checks which are related to extension
-    for (const tab of restoredTabs) {
+    for (const tab of restoredGroupTabs) {
       const groupTabData = await sessions.getTabValue(
         tab.id!,
         GROUP_TAB_SESSION_KEY
       );
-      const innerTabData = await sessions.getTabValue(
-        tab.id!,
-        INNER_TAB_SESSION_KEY
-      );
 
-      if (groupTabData) {
-        groupsSessionInfo[groupTabData.id] = {
-          groupTab: groupTabData,
-          groupTabInfo: tab,
-          innerTabs: [],
-        };
-      }
-
-      // Inner tabs will always be a after group tab in order so we can assume the the info was added
-      if (innerTabData) {
-        groupsSessionInfo[innerTabData].innerTabs.push(tab.id!);
-      }
+      this.handleRestoredGroupTab(tab, groupTabData);
     }
-
-    // Updates the session values
-    Object.values(groupsSessionInfo).forEach(
-      async ({ groupTab, groupTabInfo, innerTabs }) => {
-        // Keeps the inner tabs in the correct visibility
-        groupTab.isOpen
-          ? tabs.show(groupTab.innerTabs)
-          : tabs.hide(groupTab.innerTabs);
-
-        const restoredGroupTab =
-          await StorageHandler.instance.updateGroupTabFromSession(
-            groupTab.id,
-            groupTabInfo.id!,
-            groupTab.name,
-            innerTabs,
-            groupTab.icon,
-            groupTab.isOpen
-          );
-
-        await sessions.setTabValue(
-          restoredGroupTab.id,
-          GROUP_TAB_SESSION_KEY,
-          restoredGroupTab
-        );
-
-        restoredGroupTab.innerTabs.forEach((innerTabId) => {
-          sessions.setTabValue(
-            innerTabId,
-            INNER_TAB_SESSION_KEY,
-            restoredGroupTab.id
-          );
-        });
-
-        // Uses timeout as sometimes reload doesn't happen
-        tabs.reload(restoredGroupTab.id);
-      }
-    );
   }
 
   /**
@@ -184,12 +158,15 @@ export class SessionsHandler {
 
     // Adds to innerTabs all the updated ids of the inner tabs
     for (
-      let index = 0;
+      let index = groupTabInfo.index + 1;
       index < windowTabs.length &&
       innerTabs.length !== sessionGroupTab.innerTabs.length;
       index++
     ) {
       const tab = windowTabs[index];
+
+      // Skips group tabs
+      if (tab.url === runtime.getURL(GROUP_TAB_URL)) continue;
 
       // Checks for the session info we need
       const innerTabSessionInfo = await sessions.getTabValue(
@@ -214,7 +191,7 @@ export class SessionsHandler {
       );
 
     // Resets the session data
-    await sessions.setTabValue(
+    sessions.setTabValue(
       restoredGroupTab.id,
       GROUP_TAB_SESSION_KEY,
       restoredGroupTab
@@ -229,9 +206,7 @@ export class SessionsHandler {
     });
 
     if (groupTabInfo.active && !restoredGroupTab.isClosedGroupMode) {
-      await findNewActiveTab();
+      findNewActiveTab();
     }
-
-    await tabs.reload(restoredGroupTab.id, {});
   }
 }
