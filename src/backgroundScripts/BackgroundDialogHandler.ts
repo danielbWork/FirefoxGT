@@ -2,6 +2,7 @@ import { createNotification } from "../utils/Utils";
 import browser from "webextension-polyfill";
 import { ContentMessageType } from "../utils/messages/ContentMessageType";
 import { BackgroundMessageHandler } from "./BackgroundMessageHandler";
+import { StorageHandler } from "../utils/Storage/StorageHandler";
 
 /**
  *  Handles displaying dialogs in the ui
@@ -46,6 +47,10 @@ export class BackgroundDialogHandler {
     message: string,
     defaultValue: string
   ) {
+    if (StorageHandler.instance.isStartup) {
+      return undefined;
+    }
+
     const results =
       await BackgroundMessageHandler.instance.sendContentScriptMessage(
         ContentMessageType.DISPLAY_TEXT_INPUT,
@@ -67,6 +72,10 @@ export class BackgroundDialogHandler {
    * @returns The choice or undefined if user closed the dialog
    */
   async displayChoiceDialog(title: string, message: string) {
+    if (StorageHandler.instance.isStartup) {
+      return undefined;
+    }
+
     const results =
       await BackgroundMessageHandler.instance.sendContentScriptMessage(
         ContentMessageType.DISPLAY_CHOICE,

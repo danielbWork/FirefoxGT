@@ -64,6 +64,10 @@ export async function checkMovedIntoGroupTab(index: number, windowId: number) {
  * @returns The notification id
  */
 export async function createNotification(title: string, message: string) {
+  if (StorageHandler.instance.isStartup) {
+    return "";
+  }
+
   return notifications.create({
     type: "basic",
     iconUrl: ICON_URL,

@@ -9,6 +9,7 @@ import { OnTabClickHandler } from "../../backgroundScripts/TabHandlers/OnTabClic
 import { BackgroundMessageHandler } from "../../backgroundScripts/BackgroundMessageHandler";
 import { SessionsHandler } from "../../backgroundScripts/SessionsHandler";
 import { BackgroundDialogHandler } from "../../backgroundScripts/BackgroundDialogHandler";
+import { delay } from "../../utils/Utils";
 
 let isLoaded = false;
 let isStartup = false;
@@ -43,6 +44,7 @@ browser.runtime.onInstalled.addListener(async () => {
 
   // Called to make sure user can see dialogs from the start
   browser.runtime.openOptionsPage();
+  StorageHandler.instance.isStartup = false;
 });
 
 browser.runtime.onStartup.addListener(async () => {
@@ -51,6 +53,7 @@ browser.runtime.onStartup.addListener(async () => {
   await StorageHandler.instance.loadStorage();
   await SessionsHandler.instance.loadStartupData();
   loadHandlers();
+  StorageHandler.instance.isStartup = false;
 });
 
 loadHandlers();
@@ -62,5 +65,10 @@ setTimeout(async () => {
 
     await StorageHandler.instance.loadStorage();
     SessionsHandler.instance.handleUpdate();
+
+    // Delay so startup flag won't be removed immediately
+    await delay(500);
   }
+
+  StorageHandler.instance.isStartup = false;
 }, 500);

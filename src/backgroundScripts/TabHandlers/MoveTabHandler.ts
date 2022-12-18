@@ -373,7 +373,7 @@ export class MoveTabHandler {
 
     // Moving a tab in pinned group should never remove it unless in other window
     if (!groupTabInfo.pinned || groupTabInfo.windowId !== windowId) {
-      await this.onRemoveTabFromGroup(groupTab, index);
+      await this.onRemoveTabFromGroup(groupTab, groupTabInfo, index);
     }
   }
 
@@ -427,7 +427,7 @@ export class MoveTabHandler {
     let results;
 
     // Display dialog if needed
-    if (displayDialog) {
+    if (displayDialog && groupTabInfo.windowId === movedTabInfo.windowId) {
       results = await this.handleConfirmMove(
         "Move Between Groups",
         `Are you sure you want to move tab ${movedTabInfo.title} from group ${groupTab.name} to group ${newGroupTab.name}?`
@@ -471,10 +471,12 @@ export class MoveTabHandler {
    * Asks user if they are sure they want to remove the inner tab from group
    *
    * @param groupTab The group tab who originally had the inner tab
+   * @param groupTabInfo The group tab info
    * @param innerTabIndex The index of the inner tab in the group tab
    */
   private async onRemoveTabFromGroup(
     groupTab: GroupTab,
+    groupTabInfo: Tabs.Tab,
     innerTabIndex: number
   ) {
     const movedTabInfo = await tabs.get(groupTab.innerTabs[innerTabIndex]);
@@ -483,7 +485,10 @@ export class MoveTabHandler {
 
     let results;
 
-    if (settings.showRemoveFromGroupTabDialog.drag) {
+    if (
+      settings.showRemoveFromGroupTabDialog.drag &&
+      groupTabInfo.windowId === movedTabInfo.windowId
+    ) {
       results = await this.handleConfirmMove(
         "Remove from Group",
         `Are you sure you want remove tab ${movedTabInfo.title} from group ${groupTab.name}?`

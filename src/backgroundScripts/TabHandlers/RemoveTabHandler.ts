@@ -180,27 +180,21 @@ export class RemoveTabHandler {
           break;
       }
 
+      let message = "";
+
       if (deleteInnerTabs) {
         tabs.remove(groupTab.innerTabs);
-        createNotification(
-          `Removed ${groupTab.name}`,
-          "All of it's inner tabs were removed as well"
-        );
+        message = "All of it's inner tabs were removed as well";
       } else {
         if (groupTab.isOpen) {
-          createNotification(
-            `Removed ${groupTab.name}`,
-            "All inner tabs are currently available"
-          );
+          message = "All inner tabs are currently available";
         } else {
           tabs.show(groupTab.innerTabs);
-
-          createNotification(
-            `Removed ${groupTab.name}`,
-            "Displaying all of its hidden tabs"
-          );
+          message = "Displaying all of its hidden tabs";
         }
       }
+
+      createNotification(`Removed ${groupTab.name}`, message);
     }
   }
 

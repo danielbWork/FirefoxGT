@@ -40,6 +40,11 @@ export class StorageHandler {
    */
   settings: Settings = { ...defaultSettings };
 
+  /**
+   * Signifies that we haven't loaded everything yet
+   */
+  isStartup = true;
+
   //#region Singleton
 
   private static _instance: StorageHandler;
