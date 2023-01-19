@@ -376,9 +376,15 @@ export class StorageHandler {
     isOpen?: boolean,
     isClosedGroupMode?: boolean
   ) {
-    await this.removeTabFromStorage(oldId);
+    const removedGroupTab = this.groupTabs[oldId];
 
-    const newGroupTab = await this.addGroupTab(
+    // Best way to not delete a restored group tab that took this id
+    // without some flag
+    if (removedGroupTab?.name === name && removedGroupTab?.icon === icon) {
+      delete this.groupTabs[oldId];
+    }
+
+    const newGroupTab = new GroupTab(
       id,
       name,
       innerTabs,
@@ -387,7 +393,9 @@ export class StorageHandler {
       isClosedGroupMode
     );
 
-    this.onEditTab.editedGroupTab(newGroupTab);
+    this.groupTabs[id] = newGroupTab;
+
+    await this.updateAllGroupTabs();
 
     return newGroupTab;
   }

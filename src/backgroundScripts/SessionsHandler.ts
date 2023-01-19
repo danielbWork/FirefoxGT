@@ -6,7 +6,8 @@ import {
   GROUP_TAB_URL,
   INNER_TAB_SESSION_KEY,
 } from "../utils/Consts";
-import { findNewActiveTab } from "../utils/Utils";
+import { createNotification, findNewActiveTab } from "../utils/Utils";
+import { ContextMenuHandler } from "./ContextMenuHandler";
 
 /**
  * Class in charge of various tasks regarding session data
@@ -115,7 +116,6 @@ export class SessionsHandler {
     recentlyClosed.forEach(async (session) => {
       // Only cares about tabs
       if (!session.tab) return;
-
       // Checks if group tab
       if (session.tab.url === runtime.getURL(GROUP_TAB_URL)) {
         sessions.restore(session.tab.sessionId);
@@ -127,6 +127,11 @@ export class SessionsHandler {
    * Loads the sessions data for when user starts up the browser
    */
   async loadStartupData() {
+    createNotification(
+      "Started Loading Group Tab",
+      "Please wait until complete"
+    );
+
     const restoredGroupTabs = await tabs.query({
       url: runtime.getURL(GROUP_TAB_URL),
     });
@@ -140,6 +145,8 @@ export class SessionsHandler {
 
       this.handleRestoredGroupTab(tab, groupTabData);
     }
+
+    createNotification("Load Completed", "Finished loading group tabs");
   }
 
   /**
@@ -208,5 +215,8 @@ export class SessionsHandler {
     if (groupTabInfo.active && !restoredGroupTab.isClosedGroupMode) {
       findNewActiveTab();
     }
+
+    // Fixes bug that causes the group tab not having context menu items
+    ContextMenuHandler.instance.addGroupTabToContextMenu(restoredGroupTab);
   }
 }

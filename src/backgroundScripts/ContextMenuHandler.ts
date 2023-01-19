@@ -263,7 +263,7 @@ export class ContextMenuHandler {
    * @param groupTab The group tab that was added
    * @param index The number marking if the update was for an inner tab (if so exists)
    */
-  private async addGroupTabToContextMenu(groupTab: GroupTab, index?: number) {
+  async addGroupTabToContextMenu(groupTab: GroupTab, index?: number) {
     if (index) return;
 
     this.createMenuItem(
