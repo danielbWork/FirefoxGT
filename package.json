@@ -33,8 +33,7 @@
     "parcel": "^2.8.0"
   },
   "targets": {
-    "webext-dev": {
-    },
+    "webext-dev": {},
     "webext-prod": {}
   }
 }
